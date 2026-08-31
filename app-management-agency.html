@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tamil Nadu e-Governance Agency — App Management — TN SSO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Roboto:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="app-management.css" />
+</head>
+<body>
+  <!-- ============ Accessibility Bar ============ -->
+  <div class="accessibility-bar">
+    <div class="access-inner">
+      <a href="#main" class="skip-link">Skip to Main Content</a>
+      <span class="access-sep"></span>
+      <div class="font-controls">
+        <button class="access-icon" title="Increase font size" aria-label="Increase font size">
+          <span class="material-icons">text_increase</span>
+        </button>
+        <button class="access-icon is-active" title="Default font size" aria-label="Default font size">
+          <span class="material-icons">format_size</span>
+        </button>
+        <button class="access-icon" title="Decrease font size" aria-label="Decrease font size">
+          <span class="material-icons">text_decrease</span>
+        </button>
+      </div>
+      <span class="access-sep"></span>
+      <button class="access-icon" title="Toggle contrast" aria-label="Toggle contrast">
+        <span class="material-icons">contrast</span>
+      </button>
+      <span class="access-sep"></span>
+      <button class="access-more" aria-label="More accessibility options">
+        <span class="material-icons">accessibility_new</span>
+        <span>More</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ============ Header / Main Nav ============ -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo-block">
+        <div class="logo-emblems">
+          <img class="emblem-img" src="assets/imgImage1.png" alt="Government of Tamil Nadu emblem" />
+          <img class="emblem-img" src="assets/imgGroup2.svg" alt="TN SSO logo" />
+        </div>
+        <span class="logo-divider"></span>
+        <div class="logo-text">
+          <span class="logo-line-1">Back Office</span>
+          <span class="logo-line-2">TN SSO</span>
+        </div>
+      </div>
+
+      <nav class="main-nav" aria-label="Primary">
+        <a href="index.html" class="nav-item">Home</a>
+
+        <div class="dropdown">
+          <a href="users.html" class="nav-item dropdown-toggle" data-toggle="dropdown">User Management<span class="material-icons">keyboard_arrow_down</span></a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#"><span class="material-icons">person_add</span>Create User</a></li>
+            <li><a class="dropdown-item" href="users.html"><span class="material-icons">group</span>All Users</a></li>
+            <li><a class="dropdown-item" href="#"><span class="material-icons">admin_panel_settings</span>Roles &amp; Permissions</a></li>
+          </ul>
+        </div>
+
+        <div class="dropdown">
+          <a href="jurisdiction.html" class="nav-item dropdown-toggle" data-toggle="dropdown">Organisation Management<span class="material-icons">keyboard_arrow_down</span></a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="jurisdiction.html"><span class="material-icons">account_tree</span>Jurisdiction Management</a></li>
+            <li><a class="dropdown-item" href="designation.html"><span class="material-icons">badge</span>Designation Management</a></li>
+            <li><a class="dropdown-item" href="hierarchy.html"><span class="material-icons">schema</span>Hierarchy Map</a></li>
+          </ul>
+        </div>
+
+        <div class="dropdown">
+          <a href="app-management.html" class="nav-item dropdown-toggle is-active" data-toggle="dropdown">App Management<span class="material-icons">keyboard_arrow_down</span></a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#" data-open="app"><span class="material-icons">add_box</span>Register Application</a></li>
+            <li><a class="dropdown-item is-active" href="app-management.html"><span class="material-icons">apps</span>All Applications</a></li>
+          </ul>
+        </div>
+      </nav>
+
+      <div class="dropdown">
+        <button class="org-switcher dropdown-toggle" data-toggle="dropdown">
+          <img class="org-avatar" src="assets/imgImage12.png" alt="" />
+          <span class="org-name">TN IT &amp; DS</span>
+          <span class="material-icons">arrow_drop_down</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item is-active" href="#"><span class="material-icons">corporate_fare</span>TN IT &amp; DS</a></li>
+          <li><a class="dropdown-item" href="#"><span class="material-icons">corporate_fare</span>TNeGA</a></li>
+          <li><hr class="dropdown-divider" /></li>
+          <li><a class="dropdown-item" href="#"><span class="material-icons">settings</span>Manage Organisations</a></li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="page">
+    <!-- ============ Page head: title + breadcrumb + search ============ -->
+    <div class="page-head">
+      <div class="page-title-block">
+        <div class="page-title-row">
+          <img class="title-icon" src="assets/imgIconBadgeTitle.svg" alt="" />
+          <h1 class="page-title">Tamil Nadu e-Governance Agency</h1>
+        </div>
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <a href="index.html">Home</a>
+          <span class="crumb-sep">/</span>
+          <a href="app-management.html">App Management</a>
+          <span class="crumb-sep">/</span>
+          <span class="crumb-current">Tamil Nadu e-Governance agency</span>
+        </nav>
+      </div>
+
+      <div class="search-box">
+        <img src="assets/imgSearch.svg" alt="" />
+        <input type="text" placeholder="Search by Name, Designation...." aria-label="Search applications" />
+      </div>
+    </div>
+
+    <!-- ============ CTA banner ============ -->
+    <section class="section-block">
+      <div class="cta-banner">
+        <div class="cta-left">
+          <img class="cta-illus" src="assets/imgImage16.png" alt="" />
+          <p class="cta-text">Click Add Application to get started. Select department details, configure settings, and add it instantly.</p>
+        </div>
+        <div class="cta-actions">
+          <button class="btn btn-outline btn-lg" data-open="app">
+            <span class="material-icons" style="font-size:18px">save_alt</span>
+            Saved as Draft
+          </button>
+          <button class="btn btn-primary-alt btn-lg" data-open="app">
+            <img class="btn-plus" src="assets/imgPlus.svg" alt="" />
+            Add New Application
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Overview ============ -->
+    <section class="section-block">
+      <h2 class="section-title">Overview</h2>
+      <div class="kpi-grid"><!-- cards injected by app-agency.js --></div>
+    </section>
+
+    <!-- ============ All Apps ============ -->
+    <section class="section-block">
+      <div class="section-toolbar">
+        <div class="section-toolbar-left">
+          <h2 class="section-title">All Apps</h2>
+          <span class="apps-count">12 Apps</span>
+        </div>
+        <div class="filter-group">
+          <span class="filter-by">Filter by</span>
+          <button class="level-dropdown">
+            Select Department
+            <img src="assets/imgFilterChevron.svg" alt="" />
+          </button>
+          <button class="level-dropdown">
+            Select Sub Department
+            <img src="assets/imgFilterChevron.svg" alt="" />
+          </button>
+        </div>
+      </div>
+      <div class="app-grid"><!-- cards injected by app-agency.js --></div>
+    </section>
+  </main>
+
+  <!-- ============ Footer ============ -->
+  <footer class="footer">
+    <p class="footer-copy">
+      © 2026 - Copyright TN SSO. All rights reserved. Powered by TNeGA | Government of Tamil Nadu® 2026 TN SSO
+    </p>
+    <div class="footer-links">
+      <a href="#">Terms &amp; Conditions</a>
+      <span class="footer-divider"></span>
+      <a href="#">Privacy Policy</a>
+    </div>
+  </footer>
+
+  <!-- ============ Modal: Select one to access the application ============ -->
+  <div class="modal-backdrop" id="accessModal" hidden>
+    <div class="modal modal-sm" role="dialog" aria-modal="true" aria-label="Select how to access the application">
+      <button class="modal-close" data-access-close aria-label="Close" style="position:absolute;top:24px;right:24px;">
+        <span class="material-icons">close</span>
+      </button>
+      <h2 class="access-modal-title">Select one to access the application</h2>
+      <div class="access-options">
+        <button class="access-option" type="button">
+          <span class="access-option-icon"><span class="material-icons">phone_iphone</span></span>
+          <span class="access-option-text">Click here to access the application in mobile app</span>
+        </button>
+        <button class="access-option" type="button">
+          <span class="access-option-icon"><span class="material-icons">desktop_windows</span></span>
+          <span class="access-option-text">Click here to access the application in Browser</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="store.js"></script>
+  <script src="dropdown.js"></script>
+  <script src="app-modals.js"></script>
+  <script src="app-agency.js"></script>
+</body>
+</html>

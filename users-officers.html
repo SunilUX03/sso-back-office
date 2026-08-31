@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Officers — Department of Agriculture — TN SSO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Roboto:wght@500&display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ============ Accessibility Bar ============ -->
+  <div class="accessibility-bar">
+    <div class="access-inner">
+      <a href="#main" class="skip-link">Skip to Main Content</a>
+      <span class="access-sep"></span>
+      <div class="font-controls">
+        <button class="access-icon" title="Increase font size" aria-label="Increase font size">
+          <span class="material-icons">text_increase</span>
+        </button>
+        <button class="access-icon is-active" title="Default font size" aria-label="Default font size">
+          <span class="material-icons">format_size</span>
+        </button>
+        <button class="access-icon" title="Decrease font size" aria-label="Decrease font size">
+          <span class="material-icons">text_decrease</span>
+        </button>
+      </div>
+      <span class="access-sep"></span>
+      <button class="access-icon" title="Toggle contrast" aria-label="Toggle contrast">
+        <span class="material-icons">contrast</span>
+      </button>
+      <span class="access-sep"></span>
+      <button class="access-more" aria-label="More accessibility options">
+        <span class="material-icons">accessibility_new</span>
+        <span>More</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ============ Header / Main Nav ============ -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo-block">
+        <div class="logo-emblems">
+          <img class="emblem-img" src="assets/imgImage1.png" alt="Government of Tamil Nadu emblem" />
+          <img class="emblem-img" src="assets/imgGroup2.svg" alt="TN SSO logo" />
+        </div>
+        <span class="logo-divider"></span>
+        <div class="logo-text">
+          <span class="logo-line-1">Back Office</span>
+          <span class="logo-line-2">TN SSO</span>
+        </div>
+      </div>
+
+      <nav class="main-nav" aria-label="Primary">
+        <a href="index.html" class="nav-item">Home</a>
+
+        <div class="dropdown">
+          <a href="users.html" class="nav-item dropdown-toggle is-active" data-toggle="dropdown">User Management<span class="material-icons">keyboard_arrow_down</span></a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#" data-open="officer"><span class="material-icons">person_add</span>Create User</a></li>
+            <li><a class="dropdown-item is-active" href="users.html"><span class="material-icons">group</span>All Users</a></li>
+            <li><a class="dropdown-item" href="#"><span class="material-icons">admin_panel_settings</span>Roles &amp; Permissions</a></li>
+          </ul>
+        </div>
+
+        <div class="dropdown">
+          <a href="jurisdiction.html" class="nav-item dropdown-toggle" data-toggle="dropdown">Organisation Management<span class="material-icons">keyboard_arrow_down</span></a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="jurisdiction.html"><span class="material-icons">account_tree</span>Jurisdiction Management</a></li>
+            <li><a class="dropdown-item" href="designation.html"><span class="material-icons">badge</span>Designation Management</a></li>
+            <li><a class="dropdown-item" href="hierarchy.html"><span class="material-icons">schema</span>Hierarchy Map</a></li>
+          </ul>
+        </div>
+
+        <div class="dropdown">
+          <a href="app-management.html" class="nav-item dropdown-toggle" data-toggle="dropdown">App Management<span class="material-icons">keyboard_arrow_down</span></a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="app-management.html"><span class="material-icons">add_box</span>Register Application</a></li>
+            <li><a class="dropdown-item" href="app-management.html"><span class="material-icons">apps</span>All Applications</a></li>
+          </ul>
+        </div>
+      </nav>
+
+      <div class="dropdown">
+        <button class="org-switcher dropdown-toggle" data-toggle="dropdown">
+          <img class="org-avatar" src="assets/imgImage2.png" alt="" />
+          <span class="org-name">Name of the User</span>
+          <span class="material-icons">arrow_drop_down</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item is-active" href="#"><span class="material-icons">person</span>My Profile</a></li>
+          <li><a class="dropdown-item" href="#"><span class="material-icons">settings</span>Settings</a></li>
+          <li><hr class="dropdown-divider" /></li>
+          <li><a class="dropdown-item" href="#"><span class="material-icons">logout</span>Sign Out</a></li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="page">
+    <!-- ============ Page head: title + breadcrumb + tabs ============ -->
+    <div class="page-head">
+      <div class="page-title-block">
+        <div class="page-title-row">
+          <img class="title-icon" src="assets/imgIconBadgeTitle.svg" alt="" />
+          <h1 class="page-title">Department of Agriculture</h1>
+        </div>
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <a href="index.html">Home</a>
+          <span class="crumb-sep">/</span>
+          <a href="designation.html">Designation Management</a>
+          <span class="crumb-sep">/</span>
+          <span class="crumb-current">Department of Agriculture</span>
+        </nav>
+      </div>
+
+      <div class="tab-switch" role="tablist">
+        <button class="tab is-active" role="tab" aria-selected="true" data-officer-tab="active">Active Officers Accounts</button>
+        <button class="tab" role="tab" aria-selected="false" data-officer-tab="deactivated">Deactivated Officers Accounts</button>
+      </div>
+    </div>
+
+    <!-- ============ CTA banner ============ -->
+    <section class="section-block">
+      <div class="cta-banner">
+        <div class="cta-left">
+          <img class="cta-illus" src="assets/imgImage10.png" alt="" />
+          <p class="cta-text">
+            Click Create User to get started. Select the department details &amp; Add User Details,
+            then click Create User to add the user instantly.
+          </p>
+        </div>
+        <div class="cta-actions">
+          <button class="btn btn-outline btn-officer">
+            <span class="material-icons">save_alt</span>Saved as Draft
+          </button>
+          <button class="btn btn-primary btn-officer" data-open="officer">
+            <span class="material-icons">add</span>Add New Officer
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Officers list ============ -->
+    <section class="section-block">
+      <div class="jur-toolbar">
+        <div class="jur-toolbar-left">
+          <h2 class="section-title">Active Officers Accounts</h2>
+          <span class="count-badge">123</span>
+        </div>
+        <div class="jur-toolbar-right">
+          <span class="filter-by">Filter by</span>
+          <button class="level-dropdown">Jurisdiction <img src="assets/imgFilterChevron.svg" alt="" /></button>
+          <button class="level-dropdown">Designation <img src="assets/imgFilterChevron.svg" alt="" /></button>
+          <div class="search-box" style="width:261px;height:34px;">
+            <img src="assets/imgSearch.svg" alt="" />
+            <input type="text" placeholder="Search Name,Designation..." aria-label="Search" />
+          </div>
+        </div>
+      </div>
+
+      <div class="officer-list" id="officerList"><!-- cards injected by users-officers.js --></div>
+
+      <!-- Pagination -->
+      <div class="pagination">
+        <button class="page-arrow is-disabled" aria-label="Previous page"><span class="material-icons">chevron_left</span></button>
+        <div class="page-nums">
+          <button class="page-num is-active">1</button>
+          <button class="page-num">2</button>
+          <button class="page-num">3</button>
+          <button class="page-num">4</button>
+          <button class="page-num">5</button>
+          <button class="page-num">6</button>
+          <span class="page-ellipsis">...</span>
+          <button class="page-num">60</button>
+        </div>
+        <button class="page-arrow" aria-label="Next page"><span class="material-icons">chevron_right</span></button>
+        <div class="page-info">
+          <span>Showing</span>
+          <span class="page-size">
+            <select aria-label="Items per page"><option>10</option><option>20</option><option>50</option></select>
+          </span>
+          <span>of 15000 items</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ Footer ============ -->
+  <footer class="footer">
+    <p class="footer-copy">
+      © 2026 - Copyright TN SSO. All rights reserved. Powered by TNeGA | Government of Tamil Nadu® 2026 TN SSO
+    </p>
+    <div class="footer-links">
+      <a href="#">Terms &amp; Conditions</a>
+      <span class="footer-divider"></span>
+      <a href="#">Privacy Policy</a>
+    </div>
+  </footer>
+
+  <script src="store.js"></script>
+  <script src="dropdown.js"></script>
+  <script src="officer-modals.js"></script>
+  <script src="users-officers.js"></script>
+</body>
+</html>

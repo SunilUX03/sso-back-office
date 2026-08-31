@@ -1,0 +1,17 @@
+/* TN SSO brand override for UX4G Design System.
+   Anchors the exact brand navy (#002385) as the primary-600 default,
+   used by ux4g-bg-primary-strong / ux4g-btn-primary / focus rings etc.
+   Load this AFTER the UX4G CDN stylesheet. */
+:root {
+  --ux4g-color-primary-50: #f0f4ff;
+  --ux4g-color-primary-100: #d6e1ff;
+  --ux4g-color-primary-200: #adc3ff;
+  --ux4g-color-primary-300: #85a5ff;
+  --ux4g-color-primary-400: #5c87ff;
+  --ux4g-color-primary-500: #2961ff;
+  --ux4g-color-primary-600: #002385;
+  --ux4g-color-primary-700: #001d6d;
+  --ux4g-color-primary-800: #001756;
+  --ux4g-color-primary-900: #00113f;
+  --ux4g-color-primary-950: #000b2a;
+}

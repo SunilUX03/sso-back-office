@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Back Office — TN SSO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Roboto:wght@500&display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- UX4G Design System (CDN) -->
+  <link rel="stylesheet" href="https://cdn.ux4g.gov.in/UX4G@3.0.18/index.css" />
+  <link rel="stylesheet" href="ux4g-theme.css" />
+</head>
+<body>
+  <!-- ============ Accessibility Bar (UX4G component) ============ -->
+  <header class="ux4g-topbar ux4g-topbar-wide" role="banner">
+    <div class="ux4g-container">
+      <div class="ux4g-topbar__wrap ux4g-d-flex ux4g-jc-between ux4g-ai-center">
+        <div>
+          <a aria-label="Government of Tamil Nadu" class="ux4g-d-flex ux4g-ai-center" href="#">
+            <img src="assets/imgImage1.png" alt="" aria-hidden="true" style="height:20px;width:auto;margin-right:8px" />
+            <span class="ux4g-label-m-default">Government of Tamil Nadu</span>
+          </a>
+        </div>
+        <nav aria-label="Top utilities" class="ux4g-d-flex ux4g-ai-center">
+          <a class="ux4g-label-m-default ux4g-topbar__skip" href="#main">Skip to Main Content</a>
+          <span class="ux4g-bl acc-top-divider"></span>
+          <div aria-label="Text size controls" class="ux4g-topbar__group ux4g-d-flex ux4g-ai-center" role="group">
+            <button aria-label="Decrease text size" class="ux4g-topbar__iconbtn ux4g-d-flex ux4g-jc-center ux4g-ai-center" type="button"><span class="ux4g-icon-outlined ux4g-top-bar-icon">text_decrease</span></button>
+            <button aria-label="Reset text size" class="ux4g-topbar__iconbtn ux4g-d-flex ux4g-jc-center ux4g-ai-center" type="button"><span class="ux4g-icon-outlined ux4g-top-bar-icon">font_download</span></button>
+            <button aria-label="Increase text size" class="ux4g-topbar__iconbtn ux4g-d-flex ux4g-jc-center ux4g-ai-center" type="button"><span class="ux4g-icon-outlined ux4g-top-bar-icon">text_increase</span></button>
+          </div>
+          <span class="ux4g-bl acc-top-divider"></span>
+          <button aria-label="Accessibility options" class="ux4g-topbar__iconbtn ux4g-d-flex ux4g-jc-center ux4g-ai-center" type="button">
+            <span class="ux4g-icon-outlined ux4g-top-bar-icon">accessibility_new</span>
+          </button>
+          <span class="ux4g-bl acc-top-divider"></span>
+          <div class="ux4g-topbar__select">
+            <button aria-expanded="false" aria-haspopup="listbox" class="ux4g-topbar__selectbtn ux4g-d-inline-flex ux4g-ai-center" type="button">
+              <span class="ux4g-icon-outlined ux4g-top-bar-icon">language</span>
+              <span class="ux4g-label-m-default">English</span>
+              <span class="ux4g-icon-outlined">arrow_drop_down</span>
+            </button>
+          </div>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ Header / Main Nav ============ -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo-block">
+        <div class="logo-emblems">
+          <img class="emblem-img" src="assets/imgImage1.png" alt="Government of Tamil Nadu emblem" />
+          <img class="emblem-img" src="assets/imgGroup2.svg" alt="TN SSO logo" />
+        </div>
+        <span class="logo-divider"></span>
+        <div class="logo-text">
+          <span class="logo-line-1">Back Office</span>
+          <span class="logo-line-2">TN SSO</span>
+        </div>
+      </div>
+
+      <nav class="main-nav" aria-label="Primary">
+        <a href="#" class="nav-item is-active">Home</a>
+
+        <div class="dropdown">
+          <a href="users.html" class="nav-item dropdown-toggle" data-toggle="dropdown">User Management<span class="material-icons">keyboard_arrow_down</span></a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#"><span class="material-icons">person_add</span>Create User</a></li>
+            <li><a class="dropdown-item" href="users.html"><span class="material-icons">group</span>All Users</a></li>
+            <li><a class="dropdown-item" href="#"><span class="material-icons">admin_panel_settings</span>Roles &amp; Permissions</a></li>
+          </ul>
+        </div>
+
+        <div class="dropdown">
+          <a href="#" class="nav-item dropdown-toggle" data-toggle="dropdown">Organisation Management<span class="material-icons">keyboard_arrow_down</span></a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="jurisdiction.html"><span class="material-icons">account_tree</span>Jurisdiction Management</a></li>
+            <li><a class="dropdown-item" href="designation.html"><span class="material-icons">badge</span>Designation Management</a></li>
+            <li><a class="dropdown-item" href="hierarchy.html"><span class="material-icons">schema</span>Hierarchy Map</a></li>
+          </ul>
+        </div>
+
+        <div class="dropdown">
+          <a href="app-management.html" class="nav-item dropdown-toggle" data-toggle="dropdown">App Management<span class="material-icons">keyboard_arrow_down</span></a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="app-management.html"><span class="material-icons">add_box</span>Register Application</a></li>
+            <li><a class="dropdown-item" href="app-management.html"><span class="material-icons">apps</span>All Applications</a></li>
+          </ul>
+        </div>
+      </nav>
+
+      <div class="dropdown">
+        <button class="org-switcher dropdown-toggle" data-toggle="dropdown">
+          <img class="org-avatar" src="assets/imgImage12.png" alt="" />
+          <span class="org-name">TN IT &amp; DS</span>
+          <span class="material-icons">arrow_drop_down</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item is-active" href="#"><span class="material-icons">corporate_fare</span>TN IT &amp; DS</a></li>
+          <li><a class="dropdown-item" href="#"><span class="material-icons">corporate_fare</span>TNeGA</a></li>
+          <li><hr class="dropdown-divider" /></li>
+          <li><a class="dropdown-item" href="#"><span class="material-icons">settings</span>Manage Organisations</a></li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="page">
+    <!-- ============ Welcome Banner ============ -->
+    <section class="banner">
+      <img class="banner-icon" src="assets/imgImage19.png" alt="" aria-hidden="true" />
+      <div class="banner-text">
+        <h1 class="banner-title">Good Morning, Sunil</h1>
+        <p class="banner-subtitle">
+          Super Admin &nbsp;·&nbsp; TN Information Technology and Digital Services (IT&amp;DS)
+          &nbsp;·&nbsp; Last login: Today, 9:42 AM
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ Overview ============ -->
+    <section class="section">
+      <h2 class="section-title">Overview</h2>
+      <div class="kpi-grid">
+        <!-- cards injected by script -->
+      </div>
+    </section>
+
+    <!-- ============ Quick Access ============ -->
+    <section class="section">
+      <h2 class="section-title">Quick Access</h2>
+      <div class="quick-grid">
+        <!-- cards injected by script -->
+      </div>
+    </section>
+
+    <!-- ============ Getting Started ============ -->
+    <section class="section">
+      <h2 class="section-title">Getting Started</h2>
+
+      <!-- Card A: Setting up your organisation -->
+      <article class="stepper-card">
+        <div class="stepper-illustration">
+          <img src="assets/imgImage18.png" alt="" />
+        </div>
+        <div class="stepper-body">
+          <div class="stepper-heading">
+            <h3 class="stepper-title">Setting up your organisation</h3>
+            <p class="stepper-subtitle">Follow these steps in order to add the organisation info</p>
+          </div>
+          <div class="steps steps-3">
+            <div class="step">
+              <div class="step-circle">1</div>
+              <h4 class="step-title">Add jurisdiction info</h4>
+              <p class="step-desc">Add list of Jurisdictions in your organisation</p>
+              <a class="btn btn-primary" href="jurisdiction.html">Jurisdiction Management</a>
+            </div>
+            <div class="step">
+              <div class="step-circle">2</div>
+              <h4 class="step-title">Add Designation info</h4>
+              <p class="step-desc">Add list of Designation in the Jurisdictions</p>
+              <a class="btn btn-primary" href="designation.html">Designation Management</a>
+            </div>
+            <div class="step">
+              <div class="step-circle">3</div>
+              <h4 class="step-title">Add reporting info</h4>
+              <p class="step-desc">Set reporting hierarchy per designation</p>
+              <a class="btn btn-primary" href="jurisdiction.html">Reporting Management</a>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card B: Setting up Application -->
+      <article class="stepper-card">
+        <div class="stepper-illustration">
+          <img src="assets/imgImage16.png" alt="" />
+        </div>
+        <div class="stepper-body">
+          <div class="stepper-heading">
+            <h3 class="stepper-title">Setting up Application</h3>
+            <p class="stepper-subtitle">Follow these steps in order to add new Application</p>
+          </div>
+          <div class="steps steps-5">
+            <div class="step">
+              <div class="step-circle">1</div>
+              <h4 class="step-title">App Identity</h4>
+              <p class="step-desc">Enter Name, Type, Domain Url</p>
+            </div>
+            <div class="step">
+              <div class="step-circle">2</div>
+              <h4 class="step-title">Access Control</h4>
+              <p class="step-desc">Enter Department &amp; Roles</p>
+            </div>
+            <div class="step">
+              <div class="step-circle">3</div>
+              <h4 class="step-title">Contact Details</h4>
+              <p class="step-desc">Enter SI &amp; Dept Contacts</p>
+            </div>
+            <div class="step">
+              <div class="step-circle">4</div>
+              <h4 class="step-title">Technical Configuration</h4>
+              <p class="step-desc">Enter Redirect URL&rsquo;s, IPs</p>
+            </div>
+            <div class="step">
+              <div class="step-circle">5</div>
+              <h4 class="step-title">Review &amp; Submit</h4>
+              <p class="step-desc">Review the app details.</p>
+            </div>
+          </div>
+          <button class="btn btn-primary stepper-cta">Register an Application</button>
+        </div>
+      </article>
+    </section>
+
+    <!-- ============ Learning Centre ============ -->
+    <section class="section">
+      <h2 class="section-title">Learning Centre</h2>
+      <div class="learning-grid">
+        <!-- cards injected by script -->
+      </div>
+    </section>
+
+    <!-- ============ FAQ + Talk to Expert ============ -->
+    <section class="section faq-section">
+      <h2 class="section-title section-title-center">Frequently Asked Questions</h2>
+      <div class="faq-layout">
+        <aside class="expert-card">
+          <div class="expert-image">
+            <img src="assets/imgImage24.png" alt="" />
+          </div>
+          <h3 class="expert-title">Talk to Expert</h3>
+          <p class="expert-desc">
+            We are here to help, email us your questions we will reply soon with answers.
+          </p>
+          <button class="btn btn-primary btn-block">Reach Us</button>
+        </aside>
+
+        <div class="faq-list">
+          <!-- rows injected by script -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ Footer ============ -->
+  <footer class="footer">
+    <p class="footer-copy">
+      © 2026 - Copyright TN SSO. All rights reserved. Powered by TNeGA | Government of Tamil Nadu® 2026 TN SSO
+    </p>
+    <div class="footer-links">
+      <a href="#">Terms &amp; Conditions</a>
+      <span class="footer-divider"></span>
+      <a href="#">Privacy Policy</a>
+    </div>
+  </footer>
+
+  <script src="store.js"></script>
+  <script src="dropdown.js"></script>
+  <script src="script.js"></script>
+
+  <!-- UX4G runtime (accessibility bar behavior, theme toggle, etc.) -->
+  <script src="https://cdn.ux4g.gov.in/UX4G@3.0.18/ux4g.js"></script>
+  <script src="https://cdn.ux4g.gov.in/UX4G@3.0.18/ux4g-custom.js"></script>
+</body>
+</html>

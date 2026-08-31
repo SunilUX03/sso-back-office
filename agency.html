@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tamil Nadu e-Governance Agency — TN SSO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Roboto:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ============ Accessibility Bar ============ -->
+  <div class="accessibility-bar">
+    <div class="access-inner">
+      <a href="#main" class="skip-link">Skip to Main Content</a>
+      <span class="access-sep"></span>
+      <div class="font-controls">
+        <button class="access-icon" title="Increase font size" aria-label="Increase font size">
+          <span class="material-icons">text_increase</span>
+        </button>
+        <button class="access-icon is-active" title="Default font size" aria-label="Default font size">
+          <span class="material-icons">format_size</span>
+        </button>
+        <button class="access-icon" title="Decrease font size" aria-label="Decrease font size">
+          <span class="material-icons">text_decrease</span>
+        </button>
+      </div>
+      <span class="access-sep"></span>
+      <button class="access-icon" title="Toggle contrast" aria-label="Toggle contrast">
+        <span class="material-icons">contrast</span>
+      </button>
+      <span class="access-sep"></span>
+      <button class="access-more" aria-label="More accessibility options">
+        <span class="material-icons">accessibility_new</span>
+        <span>More</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ============ Header / Main Nav ============ -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo-block">
+        <div class="logo-emblems">
+          <img class="emblem-img" src="assets/imgImage1.png" alt="Government of Tamil Nadu emblem" />
+          <img class="emblem-img" src="assets/imgGroup2.svg" alt="TN SSO logo" />
+        </div>
+        <span class="logo-divider"></span>
+        <div class="logo-text">
+          <span class="logo-line-1">Back Office</span>
+          <span class="logo-line-2">TN SSO</span>
+        </div>
+      </div>
+
+      <nav class="main-nav" aria-label="Primary">
+        <a href="index.html" class="nav-item">Home</a>
+
+        <div class="dropdown">
+          <a href="users.html" class="nav-item dropdown-toggle" data-toggle="dropdown">User Management<span class="material-icons">keyboard_arrow_down</span></a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#"><span class="material-icons">person_add</span>Create User</a></li>
+            <li><a class="dropdown-item" href="users.html"><span class="material-icons">group</span>All Users</a></li>
+            <li><a class="dropdown-item" href="#"><span class="material-icons">admin_panel_settings</span>Roles &amp; Permissions</a></li>
+          </ul>
+        </div>
+
+        <div class="dropdown">
+          <a href="jurisdiction.html" class="nav-item dropdown-toggle is-active" data-toggle="dropdown">Organisation Management<span class="material-icons">keyboard_arrow_down</span></a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item is-active" href="jurisdiction.html"><span class="material-icons">account_tree</span>Jurisdiction Management</a></li>
+            <li><a class="dropdown-item" href="designation.html"><span class="material-icons">badge</span>Designation Management</a></li>
+            <li><a class="dropdown-item" href="hierarchy.html"><span class="material-icons">schema</span>Hierarchy Map</a></li>
+          </ul>
+        </div>
+
+        <div class="dropdown">
+          <a href="app-management.html" class="nav-item dropdown-toggle" data-toggle="dropdown">App Management<span class="material-icons">keyboard_arrow_down</span></a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="app-management.html"><span class="material-icons">add_box</span>Register Application</a></li>
+            <li><a class="dropdown-item" href="app-management.html"><span class="material-icons">apps</span>All Applications</a></li>
+          </ul>
+        </div>
+      </nav>
+
+      <div class="dropdown">
+        <button class="org-switcher dropdown-toggle" data-toggle="dropdown">
+          <img class="org-avatar" src="assets/imgImage12.png" alt="" />
+          <span class="org-name">TN IT &amp; DS</span>
+          <span class="material-icons">arrow_drop_down</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item is-active" href="#"><span class="material-icons">corporate_fare</span>TN IT &amp; DS</a></li>
+          <li><a class="dropdown-item" href="#"><span class="material-icons">corporate_fare</span>TNeGA</a></li>
+          <li><hr class="dropdown-divider" /></li>
+          <li><a class="dropdown-item" href="#"><span class="material-icons">settings</span>Manage Organisations</a></li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="page">
+    <!-- ============ Page head: title + breadcrumb + tabs ============ -->
+    <div class="page-head">
+      <div class="page-title-block">
+        <div class="page-title-row">
+          <img class="title-icon" src="assets/imgIconBadgeTitle.svg" alt="" />
+          <h1 class="page-title">Tamil Nadu e-Governance Agency</h1>
+        </div>
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <a href="index.html">Home</a>
+          <span class="crumb-sep">/</span>
+          <a href="jurisdiction.html">Organisation Management</a>
+          <span class="crumb-sep">/</span>
+          <a href="jurisdiction.html">Jurisdiction Management</a>
+          <span class="crumb-sep">/</span>
+          <span class="crumb-current">Tamil Nadu e Governance Agency</span>
+        </nav>
+      </div>
+
+      <div class="tab-switch" role="tablist">
+        <button class="tab is-active" role="tab" aria-selected="true">Jurisdiction Management</button>
+        <button class="tab" role="tab" aria-selected="false" data-href="agency-designation.html">Designation Management</button>
+        <button class="tab" role="tab" aria-selected="false" data-href="hierarchy.html">Hierarchy Map</button>
+      </div>
+    </div>
+
+    <!-- ============ Your Hierarchy Structure ============ -->
+    <section class="section-block">
+      <h2 class="section-title">Your Hierarchy Structure</h2>
+      <div class="hierarchy-card" id="hierarchyCard"><!-- rendered by agency.js --></div>
+    </section>
+
+    <!-- ============ All Jurisdictions ============ -->
+    <section class="section-block">
+      <div class="jur-toolbar">
+        <div class="jur-toolbar-left">
+          <h2 class="section-title">All Jurisdictions</h2>
+          <span class="count-badge">123</span>
+        </div>
+        <div class="jur-toolbar-right">
+          <div class="search-box">
+            <img src="assets/imgSearch.svg" alt="" />
+            <input type="text" placeholder="Search Jurisdiction offices..." aria-label="Search Jurisdiction offices" />
+          </div>
+          <button class="level-dropdown">
+            All Levels
+            <img src="assets/imgFilterChevron.svg" alt="" />
+          </button>
+          <button class="btn btn-primary-alt btn-lg" data-open="office">
+            <img class="btn-plus" src="assets/imgPlus.svg" alt="" />
+            Add Jurisdiction Office
+          </button>
+        </div>
+      </div>
+
+      <!-- Data table -->
+      <div class="jur-table">
+        <div class="table-head" role="row">
+          <span class="th"><input type="checkbox" class="table-checkbox" aria-label="Select all" /></span>
+          <span class="th">Name of the Jurisdiction Office</span>
+          <span class="th">Level of the Jurisdiction Office</span>
+          <span class="th">Reports to</span>
+          <span class="th">Sub Jurisdiction Offices</span>
+          <span class="th">Action</span>
+        </div>
+        <div class="table-empty">
+          <div class="empty-illustration" aria-hidden="true">
+            <img class="empty-l9" src="assets/imgEmpty9.svg" alt="" />
+            <img class="empty-l11" src="assets/imgEmpty11.svg" alt="" />
+            <img class="empty-l10" src="assets/imgEmpty10.svg" alt="" />
+            <img class="empty-group" src="assets/imgEmptyGroup.svg" alt="" />
+          </div>
+          <p class="empty-msg">No offices added yet. Click "+ Add Jurisdiction Office" to begin.</p>
+          <button class="btn btn-primary-alt btn-lg" data-open="office">
+            <img class="btn-plus" src="assets/imgPlus.svg" alt="" />
+            Add Jurisdiction Office
+          </button>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination">
+        <button class="page-arrow is-disabled" aria-label="Previous page">
+          <span class="material-icons">chevron_left</span>
+        </button>
+        <div class="page-nums">
+          <button class="page-num is-active">1</button>
+          <button class="page-num">2</button>
+          <button class="page-num">3</button>
+          <button class="page-num">4</button>
+          <button class="page-num">5</button>
+          <button class="page-num">6</button>
+          <span class="page-ellipsis">...</span>
+          <button class="page-num">60</button>
+        </div>
+        <button class="page-arrow" aria-label="Next page">
+          <span class="material-icons">chevron_right</span>
+        </button>
+        <div class="page-info">
+          <span>Showing</span>
+          <span class="page-size">
+            <select aria-label="Items per page">
+              <option>10</option>
+              <option>20</option>
+              <option>50</option>
+              <option>100</option>
+            </select>
+          </span>
+          <span>of 15000 items</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ Footer ============ -->
+  <footer class="footer">
+    <p class="footer-copy">
+      © 2026 - Copyright TN SSO. All rights reserved. Powered by TNeGA | Government of Tamil Nadu® 2026 TN SSO
+    </p>
+    <div class="footer-links">
+      <a href="#">Terms &amp; Conditions</a>
+      <span class="footer-divider"></span>
+      <a href="#">Privacy Policy</a>
+    </div>
+  </footer>
+
+  <!-- ============ Modal: Define Hierarchy Structure ============ -->
+  <div class="modal-backdrop" id="hierarchyModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="hierTitle">
+      <div class="modal-header">
+        <div class="modal-heading">
+          <h2 class="modal-title" id="hierTitle">Define Hierarchy Structure</h2>
+          <p class="modal-subtitle">
+            Add, rename, and reorder the jurisdiction levels for your sub-department. Drag to reorder.
+          </p>
+        </div>
+        <button class="modal-close" data-close aria-label="Close">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
+      <div class="tip-box">
+        <span class="tip-label">Tip:</span>
+        <span class="tip-text">
+          Levels flow top-down. "State" is the highest. "Village" is the lowest. You can name them
+          anything — only add levels your department actually uses.
+        </span>
+      </div>
+
+      <div class="levels-list" id="levelsList"></div>
+
+      <button class="add-level-btn" id="addLevelBtn">
+        <span class="material-icons">add</span>
+        Add Another Level
+      </button>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" data-close>Cancel</button>
+        <button class="btn-modal-primary" id="saveHierarchyBtn">Save Hierarchy Structure</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Modal: Add Jurisdiction Office ============ -->
+  <div class="modal-backdrop" id="officeModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="officeTitle">
+      <div class="modal-header">
+        <div class="modal-heading">
+          <h2 class="modal-title" id="officeTitle">Add Jurisdiction Office</h2>
+          <p class="modal-subtitle">Add an office to your jurisdiction Hierarchy</p>
+        </div>
+        <button class="modal-close" data-close aria-label="Close">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
+      <div class="tip-box">
+        <span class="tip-label">Tip:</span>
+        <span class="tip-text">
+          Select the level this office belongs to, then give it its official name. If this office has a
+          parent (e.g. a District belongs under a Division), you'll be asked to select it after choosing
+          the level.
+        </span>
+      </div>
+
+      <form class="form-fields" id="officeForm">
+        <div class="field">
+          <label class="field-label" for="fLevel">Jurisdiction Level <span class="field-req">*</span></label>
+          <select class="field-control" id="fLevel" required>
+            <option value="" disabled selected>Select a Level</option>
+          </select>
+          <span class="field-hint"><span class="material-icons">info</span>e.g. District, Taluk</span>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="fName">Jurisdiction Office Name <span class="field-req">*</span></label>
+          <input class="field-control" id="fName" type="text"
+            placeholder="e.g. Vellore District, Tiruvallur Division...." required />
+        </div>
+
+        <div class="field" id="parentField" hidden>
+          <label class="field-label" for="fParent">Parent Office (Reports Under) <span class="field-req">*</span></label>
+          <select class="field-control" id="fParent">
+            <option value="" disabled selected>Select Parent office...</option>
+          </select>
+          <span class="field-hint"><span class="material-icons">info</span>Select which higher-level office this belongs to</span>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="fDesc">Description(Optional)</label>
+          <input class="field-control" id="fDesc" type="text" placeholder="Optional Notes about the office" />
+        </div>
+      </form>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" data-close>Cancel</button>
+        <button class="btn-modal-primary" id="addOfficeBtn">Add Jurisdiction Office</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="store.js"></script>
+  <script src="dropdown.js"></script>
+  <script src="agency.js"></script>
+</body>
+</html>
