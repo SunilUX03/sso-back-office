@@ -80,15 +80,30 @@ window.Store = (function () {
     });
   }
 
+  function seedDepartmentAdmins() {
+    // One onboarded admin per seed department, so the Departments page
+    // isn't empty on first load.
+    return DEPARTMENTS.map((name, i) => ({
+      id: i + 1,
+      dept: name,
+      name: ["Meena Krishnan", "Suresh Pillai", "Divya Mohan"][i] || "Admin " + (i + 1),
+      email: "admin" + (i + 1) + "@tn.gov.in",
+      mobile: "9" + String(800000000 + i * 111111).slice(0, 9),
+      sso: "deptadmin" + (i + 1),
+      status: "active",
+    }));
+  }
+
   function defaults() {
     return {
       departments: DEPARTMENTS.slice(),
       subDepartments: JSON.parse(JSON.stringify(SUB_DEPARTMENTS)),
+      departmentAdmins: seedDepartmentAdmins(),
       levels: LEVELS.slice(),
       offices: JSON.parse(JSON.stringify(OFFICES)),
       designations: JSON.parse(JSON.stringify(DESIGNATIONS)),
       officers: seedOfficers(),
-      seqs: { office: 7, designation: 7, officer: 15 },
+      seqs: { office: 7, designation: 7, officer: 15, department: DEPARTMENTS.length },
     };
   }
 
@@ -140,10 +155,35 @@ window.Store = (function () {
     get levels() { return data.levels; },
     departments() { return data.departments; },
     subDepartments(dept) { return data.subDepartments[dept] || []; },
+    departmentAdmins() { return data.departmentAdmins || (data.departmentAdmins = []); },
+    departmentAdmin(dept) { return this.departmentAdmins().find((a) => a.dept === dept) || null; },
     offices() { return data.offices; },
     officeNames() { return data.offices.map((o) => o.name); },
     designations() { return data.designations; },
     officers() { return data.officers; },
+
+    // ---- departments (Super Admin onboarding) ----
+    addDepartment({ name, admin }) {
+      data.departments.push(name);
+      data.subDepartments[name] = [];
+      if (!data.seqs.department) data.seqs.department = data.departments.length;
+      const record = {
+        id: ++data.seqs.department,
+        dept: name,
+        name: admin.name,
+        email: admin.email,
+        mobile: admin.mobile,
+        sso: admin.sso,
+        status: "active",
+      };
+      this.departmentAdmins().push(record);
+      persist();
+      return record;
+    },
+    setDepartmentAdminStatus(id, status) {
+      const a = this.departmentAdmins().find((x) => x.id === id);
+      if (a) { a.status = status; persist(); }
+    },
 
     // ---- jurisdiction ----
     setLevels(levels) { replaceInPlace(data.levels, levels); persist(); },

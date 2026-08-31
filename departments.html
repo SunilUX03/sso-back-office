@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jurisdiction Management — TN SSO</title>
+  <title>Departments — TN SSO</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -13,35 +13,46 @@
     href="https://fonts.googleapis.com/icon?family=Material+Icons"
     rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+
+  <!-- UX4G Design System (CDN) -->
+  <link rel="stylesheet" href="https://cdn.ux4g.gov.in/UX4G@3.0.18/index.css" />
+  <link rel="stylesheet" href="ux4g-theme.css" />
 </head>
 <body>
-  <!-- ============ Accessibility Bar ============ -->
-  <div class="accessibility-bar">
-    <div class="access-inner">
-      <a href="#main" class="skip-link">Skip to Main Content</a>
-      <span class="access-sep"></span>
-      <div class="font-controls">
-        <button class="access-icon" title="Increase font size" aria-label="Increase font size">
-          <span class="material-icons">text_increase</span>
-        </button>
-        <button class="access-icon is-active" title="Default font size" aria-label="Default font size">
-          <span class="material-icons">format_size</span>
-        </button>
-        <button class="access-icon" title="Decrease font size" aria-label="Decrease font size">
-          <span class="material-icons">text_decrease</span>
-        </button>
+  <!-- ============ Accessibility Bar (UX4G component) ============ -->
+  <header class="ux4g-topbar ux4g-topbar-wide" role="banner">
+    <div class="ux4g-container">
+      <div class="ux4g-topbar__wrap ux4g-d-flex ux4g-jc-between ux4g-ai-center">
+        <div>
+          <a aria-label="Government of Tamil Nadu" class="ux4g-d-flex ux4g-ai-center" href="#">
+            <img src="assets/imgImage1.png" alt="" aria-hidden="true" style="height:20px;width:auto;margin-right:8px" />
+            <span class="ux4g-label-m-default">Government of Tamil Nadu</span>
+          </a>
+        </div>
+        <nav aria-label="Top utilities" class="ux4g-d-flex ux4g-ai-center">
+          <a class="ux4g-label-m-default ux4g-topbar__skip" href="#main">Skip to Main Content</a>
+          <span class="ux4g-bl acc-top-divider"></span>
+          <div aria-label="Text size controls" class="ux4g-topbar__group ux4g-d-flex ux4g-ai-center" role="group">
+            <button aria-label="Decrease text size" class="ux4g-topbar__iconbtn ux4g-d-flex ux4g-jc-center ux4g-ai-center" type="button"><span class="ux4g-icon-outlined ux4g-top-bar-icon">text_decrease</span></button>
+            <button aria-label="Reset text size" class="ux4g-topbar__iconbtn ux4g-d-flex ux4g-jc-center ux4g-ai-center" type="button"><span class="ux4g-icon-outlined ux4g-top-bar-icon">font_download</span></button>
+            <button aria-label="Increase text size" class="ux4g-topbar__iconbtn ux4g-d-flex ux4g-jc-center ux4g-ai-center" type="button"><span class="ux4g-icon-outlined ux4g-top-bar-icon">text_increase</span></button>
+          </div>
+          <span class="ux4g-bl acc-top-divider"></span>
+          <button aria-label="Accessibility options" class="ux4g-topbar__iconbtn ux4g-d-flex ux4g-jc-center ux4g-ai-center" type="button">
+            <span class="ux4g-icon-outlined ux4g-top-bar-icon">accessibility_new</span>
+          </button>
+          <span class="ux4g-bl acc-top-divider"></span>
+          <div class="ux4g-topbar__select">
+            <button aria-expanded="false" aria-haspopup="listbox" class="ux4g-topbar__selectbtn ux4g-d-inline-flex ux4g-ai-center" type="button">
+              <span class="ux4g-icon-outlined ux4g-top-bar-icon">language</span>
+              <span class="ux4g-label-m-default">English</span>
+              <span class="ux4g-icon-outlined">arrow_drop_down</span>
+            </button>
+          </div>
+        </nav>
       </div>
-      <span class="access-sep"></span>
-      <button class="access-icon" title="Toggle contrast" aria-label="Toggle contrast">
-        <span class="material-icons">contrast</span>
-      </button>
-      <span class="access-sep"></span>
-      <button class="access-more" aria-label="More accessibility options">
-        <span class="material-icons">accessibility_new</span>
-        <span>More</span>
-      </button>
     </div>
-  </div>
+  </header>
 
   <!-- ============ Header / Main Nav ============ -->
   <header class="header">
@@ -61,12 +72,12 @@
       <nav class="main-nav" aria-label="Primary">
         <a href="index.html" class="nav-item">Home</a>
 
-        <a href="departments.html" class="nav-item">Departments</a>
+        <a href="departments.html" class="nav-item is-active">Departments</a>
 
         <div class="dropdown">
-          <a href="jurisdiction.html" class="nav-item dropdown-toggle is-active" data-toggle="dropdown">Organisation Management<span class="material-icons">keyboard_arrow_down</span></a>
+          <a href="jurisdiction.html" class="nav-item dropdown-toggle" data-toggle="dropdown">Organisation Management<span class="material-icons">keyboard_arrow_down</span></a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item is-active" href="jurisdiction.html"><span class="material-icons">account_tree</span>Jurisdiction Management</a></li>
+            <li><a class="dropdown-item" href="jurisdiction.html"><span class="material-icons">account_tree</span>Jurisdiction Management</a></li>
             <li><a class="dropdown-item" href="designation.html"><span class="material-icons">badge</span>Designation Management</a></li>
             <li><a class="dropdown-item" href="hierarchy.html"><span class="material-icons">schema</span>Hierarchy Map</a></li>
           </ul>
@@ -107,31 +118,27 @@
   </header>
 
   <main id="main" class="page">
-    <!-- ============ Page head: title + breadcrumb + tabs ============ -->
+    <!-- ============ Page head: title + breadcrumb ============ -->
     <div class="page-head">
       <div class="page-title-block">
-        <h1 class="page-title">Jurisdiction Management</h1>
+        <h1 class="page-title">Departments</h1>
         <nav class="breadcrumb" aria-label="Breadcrumb">
           <a href="index.html">Home</a>
           <span class="crumb-sep">/</span>
-          <a href="jurisdiction.html">Organisation Management</a>
-          <span class="crumb-sep">/</span>
-          <span class="crumb-current">Jurisdiction Management</span>
+          <span class="crumb-current">Departments</span>
         </nav>
       </div>
-
-      <div class="tab-switch" role="tablist">
-        <button class="tab is-active" role="tab" aria-selected="true">Jurisdiction Management</button>
-        <button class="tab" role="tab" aria-selected="false" data-href="designation.html">Designation Management</button>
-        <button class="tab" role="tab" aria-selected="false" data-href="hierarchy.html">Hierarchy Map</button>
-      </div>
+      <button class="btn btn-primary-alt btn-lg" data-open="department">
+        <span class="material-icons" style="font-size:18px;vertical-align:-4px;margin-right:4px">add</span>
+        Onboard New Department
+      </button>
     </div>
 
     <!-- ============ Overview ============ -->
     <section class="section">
       <h2 class="section-title">Overview</h2>
-      <div class="chart-card">
-        <!-- breakdown chart injected by jurisdiction.js -->
+      <div class="kpi-grid" id="kpiGrid">
+        <!-- cards injected by departments.js -->
       </div>
     </section>
 
@@ -141,11 +148,11 @@
         <h2 class="section-title" style="margin:0;">All Departments</h2>
         <div class="search-box">
           <img src="assets/imgSearch.svg" alt="" />
-          <input type="text" id="deptSearch" placeholder="Search departments" aria-label="Search departments" />
+          <input type="text" id="deptSearch" placeholder="Search departments or admins" aria-label="Search departments or admins" />
         </div>
       </div>
-      <div class="dept-list">
-        <!-- rows injected by jurisdiction.js -->
+      <div class="dept-list" id="deptList">
+        <!-- rows injected by departments.js -->
       </div>
     </section>
   </main>
@@ -164,7 +171,11 @@
 
   <script src="store.js"></script>
   <script src="dropdown.js"></script>
-  <script src="charts.js"></script>
-  <script src="jurisdiction.js"></script>
+  <script src="department-modals.js"></script>
+  <script src="departments.js"></script>
+
+  <!-- UX4G runtime (accessibility bar behavior, theme toggle, etc.) -->
+  <script src="https://cdn.ux4g.gov.in/UX4G@3.0.18/ux4g.js"></script>
+  <script src="https://cdn.ux4g.gov.in/UX4G@3.0.18/ux4g-custom.js"></script>
 </body>
 </html>

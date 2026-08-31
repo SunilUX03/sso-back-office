@@ -2069,6 +2069,97 @@ select.field-control:invalid {
   min-height: 0;
 }
 
+/* ============================================================
+   Departments (Super Admin onboarding)
+   ============================================================ */
+.dept-admin-row {
+  background: var(--white);
+  border: 1px solid var(--stroke-100);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-step);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.dept-admin-main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+.dept-admin-main .dept-name {
+  margin: 0;
+  min-height: 0;
+}
+.dept-admin-meta {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.dept-admin-side {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 0 0 auto;
+}
+.status-toggle-btn {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+  background: transparent;
+  border: 1px solid var(--stroke-100);
+  border-radius: 100px;
+  padding: 5px 12px;
+}
+.status-toggle-btn:hover {
+  border-color: var(--primary);
+  background: var(--banner-bg);
+}
+
+/* ---- Status badge (shared) ---- */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  padding: 4px 11px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+.status-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.status-badge.is-active {
+  background: #e9f7ee;
+  color: #146c3f;
+}
+.status-badge.is-active::before {
+  background: #146c3f;
+}
+.status-badge.is-inactive {
+  background: #fdecec;
+  color: #a3271f;
+}
+.status-badge.is-inactive::before {
+  background: #a3271f;
+}
+.status-active {
+  color: #146c3f;
+  font-weight: 600;
+}
+.status-inactive {
+  color: #a3271f;
+  font-weight: 600;
+}
+
 /* Designation table column widths (Name / Short Code / Level / Reports to / Action) */
 .tbl-desig .table-head,
 .tbl-desig .table-row {
