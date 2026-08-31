@@ -39,7 +39,7 @@ function el(tag, className, html) {
 }
 
 // ---- Render Overview breakdown chart ----
-renderHierarchyBarChart(document.querySelector(".chart-card"), BREAKDOWN);
+renderHierarchyDonutChart(document.querySelector(".chart-card"), BREAKDOWN);
 
 // ---- Render department rows (full-width, one per row) ----
 const deptList = document.querySelector(".dept-list");
