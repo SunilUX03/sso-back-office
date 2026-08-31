@@ -4,23 +4,19 @@
 
 // ---- Overview KPI cards ----
 const KPI_CARDS = [
-  { icon: "domain", number: "5", label: "Sub Departments", link: "jurisdiction.html" },
-  { icon: "apps", number: "35", label: "Registered applications", link: "#" },
+  { icon: "domain", number: "5", label: "Departments", link: "jurisdiction.html" },
   { icon: "account_tree", number: "80,000", label: "Divisions", link: "jurisdiction.html" },
-  { icon: "location_city", number: "1,24,500", label: "Districts", link: "jurisdiction.html" },
-  { icon: "hub", number: "1,24,500", label: "Sub Divisions", link: "jurisdiction.html" },
-  { icon: "map", number: "1,24,500", label: "Talukas/Mandal/Tehsil", link: "jurisdiction.html" },
-  { icon: "explore", number: "1,24,500", label: "Firka/ Revenue Circle", link: "jurisdiction.html" },
-  { icon: "holiday_village", number: "1,24,500", label: "Village", link: "jurisdiction.html" },
+  { icon: "check_circle", number: "28", label: "Active Applications", link: "app-management.html" },
+  { icon: "cancel", number: "7", label: "Inactive Applications", link: "app-management.html" },
 ];
 
 // ---- Quick Access cards ----
 const QUICK_CARDS = [
-  { label: "Add New Jurisdiction", link: "agency.html" },
-  { label: "Add New Designation", link: "agency-designation.html" },
-  { label: "Add New Reporting", link: "jurisdiction.html" },
-  { label: "Add New Officer", link: "users.html" },
-  { label: "Add New Application", link: "#" },
+  { icon: "account_tree", label: "Add New Jurisdiction", link: "agency.html" },
+  { icon: "badge", label: "Add New Designation", link: "agency-designation.html" },
+  { icon: "schema", label: "Add New Reporting", link: "jurisdiction.html" },
+  { icon: "person_add", label: "Add New Officer", link: "users.html" },
+  { icon: "add_box", label: "Add New Application", link: "#" },
 ];
 
 // ---- Learning Centre cards ----
@@ -53,10 +49,7 @@ KPI_CARDS.forEach((c) => {
   const card = el(
     "a",
     "kpi-card",
-    `<div class="kpi-top">
-         <span class="icon-badge"><span class="material-icons">${c.icon}</span></span>
-         <span class="kpi-external" aria-hidden="true"><span class="material-icons">open_in_new</span></span>
-       </div>
+    `<span class="icon-badge"><span class="material-icons">${c.icon}</span></span>
        <div class="kpi-number">${c.number}</div>
        <div class="kpi-label">${c.label}</div>`
   );
@@ -70,11 +63,8 @@ QUICK_CARDS.forEach((c) => {
   const card = el(
     "a",
     "quick-card",
-    `<div class="quick-top">
-         <span class="icon-badge"><img class="badge-img" src="assets/imgIconBadge.svg" alt="" /></span>
-         <span class="kpi-external" aria-hidden="true"><span class="material-icons">open_in_new</span></span>
-       </div>
-       <div class="quick-label">${c.label}</div>`
+    `<span class="icon-badge icon-badge-sm"><span class="material-icons">${c.icon}</span></span>
+       <span class="quick-label">${c.label}</span>`
   );
   card.href = c.link || "#";
   quickGrid.appendChild(card);
@@ -93,6 +83,13 @@ LEARNING_CARDS.forEach((c) => {
        <button class="btn btn-primary btn-block">View Tutorial</button>`
     )
   );
+});
+
+// ---- Dismiss Getting Started cards ----
+document.querySelectorAll(".stepper-close").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    btn.closest(".stepper-card").remove();
+  });
 });
 
 // ---- Render FAQ rows + wire accordion ----

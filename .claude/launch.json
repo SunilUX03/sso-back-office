@@ -2,10 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "sso-back-office",
+      "name": "sso-super-admin-preview",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8000"],
-      "port": 8000
+      "runtimeArgs": ["-m", "http.server", "8092", "--directory", "/Users/sunil/Documents/sso-back-office-super-admin"],
+      "port": 8092
     }
   ]
 }

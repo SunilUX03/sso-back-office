@@ -162,6 +162,43 @@ orgTree.addEventListener("click", (e) => {
   render();
 });
 
+// ---- Select Department dropdown ----
+const selectDept = document.getElementById("selectDept");
+const selectDeptLabel = document.getElementById("selectDeptLabel");
+let currentDept = "all";
+
+function closeFilterMenus() {
+  document.querySelectorAll(".filter-menu").forEach((m) => m.remove());
+}
+selectDept.addEventListener("click", (e) => {
+  e.stopPropagation();
+  if (document.querySelector(".filter-menu")) { closeFilterMenus(); return; }
+  const menu = document.createElement("div");
+  menu.className = "filter-menu";
+  const options = [{ key: "all", label: "All Departments" }].concat(
+    Store.departments().map((d) => ({ key: d, label: d }))
+  );
+  options.forEach(({ key, label }) => {
+    const b = document.createElement("button");
+    b.textContent = label;
+    if (key === currentDept) b.classList.add("is-active");
+    b.addEventListener("click", () => {
+      currentDept = key;
+      selectDeptLabel.textContent = key === "all" ? "Select Department" : label;
+      closeFilterMenus();
+    });
+    menu.appendChild(b);
+  });
+  document.body.appendChild(menu);
+  const r = selectDept.getBoundingClientRect();
+  menu.style.top = `${r.bottom + 4}px`;
+  menu.style.left = `${r.left}px`;
+  menu.style.minWidth = `${r.width}px`;
+});
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".filter-menu") && !e.target.closest("#selectDept")) closeFilterMenus();
+});
+
 // ---- Select Type dropdown ----
 const selectType = document.getElementById("selectType");
 const selectTypeLabel = document.getElementById("selectTypeLabel");

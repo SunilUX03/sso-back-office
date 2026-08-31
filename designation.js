@@ -2,15 +2,16 @@
 // TN SSO — Designation Management (landing) : dynamic content
 // ============================================================
 
-// Overview KPI cards — "<used>/ <total>" designations per level
-const KPI_CARDS = [
-  { number: "5/ 8000", label: "Sub Departments/Designations" },
-  { number: "20/ 400", label: "Divisions/ Designations" },
-  { number: "38/ 800", label: "Districts/ Designations" },
-  { number: "64/ 1200", label: "Sub Divisions/ Designations" },
-  { number: "164/ 2600", label: "Talukas,Mandal,Tehsil/ Designations" },
-  { number: "320/ 3200", label: "Frika,Revenue Circle/ Designations" },
-  { number: "820/ 5000", label: "Village/ Designations" },
+// Overview breakdown chart — organisation tiers vs. total designations
+const BREAKDOWN = [
+  { label: "Departments", value: "5" },
+  { label: "Divisions", value: "20" },
+  { label: "Districts", value: "38" },
+  { label: "Sub Divisions", value: "64" },
+  { label: "Talukas/Mandal/Tehsil", value: "164" },
+  { label: "Firka/ Revenue Circle", value: "320" },
+  { label: "Village", value: "820" },
+  { label: "Designations", value: "21,200" },
 ];
 
 // Sub-department rows (full-width). Each carries used/total per level.
@@ -35,42 +36,44 @@ function el(tag, className, html) {
   return node;
 }
 
-// ---- KPI cards ----
-const kpiGrid = document.querySelector(".kpi-grid");
-KPI_CARDS.forEach((c) => {
-  kpiGrid.appendChild(
-    el(
-      "article",
-      "kpi-card",
-      `<div class="kpi-top">
-         <span class="icon-badge"><span class="material-icons">school</span></span>
-         <a href="#" class="kpi-external" aria-label="Open"><span class="material-icons">open_in_new</span></a>
-       </div>
-       <div class="kpi-number">${c.number}</div>
-       <div class="kpi-label">${c.label}</div>`
-    )
-  );
-});
+// ---- Overview breakdown chart ----
+renderHierarchyBarChart(document.querySelector(".chart-card"), BREAKDOWN);
 
-// ---- Sub-department rows ----
+// ---- Department rows ----
 const deptList = document.querySelector(".dept-list");
-DEPARTMENTS.forEach((name) => {
+let deptFilter = "";
+
+function renderDepartments() {
+  deptList.innerHTML = "";
   const chips = CHIPS.map((t) => `<span class="chip">${t}</span>`).join("");
-  deptList.appendChild(
-    el(
-      "article",
-      "dept-row",
-      `<div class="dept-row-head">
-         <div class="dept-row-title">
-           <span class="dept-badge"><img src="assets/imgIconBadge.svg" alt="" /></span>
-           <h3 class="dept-name">${name}</h3>
+  DEPARTMENTS.filter((name) =>
+    name.toLowerCase().includes(deptFilter.toLowerCase())
+  ).forEach((name) => {
+    deptList.appendChild(
+      el(
+        "article",
+        "dept-row",
+        `<div class="dept-row-head">
+           <div class="dept-row-title">
+             <span class="dept-badge"><img src="assets/imgIconBadge.svg" alt="" /></span>
+             <h3 class="dept-name">${name}</h3>
+           </div>
+           <a href="agency-designation.html" class="kpi-external" aria-label="Open ${name}"><span class="material-icons">arrow_forward</span></a>
          </div>
-         <a href="agency-designation.html" class="kpi-external" aria-label="Open ${name}"><span class="material-icons">open_in_new</span></a>
-       </div>
-       <div class="chips">${chips}</div>`
-    )
-  );
-});
+         <div class="chips">${chips}</div>`
+      )
+    );
+  });
+}
+renderDepartments();
+
+const deptSearch = document.getElementById("deptSearch");
+if (deptSearch) {
+  deptSearch.addEventListener("input", (e) => {
+    deptFilter = e.target.value;
+    renderDepartments();
+  });
+}
 
 // ---- Tab switcher (navigate if data-href, else toggle) ----
 document.querySelectorAll(".tab-switch .tab").forEach((tab) => {

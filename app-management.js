@@ -5,7 +5,7 @@
 
 // ---- Overview KPI cards ----
 const KPI_CARDS = [
-  { icon: "school", number: "5", label: "Sub Departments" },
+  { icon: "domain", number: "5", label: "Departments" },
   { icon: "layers", number: "35", label: "Applications" },
   { icon: "layers", number: "15", label: "Web Applications" },
   { icon: "layers", number: "20", label: "Mobile Applications" },
@@ -39,7 +39,7 @@ KPI_CARDS.forEach((c) => {
       "kpi-card",
       `<div class="kpi-top">
          <span class="icon-badge"><span class="material-icons">${c.icon}</span></span>
-         <a href="app-management-agency.html" class="kpi-external" aria-label="Open"><span class="material-icons">open_in_new</span></a>
+         <a href="app-management-agency.html" class="kpi-external" aria-label="Open"><span class="material-icons">arrow_forward</span></a>
        </div>
        <div class="kpi-number">${c.number}</div>
        <div class="kpi-label">${c.label}</div>`
@@ -56,7 +56,7 @@ DEPT_CARDS.forEach((c) => {
       "uj-card",
       `<div class="uj-top">
          <span class="uj-badge"><img src="assets/imgIconBadge.svg" alt="" /></span>
-         <a href="app-management-agency.html" class="kpi-external" aria-label="Open"><span class="material-icons">open_in_new</span></a>
+         <a href="app-management-agency.html" class="kpi-external" aria-label="Open"><span class="material-icons">arrow_forward</span></a>
        </div>
        <div class="uj-numrow">
          <span class="uj-number">${c.count}</span>

@@ -62,20 +62,20 @@
         <a href="index.html" class="nav-item">Home</a>
 
         <div class="dropdown">
-          <a href="users.html" class="nav-item dropdown-toggle" data-toggle="dropdown">User Management<span class="material-icons">keyboard_arrow_down</span></a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#"><span class="material-icons">person_add</span>Create User</a></li>
-            <li><a class="dropdown-item" href="users.html"><span class="material-icons">group</span>All Users</a></li>
-            <li><a class="dropdown-item" href="#"><span class="material-icons">admin_panel_settings</span>Roles &amp; Permissions</a></li>
-          </ul>
-        </div>
-
-        <div class="dropdown">
           <a href="jurisdiction.html" class="nav-item dropdown-toggle is-active" data-toggle="dropdown">Organisation Management<span class="material-icons">keyboard_arrow_down</span></a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item is-active" href="jurisdiction.html"><span class="material-icons">account_tree</span>Jurisdiction Management</a></li>
             <li><a class="dropdown-item" href="designation.html"><span class="material-icons">badge</span>Designation Management</a></li>
             <li><a class="dropdown-item" href="hierarchy.html"><span class="material-icons">schema</span>Hierarchy Map</a></li>
+          </ul>
+        </div>
+
+        <div class="dropdown">
+          <a href="users.html" class="nav-item dropdown-toggle" data-toggle="dropdown">User Management<span class="material-icons">keyboard_arrow_down</span></a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#"><span class="material-icons">person_add</span>Create User</a></li>
+            <li><a class="dropdown-item" href="users.html"><span class="material-icons">group</span>All Users</a></li>
+            <li><a class="dropdown-item" href="#"><span class="material-icons">admin_panel_settings</span>Roles &amp; Permissions</a></li>
           </ul>
         </div>
 
@@ -128,16 +128,22 @@
     <!-- ============ Overview ============ -->
     <section class="section">
       <h2 class="section-title">Overview</h2>
-      <div class="kpi-grid">
-        <!-- cards injected by jurisdiction.js -->
+      <div class="chart-card">
+        <!-- breakdown chart injected by jurisdiction.js -->
       </div>
     </section>
 
-    <!-- ============ All Sub Departments ============ -->
+    <!-- ============ All Departments ============ -->
     <section class="section">
-      <h2 class="section-title">All Sub Departments</h2>
-      <div class="dept-grid">
-        <!-- cards injected by jurisdiction.js -->
+      <div class="jur-toolbar">
+        <h2 class="section-title" style="margin:0;">All Departments</h2>
+        <div class="search-box">
+          <img src="assets/imgSearch.svg" alt="" />
+          <input type="text" id="deptSearch" placeholder="Search departments" aria-label="Search departments" />
+        </div>
+      </div>
+      <div class="dept-list">
+        <!-- rows injected by jurisdiction.js -->
       </div>
     </section>
   </main>
@@ -156,6 +162,7 @@
 
   <script src="store.js"></script>
   <script src="dropdown.js"></script>
+  <script src="charts.js"></script>
   <script src="jurisdiction.js"></script>
 </body>
 </html>

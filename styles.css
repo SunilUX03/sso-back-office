@@ -388,6 +388,55 @@ button.dropdown-toggle {
   color: var(--hint);
 }
 
+/* ============ Hierarchy breakdown chart ============ */
+.chart-card {
+  background: var(--white);
+  border: 1px solid var(--stroke-100);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-step);
+  padding: 24px 28px;
+}
+.hbar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.hbar-row {
+  display: grid;
+  grid-template-columns: 180px 1fr 90px;
+  align-items: center;
+  gap: 16px;
+}
+.hbar-label {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.25px;
+  color: var(--muted);
+}
+.hbar-track {
+  background: var(--stroke-50);
+  border-radius: 7px;
+  height: 14px;
+  overflow: hidden;
+}
+.hbar-fill {
+  height: 100%;
+  border-radius: 7px;
+  transition: width 0.4s ease;
+}
+.hbar-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--heading);
+  text-align: right;
+}
+@media (max-width: 768px) {
+  .hbar-row {
+    grid-template-columns: 110px 1fr 70px;
+    gap: 8px;
+  }
+}
+
 /* ============ KPI / Overview grid ============ */
 .kpi-grid {
   display: grid;
@@ -451,16 +500,19 @@ button.dropdown-toggle {
 .quick-card {
   background: var(--white);
   border-radius: var(--radius);
-  padding: 20px;
+  padding: 14px 16px;
   box-shadow: var(--shadow-card);
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 12px;
 }
-.quick-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+.icon-badge-sm {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+}
+.icon-badge-sm .material-icons {
+  font-size: 18px;
 }
 .badge-img {
   width: 24px;
@@ -468,15 +520,26 @@ button.dropdown-toggle {
   display: block;
 }
 .quick-label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
-  line-height: 16px;
-  letter-spacing: 0.5px;
-  color: var(--muted);
+  line-height: 18px;
+  letter-spacing: 0.25px;
+  color: var(--dark);
+}
+@media (max-width: 1024px) {
+  .quick-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .quick-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 /* ============ Getting Started — Stepper cards ============ */
 .stepper-card {
+  position: relative;
   background: var(--white);
   border: 1px solid var(--stroke-100);
   border-radius: var(--radius);
@@ -485,6 +548,26 @@ button.dropdown-toggle {
   display: flex;
   gap: 24px;
   margin-bottom: 12px;
+}
+.stepper-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--hint);
+}
+.stepper-close:hover {
+  background: var(--stroke-50);
+  color: var(--dark);
+}
+.stepper-close .material-icons {
+  font-size: 18px;
 }
 .stepper-illustration {
   flex: 0 0 189px;

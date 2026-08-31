@@ -54,7 +54,7 @@ KPI_CARDS.forEach((c) => {
       "kpi-card",
       `<div class="kpi-top">
          <span class="icon-badge"><span class="material-icons">${c.icon}</span></span>
-         <span class="kpi-external" aria-hidden="true"><span class="material-icons">open_in_new</span></span>
+         <span class="kpi-external" aria-hidden="true"><span class="material-icons">arrow_forward</span></span>
        </div>
        <div class="kpi-number">${c.number}</div>
        <div class="kpi-label">${c.label}</div>`
