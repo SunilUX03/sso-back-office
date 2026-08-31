@@ -1,6 +1,8 @@
 // ============================================================
-// TN SSO — Departments (Super Admin only): onboarded departments
-// + their admin logins.
+// TN SSO — Admin Logins (Super Admin only): onboarded departments
+// + their admin logins. Built from real UX4G components
+// (Card, Table, Badge, Input) — see ux4g-al-* rules in styles.css
+// for the small amount of custom layout glue between them.
 // ============================================================
 function el(tag, className, html) {
   const node = document.createElement(tag);
@@ -26,10 +28,14 @@ function renderKpis() {
     kpiGrid.appendChild(
       el(
         "article",
-        "kpi-card",
-        `<span class="icon-badge"><span class="material-icons">${c.icon}</span></span>
-         <div class="kpi-number">${c.number}</div>
-         <div class="kpi-label">${c.label}</div>`
+        "ux4g-card ux4g-card-outline ux4g-al-stat-card",
+        `<div class="ux4g-card-body">
+           <span class="ux4g-al-icon-tile"><span class="ux4g-icon-outlined" style="font-size:20px">${c.icon}</span></span>
+           <div>
+             <div class="ux4g-al-stat-number">${c.number}</div>
+             <div class="ux4g-al-stat-label">${c.label}</div>
+           </div>
+         </div>`
       )
     );
   });
@@ -40,25 +46,27 @@ function renderDepartments() {
   Store.departmentAdmins()
     .filter((a) => a.dept.toLowerCase().includes(filterText.toLowerCase()) || a.name.toLowerCase().includes(filterText.toLowerCase()))
     .forEach((a) => {
-      const statusCls = a.status === "active" ? "is-active" : "is-inactive";
-      const statusLabel = a.status === "active" ? "Active" : "Inactive";
+      const isActive = a.status === "active";
       const row = el(
-        "article",
-        "dept-admin-row",
-        `<div class="dept-admin-main">
-           <span class="dept-badge"><img src="assets/imgIconBadge.svg" alt="" /></span>
-           <div>
-             <h3 class="dept-name">${a.dept}</h3>
-             <p class="dept-admin-meta">Admin: ${a.name} &middot; ${a.email} &middot; ${a.mobile}</p>
+        "tr",
+        null,
+        `<td><span class="ux4g-al-dept-name">${a.dept}</span></td>
+         <td>${a.name}</td>
+         <td><span class="ux4g-al-contact">${a.email}<br />${a.mobile}</span></td>
+         <td>
+           <span class="ux4g-al-status ${isActive ? "is-active" : "is-inactive"}">
+             <span class="ux4g-badge-dot-${isActive ? "success" : "danger"}"></span>
+             ${isActive ? "Active" : "Inactive"}
+           </span>
+         </td>
+         <td>
+           <div class="ux4g-al-row-actions">
+             <button class="ux4g-btn ux4g-btn-outline-neutral ux4g-btn-sm" data-toggle-id="${a.id}" data-next="${isActive ? "inactive" : "active"}">
+               ${isActive ? "Deactivate" : "Activate"}
+             </button>
+             <a href="jurisdiction.html" aria-label="Manage ${a.dept}" style="display:inline-flex"><span class="ux4g-icon-outlined" style="font-size:18px">arrow_forward</span></a>
            </div>
-         </div>
-         <div class="dept-admin-side">
-           <span class="status-badge ${statusCls}">${statusLabel}</span>
-           <button class="status-toggle-btn" data-toggle-id="${a.id}" data-next="${a.status === "active" ? "inactive" : "active"}">
-             ${a.status === "active" ? "Deactivate" : "Activate"}
-           </button>
-           <a href="jurisdiction.html" class="kpi-external" aria-label="Manage ${a.dept}"><span class="material-icons">arrow_forward</span></a>
-         </div>`
+         </td>`
       );
       deptList.appendChild(row);
     });

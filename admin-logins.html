@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Departments — TN SSO</title>
+  <title>Admin Logins — TN SSO</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -72,7 +72,7 @@
       <nav class="main-nav" aria-label="Primary">
         <a href="index.html" class="nav-item">Home</a>
 
-        <a href="departments.html" class="nav-item is-active">Departments</a>
+        <a href="admin-logins.html" class="nav-item is-active">Admin Logins</a>
 
         <div class="dropdown">
           <a href="jurisdiction.html" class="nav-item dropdown-toggle" data-toggle="dropdown">Organisation Management<span class="material-icons">keyboard_arrow_down</span></a>
@@ -117,42 +117,55 @@
     </div>
   </header>
 
-  <main id="main" class="page">
+  <main id="main" class="page ux4g-al-page">
     <!-- ============ Page head: title + breadcrumb ============ -->
     <div class="page-head">
       <div class="page-title-block">
-        <h1 class="page-title">Departments</h1>
+        <h1 class="page-title">Admin Logins</h1>
         <nav class="breadcrumb" aria-label="Breadcrumb">
           <a href="index.html">Home</a>
           <span class="crumb-sep">/</span>
-          <span class="crumb-current">Departments</span>
+          <span class="crumb-current">Admin Logins</span>
         </nav>
       </div>
-      <button class="btn btn-primary-alt btn-lg" data-open="department">
-        <span class="material-icons" style="font-size:18px;vertical-align:-4px;margin-right:4px">add</span>
+      <button class="ux4g-btn ux4g-btn-primary ux4g-btn-md" type="button" data-open="department">
+        <span class="ux4g-icon-outlined" style="font-size:18px">add</span>
         Onboard New Department
       </button>
     </div>
 
-    <!-- ============ Overview ============ -->
+    <!-- ============ Overview (UX4G cards) ============ -->
     <section class="section">
       <h2 class="section-title">Overview</h2>
-      <div class="kpi-grid" id="kpiGrid">
-        <!-- cards injected by departments.js -->
+      <div class="ux4g-al-stat-grid" id="kpiGrid">
+        <!-- ux4g-card stats injected by admin-logins.js -->
       </div>
     </section>
 
-    <!-- ============ All Departments ============ -->
+    <!-- ============ All Admin Logins (UX4G table) ============ -->
     <section class="section">
       <div class="jur-toolbar">
-        <h2 class="section-title" style="margin:0;">All Departments</h2>
-        <div class="search-box">
-          <img src="assets/imgSearch.svg" alt="" />
-          <input type="text" id="deptSearch" placeholder="Search departments or admins" aria-label="Search departments or admins" />
+        <h2 class="section-title" style="margin:0;">All Admin Logins</h2>
+        <div class="ux4g-input ux4g-input-md ux4g-al-search">
+          <span class="ux4g-input-leading-icon"><span class="ux4g-icon-outlined" style="font-size:18px">search</span></span>
+          <input class="ux4g-input-input" type="text" id="deptSearch" placeholder="Search departments or admins" aria-label="Search departments or admins" />
         </div>
       </div>
-      <div class="dept-list" id="deptList">
-        <!-- rows injected by departments.js -->
+      <div class="ux4g-al-table-wrap">
+        <table class="ux4g-table ux4g-table-rounded ux4g-table-m">
+          <thead>
+            <tr>
+              <th><div class="ux4g-table-th-content">Department</div></th>
+              <th><div class="ux4g-table-th-content">Admin</div></th>
+              <th><div class="ux4g-table-th-content">Contact</div></th>
+              <th><div class="ux4g-table-th-content">Status</div></th>
+              <th><div class="ux4g-table-th-content">Action</div></th>
+            </tr>
+          </thead>
+          <tbody id="deptList">
+            <!-- rows injected by admin-logins.js -->
+          </tbody>
+        </table>
       </div>
     </section>
   </main>
@@ -171,8 +184,8 @@
 
   <script src="store.js"></script>
   <script src="dropdown.js"></script>
-  <script src="department-modals.js"></script>
-  <script src="departments.js"></script>
+  <script src="admin-login-modals.js"></script>
+  <script src="admin-logins.js"></script>
 
   <!-- UX4G runtime (accessibility bar behavior, theme toggle, etc.) -->
   <script src="https://cdn.ux4g.gov.in/UX4G@3.0.18/ux4g.js"></script>
