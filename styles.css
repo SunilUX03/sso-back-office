@@ -461,18 +461,21 @@ button.dropdown-toggle {
 .ux4g-al-row-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 @media (max-width: 900px) {
   .ux4g-al-stat-grid { grid-template-columns: 1fr; }
 }
 
 /* ---- Admin Login wizard (UX4G Modal + Input + Badge) ---- */
-/* .ux4g-btn sets display:flex, which beats the UA [hidden] default
-   at equal specificity — restore it explicitly wherever a ux4g-btn
-   is toggled via the hidden attribute. */
-.ux4g-btn[hidden] {
-  display: none;
+/* Many UX4G component classes (.ux4g-btn, .ux4g-otp, etc.) set
+   `display` directly, which beats the browser's [hidden] default at
+   equal specificity — any such element stays visible even with the
+   hidden attribute set. Restore [hidden]'s intended "always hide"
+   behavior globally; this is the standard fix for this exact clash. */
+[hidden] {
+  display: none !important;
 }
 .ux4g-al-form-grid {
   display: grid;
@@ -530,7 +533,8 @@ button.dropdown-toggle {
 }
 
 .ux4g-al-review-card {
-  background: var(--ux4g-bg-neutral-subtle, #f7f7f7);
+  background: var(--banner-bg, #f0f3ff);
+  border: 1px solid var(--ux4g-border-color-primary-subtle, var(--ux4g-bg-primary-subtle));
   border-radius: var(--ux4g-radius-md, 8px);
   padding: 14px 18px;
   margin-bottom: 14px;
@@ -540,23 +544,27 @@ button.dropdown-toggle {
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--ux4g-text-neutral-secondary);
+  color: var(--ux4g-text-brand-primary-default, var(--primary));
   margin-bottom: 8px;
 }
 .ux4g-al-review-row {
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
   gap: 16px;
   padding: 6px 0;
   font-size: 13.5px;
 }
 .ux4g-al-review-row span {
   color: var(--ux4g-text-neutral-secondary);
+  flex: 0 0 auto;
 }
 .ux4g-al-review-row strong {
   color: var(--ux4g-text-neutral-primary);
   font-weight: 600;
   text-align: right;
+  word-break: break-word;
+  min-width: 0;
 }
 .ux4g-al-success-check {
   width: 56px;
@@ -571,6 +579,44 @@ button.dropdown-toggle {
 }
 @media (max-width: 640px) {
   .ux4g-al-form-grid { grid-template-columns: 1fr; }
+}
+
+/* ---- Mobile OTP verification ---- */
+.ux4g-al-otp-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ux4g-al-otp-row .ux4g-input {
+  flex: 1;
+  min-width: 0;
+}
+.ux4g-al-otp-row .ux4g-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+#dwOtpBlock {
+  margin-top: 10px;
+  width: 100%;
+}
+#dwOtpGroup {
+  max-width: 320px;
+}
+.ux4g-al-otp-verified {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ux4g-text-success-default);
+}
+
+/* Defensive: keep tall wizard content scrollable inside the modal
+   instead of overflowing the viewport. */
+.ux4g-modal-box {
+  max-height: 85vh;
+  overflow-y: auto;
 }
 
 .chart-card {

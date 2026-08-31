@@ -86,6 +86,7 @@ window.Store = (function () {
     return DEPARTMENTS.map((name, i) => ({
       id: i + 1,
       dept: name,
+      code: ["", "RDM", "RDPR"][i] || "", // first dept already ends in "(IT&DS)" in its own name
       name: ["Meena Krishnan", "Suresh Pillai", "Divya Mohan"][i] || "Admin " + (i + 1),
       email: "admin" + (i + 1) + "@tn.gov.in",
       mobile: "9" + String(800000000 + i * 111111).slice(0, 9),
@@ -163,13 +164,14 @@ window.Store = (function () {
     officers() { return data.officers; },
 
     // ---- departments (Super Admin onboarding) ----
-    addDepartment({ name, admin }) {
+    addDepartment({ name, code, admin }) {
       data.departments.push(name);
       data.subDepartments[name] = [];
       if (!data.seqs.department) data.seqs.department = data.departments.length;
       const record = {
         id: ++data.seqs.department,
         dept: name,
+        code: code || "",
         name: admin.name,
         email: admin.email,
         mobile: admin.mobile,
@@ -179,6 +181,26 @@ window.Store = (function () {
       this.departmentAdmins().push(record);
       persist();
       return record;
+    },
+    updateDepartment(id, { name, code, admin }) {
+      const a = this.departmentAdmins().find((x) => x.id === id);
+      if (!a) return null;
+      if (name && name !== a.dept) {
+        const i = data.departments.indexOf(a.dept);
+        if (i !== -1) data.departments[i] = name;
+        if (data.subDepartments[a.dept]) {
+          data.subDepartments[name] = data.subDepartments[a.dept];
+          delete data.subDepartments[a.dept];
+        }
+        a.dept = name;
+      }
+      a.code = code || "";
+      a.name = admin.name;
+      a.email = admin.email;
+      a.mobile = admin.mobile;
+      a.sso = admin.sso;
+      persist();
+      return a;
     },
     setDepartmentAdminStatus(id, status) {
       const a = this.departmentAdmins().find((x) => x.id === id);

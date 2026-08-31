@@ -47,10 +47,11 @@ function renderDepartments() {
     .filter((a) => a.dept.toLowerCase().includes(filterText.toLowerCase()) || a.name.toLowerCase().includes(filterText.toLowerCase()))
     .forEach((a) => {
       const isActive = a.status === "active";
+      const deptLabel = a.code ? `${a.dept} (${a.code})` : a.dept;
       const row = el(
         "tr",
         null,
-        `<td><span class="ux4g-al-dept-name">${a.dept}</span></td>
+        `<td><span class="ux4g-al-dept-name">${deptLabel}</span></td>
          <td>${a.name}</td>
          <td><span class="ux4g-al-contact">${a.email}<br />${a.mobile}</span></td>
          <td>
@@ -64,7 +65,9 @@ function renderDepartments() {
              <button class="ux4g-btn ux4g-btn-outline-neutral ux4g-btn-sm" data-toggle-id="${a.id}" data-next="${isActive ? "inactive" : "active"}">
                ${isActive ? "Deactivate" : "Activate"}
              </button>
-             <a href="jurisdiction.html" aria-label="Manage ${a.dept}" style="display:inline-flex"><span class="ux4g-icon-outlined" style="font-size:18px">arrow_forward</span></a>
+             <button class="ux4g-btn ux4g-btn-outline-neutral ux4g-btn-sm" data-edit-id="${a.id}" aria-label="Edit ${a.dept}">
+               <span class="ux4g-icon-outlined" style="font-size:15px">edit</span> Edit
+             </button>
            </div>
          </td>`
       );
@@ -80,9 +83,16 @@ renderAll();
 Store.on(renderAll);
 
 deptList.addEventListener("click", (e) => {
-  const btn = e.target.closest("[data-toggle-id]");
-  if (!btn) return;
-  Store.setDepartmentAdminStatus(Number(btn.dataset.toggleId), btn.dataset.next);
+  const toggleBtn = e.target.closest("[data-toggle-id]");
+  if (toggleBtn) {
+    Store.setDepartmentAdminStatus(Number(toggleBtn.dataset.toggleId), toggleBtn.dataset.next);
+    return;
+  }
+  const editBtn = e.target.closest("[data-edit-id]");
+  if (editBtn && window.openDepartmentWizard) {
+    const record = Store.departmentAdmins().find((a) => a.id === Number(editBtn.dataset.editId));
+    if (record) window.openDepartmentWizard(record);
+  }
 });
 
 const deptSearch = document.getElementById("deptSearch");
