@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Logins — TN SSO</title>
+  <title>Reports &amp; Export — TN SSO</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -71,11 +71,12 @@
 
       <nav class="main-nav" aria-label="Primary">
         <a href="index.html" class="nav-item">Home</a>
-                <div class="dropdown">
+
+        <div class="dropdown">
           <a href="admin-logins.html" class="nav-item dropdown-toggle is-active" data-toggle="dropdown">Administration<span class="material-icons">keyboard_arrow_down</span></a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item is-active" href="admin-logins.html"><span class="material-icons">admin_panel_settings</span>Admin Logins</a></li>
-            <li><a class="dropdown-item" href="reports.html"><span class="material-icons">summarize</span>Reports &amp; Export</a></li>
+            <li><a class="dropdown-item" href="admin-logins.html"><span class="material-icons">admin_panel_settings</span>Admin Logins</a></li>
+            <li><a class="dropdown-item is-active" href="reports.html"><span class="material-icons">summarize</span>Reports &amp; Export</a></li>
           </ul>
         </div>
 
@@ -126,50 +127,44 @@
     <!-- ============ Page head: title + breadcrumb ============ -->
     <div class="page-head">
       <div class="page-title-block">
-        <h1 class="page-title">Admin Logins</h1>
+        <h1 class="page-title">Reports &amp; Export</h1>
         <nav class="breadcrumb" aria-label="Breadcrumb">
           <a href="index.html">Home</a>
           <span class="crumb-sep">/</span>
-          <span class="crumb-current">Admin Logins</span>
+          <span class="crumb-current">Reports &amp; Export</span>
         </nav>
       </div>
-      <button class="ux4g-btn ux4g-btn-primary ux4g-btn-md" type="button" data-open="department">
-        <span class="ux4g-icon-outlined" style="font-size:18px">add</span>
-        Onboard New Department
-      </button>
+      <div class="ux4g-al-row-actions">
+        <button class="ux4g-btn ux4g-btn-outline-neutral ux4g-btn-md" id="exportCsv" type="button">
+          <span class="ux4g-icon-outlined" style="font-size:18px">download</span>
+          Export CSV
+        </button>
+        <button class="ux4g-btn ux4g-btn-primary ux4g-btn-md" id="exportPdf" type="button">
+          <span class="ux4g-icon-outlined" style="font-size:18px">picture_as_pdf</span>
+          Export PDF
+        </button>
+      </div>
     </div>
 
-    <!-- ============ Overview (UX4G cards) ============ -->
-    <section class="section">
-      <h2 class="section-title">Overview</h2>
-      <div class="ux4g-al-stat-grid" id="kpiGrid">
-        <!-- ux4g-card stats injected by admin-logins.js -->
-      </div>
-    </section>
-
-    <!-- ============ All Admin Logins (UX4G table) ============ -->
+    <!-- ============ Dataset picker ============ -->
     <section class="section">
       <div class="jur-toolbar">
-        <h2 class="section-title" style="margin:0;">All Admin Logins</h2>
+        <div class="tab-switch" role="tablist" id="datasetTabs">
+          <button class="tab is-active" role="tab" aria-selected="true" data-dataset="departments">Departments</button>
+          <button class="tab" role="tab" aria-selected="false" data-dataset="jurisdictions">Jurisdictions</button>
+          <button class="tab" role="tab" aria-selected="false" data-dataset="designations">Designations</button>
+          <button class="tab" role="tab" aria-selected="false" data-dataset="officers">Officers</button>
+        </div>
         <div class="ux4g-input ux4g-input-md ux4g-al-search">
           <span class="ux4g-input-leading-icon"><span class="ux4g-icon-outlined" style="font-size:18px">search</span></span>
-          <input class="ux4g-input-input" type="text" id="deptSearch" placeholder="Search departments or admins" aria-label="Search departments or admins" />
+          <input class="ux4g-input-input" type="text" id="reportSearch" placeholder="Search this dataset" aria-label="Search this dataset" />
         </div>
       </div>
+      <p class="ux4g-al-report-count" id="reportCount"></p>
       <div class="ux4g-al-table-wrap">
-        <table class="ux4g-table ux4g-table-rounded ux4g-table-m">
-          <thead>
-            <tr>
-              <th><div class="ux4g-table-th-content">Department</div></th>
-              <th><div class="ux4g-table-th-content">Admin</div></th>
-              <th><div class="ux4g-table-th-content">Contact</div></th>
-              <th><div class="ux4g-table-th-content">Status</div></th>
-              <th><div class="ux4g-table-th-content">Action</div></th>
-            </tr>
-          </thead>
-          <tbody id="deptList">
-            <!-- rows injected by admin-logins.js -->
-          </tbody>
+        <table class="ux4g-table ux4g-table-rounded ux4g-table-m" id="reportTable">
+          <thead id="reportHead"></thead>
+          <tbody id="reportBody"></tbody>
         </table>
       </div>
     </section>
@@ -189,8 +184,7 @@
 
   <script src="store.js"></script>
   <script src="dropdown.js"></script>
-  <script src="admin-login-modals.js"></script>
-  <script src="admin-logins.js"></script>
+  <script src="reports.js"></script>
 
   <!-- UX4G runtime (accessibility bar behavior, theme toggle, etc.) -->
   <script src="https://cdn.ux4g.gov.in/UX4G@3.0.18/ux4g.js"></script>

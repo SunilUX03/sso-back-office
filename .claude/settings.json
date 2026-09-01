@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s *)",
+      "Bash(curl -sS *)",
+      "Bash(lsof -ti:*)",
+      "Bash(lsof -i *)",
+      "Bash(lsof -nP *)",
+      "Bash(pkill -f *)",
+      "mcp__Claude_Browser__get_page_text",
+      "mcp__Claude_Browser__read_console_messages",
+      "mcp__Claude_Browser__read_page",
+      "mcp__Claude_Browser__read_network_requests",
+      "mcp__Claude_Browser__find",
+      "mcp__Claude_Browser__preview_logs",
+      "mcp__Claude_Browser__preview_list",
+
+      "Bash(git add *)",
+      "Bash(git add -A)",
+      "Bash(git commit -m *)",
+      "Bash(git push origin main)",
+      "Bash(git push origin main *)",
+      "Bash(git mv *)",
+      "Bash(vercel deploy --prod --yes)",
+      "Bash(vercel deploy --prod --yes *)",
+      "Bash(vercel link --yes --project *)",
+      "Bash(python3 -m http.server *)",
+
+      "Bash(cd \"/Users/sunil/Documents/sso-back-office-super-admin\" && git status *)",
+      "Bash(cd \"/Users/sunil/Documents/sso-back-office-super-admin\" && git add *)",
+      "Bash(cd \"/Users/sunil/Documents/sso-back-office-super-admin\" && git commit -m *)",
+      "Bash(cd \"/Users/sunil/Documents/sso-back-office-super-admin\" && git push origin main *)",
+      "Bash(cd \"/Users/sunil/Documents/sso-back-office-super-admin\" && git log *)",
+      "Bash(cd \"/Users/sunil/Documents/sso-back-office-super-admin\" && git diff *)",
+      "Bash(cd \"/Users/sunil/Documents/sso-back-office-super-admin\" && git mv *)",
+      "Bash(cd \"/Users/sunil/Documents/sso-back-office-super-admin\" && vercel deploy --prod --yes *)",
+      "Bash(cd \"/Users/sunil/Documents/sso-back-office-super-admin\" && python3 -m http.server *)"
+    ]
+  }
+}

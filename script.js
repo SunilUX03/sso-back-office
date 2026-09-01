@@ -2,16 +2,23 @@
 // TN SSO — Back Office Home : dynamic content + interactions
 // ============================================================
 
-// ---- Overview KPI cards ----
-const KPI_CARDS = [
-  { icon: "domain", number: "5", label: "Departments", link: "jurisdiction.html" },
-  { icon: "account_tree", number: "80,000", label: "Divisions", link: "jurisdiction.html" },
-  { icon: "check_circle", number: "28", label: "Active Applications", link: "app-management.html" },
-  { icon: "cancel", number: "7", label: "Inactive Applications", link: "app-management.html" },
-];
+// ---- Overview KPI cards (admin health is live from Store) ----
+function getKpiCards() {
+  const admins = Store.departmentAdmins();
+  const activeAdmins = admins.filter((a) => a.status === "active").length;
+  const inactiveAdmins = admins.length - activeAdmins;
+  return [
+    { icon: "domain", number: String(Store.departments().length), label: "Departments", link: "admin-logins.html" },
+    { icon: "check_circle", number: String(activeAdmins), label: "Active Admins", link: "admin-logins.html" },
+    { icon: "cancel", number: String(inactiveAdmins), label: "Inactive Admins", link: "admin-logins.html" },
+    { icon: "check_circle", number: "28", label: "Active Applications", link: "app-management.html" },
+    { icon: "cancel", number: "7", label: "Inactive Applications", link: "app-management.html" },
+  ];
+}
 
 // ---- Quick Access cards ----
 const QUICK_CARDS = [
+  { icon: "domain", label: "Onboard New Department", trigger: "department" },
   { icon: "account_tree", label: "Add New Jurisdiction", link: "agency.html" },
   { icon: "badge", label: "Add New Designation", link: "agency-designation.html" },
   { icon: "schema", label: "Add New Reporting", link: "jurisdiction.html" },
@@ -43,32 +50,54 @@ function el(tag, className, html) {
   return node;
 }
 
-// ---- Render KPI cards ----
+// ---- Render KPI cards (re-renders when Store changes) ----
 const kpiGrid = document.querySelector(".kpi-grid");
-KPI_CARDS.forEach((c) => {
-  const card = el(
-    "a",
-    "kpi-card",
-    `<span class="icon-badge"><span class="material-icons">${c.icon}</span></span>
-       <div class="kpi-number">${c.number}</div>
-       <div class="kpi-label">${c.label}</div>`
-  );
-  card.href = c.link || "#";
-  kpiGrid.appendChild(card);
-});
+function renderKpiCards() {
+  kpiGrid.innerHTML = "";
+  getKpiCards().forEach((c) => {
+    const card = el(
+      "a",
+      "kpi-card",
+      `<span class="icon-badge"><span class="material-icons">${c.icon}</span></span>
+         <div class="kpi-number">${c.number}</div>
+         <div class="kpi-label">${c.label}</div>`
+    );
+    card.href = c.link || "#";
+    kpiGrid.appendChild(card);
+  });
+}
+renderKpiCards();
+Store.on(renderKpiCards);
 
 // ---- Render Quick Access cards ----
-const quickGrid = document.querySelector(".quick-grid");
+const quickTrack = document.getElementById("quickTrack");
 QUICK_CARDS.forEach((c) => {
-  const card = el(
-    "a",
-    "quick-card",
-    `<span class="icon-badge icon-badge-sm"><span class="material-icons">${c.icon}</span></span>
-       <span class="quick-label">${c.label}</span>`
-  );
-  card.href = c.link || "#";
-  quickGrid.appendChild(card);
+  const html = `<span class="icon-badge icon-badge-sm"><span class="material-icons">${c.icon}</span></span>
+       <span class="quick-label">${c.label}</span>`;
+  const card = c.trigger
+    ? el("button", "quick-card", html)
+    : el("a", "quick-card", html);
+  if (c.trigger) {
+    card.type = "button";
+    card.dataset.open = c.trigger;
+  } else {
+    card.href = c.link || "#";
+  }
+  quickTrack.appendChild(card);
 });
+
+// ---- Quick Access carousel arrows ----
+const quickPrev = document.getElementById("quickPrev");
+const quickNext = document.getElementById("quickNext");
+function updateQuickNav() {
+  quickPrev.disabled = quickTrack.scrollLeft <= 4;
+  quickNext.disabled = quickTrack.scrollLeft + quickTrack.clientWidth >= quickTrack.scrollWidth - 4;
+}
+quickPrev.addEventListener("click", () => quickTrack.scrollBy({ left: -240 }));
+quickNext.addEventListener("click", () => quickTrack.scrollBy({ left: 240 }));
+quickTrack.addEventListener("scroll", updateQuickNav);
+window.addEventListener("resize", updateQuickNav);
+updateQuickNav();
 
 // ---- Render Learning Centre cards ----
 const learningGrid = document.querySelector(".learning-grid");
@@ -110,5 +139,20 @@ FAQ_ITEMS.forEach((item, i) => {
   btn.addEventListener("click", () => {
     const open = row.classList.toggle("is-open");
     btn.setAttribute("aria-expanded", String(open));
+  });
+});
+
+// ---- Force a repaint after everything is on the page ----
+// Chromium can leave below-the-fold content painted incorrectly on first
+// load even when its computed styles are already correct (opacity/display
+// report fine, but the pixels lag until a repaint is triggered). Nudging
+// a reflow right after load fixes it without the user needing to
+// hover/scroll/resize first.
+window.addEventListener("load", () => {
+  requestAnimationFrame(() => {
+    document.body.style.transform = "translateZ(0)";
+    requestAnimationFrame(() => {
+      document.body.style.transform = "";
+    });
   });
 });

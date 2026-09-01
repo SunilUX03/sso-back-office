@@ -31,7 +31,7 @@
   wrap.innerHTML = `
   <div class="ux4g-modal-backdrop ux4g-modal-backdrop-50" id="deptWizard">
     <div class="ux4g-modal">
-      <div class="ux4g-modal-box ux4g-modal-m">
+      <div class="ux4g-modal-box ux4g-modal-l">
         <div class="ux4g-modal-header">
           <div class="ux4g-modal-header-title-content">
             <div>
@@ -105,7 +105,7 @@
   <!-- Success modal -->
   <div class="ux4g-modal-backdrop ux4g-modal-backdrop-50" id="deptSuccess">
     <div class="ux4g-modal">
-      <div class="ux4g-modal-box ux4g-modal-s ux4g-modal-center-content">
+      <div class="ux4g-modal-box ux4g-modal-m ux4g-modal-center-content">
         <div class="ux4g-modal-header">
           <div class="ux4g-modal-header-title-content"></div>
           <button class="ux4g-modal-close" data-ds-close aria-label="Close" type="button">
@@ -115,7 +115,7 @@
         <div class="ux4g-modal-body">
           <div class="ux4g-al-success-check"><span class="ux4g-icon-outlined" style="font-size:28px">check</span></div>
           <div class="ux4g-modal-body-title" id="dsTitle">Department Onboarded Successfully!</div>
-          <p id="dsSubtext">The department has been added and its admin login created. Credentials have been sent to the admin's registered email address.</p>
+          <p class="ux4g-al-success-subtext" id="dsSubtext">The department has been added and its admin login created. Credentials have been sent to the admin's registered email address.</p>
           <div class="ux4g-al-review-card">
             <div class="ux4g-al-review-row"><span>Department Name</span><strong id="dsName">&mdash;</strong></div>
             <div class="ux4g-al-review-row"><span>Admin Name</span><strong id="dsAdminName">&mdash;</strong></div>
@@ -123,7 +123,7 @@
             <div class="ux4g-al-review-row"><span>Status</span><strong class="ux4g-al-status is-active"><span class="ux4g-badge-dot-success"></span>Active</strong></div>
           </div>
         </div>
-        <div class="ux4g-modal-actions" style="justify-content:center">
+        <div class="ux4g-modal-actions ux4g-al-success-actions" style="justify-content:center">
           <button class="ux4g-btn ux4g-btn-primary ux4g-btn-md" id="dsAddAnother" type="button">Onboard Another Department</button>
           <button class="ux4g-btn ux4g-btn-text-neutral ux4g-btn-md" data-ds-close type="button">Go to Dashboard</button>
         </div>

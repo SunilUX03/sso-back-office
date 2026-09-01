@@ -54,8 +54,13 @@ a {
 /* Excludes ux4g-* components: this is an unlayered rule, so per CSS
    Cascade Layers it would otherwise always beat UX4G's own layered
    component styles (e.g. .ux4g-btn-primary's background), regardless
-   of specificity. */
-button:not([class*="ux4g-"]) {
+   of specificity. Also excludes our own .btn family (btn, btn-primary,
+   btn-block, ...) — button:not([class*="ux4g-"]) has higher specificity
+   than a single .btn-primary class, so without this it silently strips
+   the background from every <button class="btn btn-primary ...">,
+   leaving white text on a transparent background (invisible except on
+   :hover, whose higher-specificity rule wins the fight back). */
+button:not([class*="ux4g-"]):not([class*="btn"]) {
   font-family: inherit;
   cursor: pointer;
   border: none;
@@ -462,7 +467,11 @@ button.dropdown-toggle {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+}
+.ux4g-al-row-actions .ux4g-btn {
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 @media (max-width: 900px) {
   .ux4g-al-stat-grid { grid-template-columns: 1fr; }
@@ -504,32 +513,43 @@ button.dropdown-toggle {
   display: flex;
   align-items: center;
   margin-bottom: 22px;
+  width: 100%;
+  min-width: 0;
 }
 .ux4g-al-step {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  min-width: 0;
 }
 .ux4g-al-step-label {
   font-size: 12.5px;
   font-weight: 500;
   color: var(--ux4g-text-neutral-secondary);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 .ux4g-al-step.is-active .ux4g-al-step-label {
   color: var(--ux4g-text-neutral-primary);
   font-weight: 600;
 }
 .ux4g-al-step-line {
-  flex: 1 1 auto;
+  flex: 1 1 12px;
   height: 2px;
   background: var(--ux4g-border-color-neutral-subtle, #e5e5e5);
-  margin: 0 12px;
-  min-width: 24px;
+  margin: 0 8px;
+  min-width: 12px;
 }
 .ux4g-al-step-line.is-done {
   background: var(--ux4g-bg-primary-strong);
+}
+@media (max-width: 460px) {
+  .ux4g-al-step-label {
+    display: none;
+  }
 }
 
 .ux4g-al-review-card {
@@ -577,8 +597,22 @@ button.dropdown-toggle {
   justify-content: center;
   margin: 0 auto 16px;
 }
+.ux4g-al-success-subtext {
+  margin: 8px 0 20px;
+}
+.ux4g-al-success-actions {
+  flex-wrap: nowrap;
+  gap: 12px;
+}
+.ux4g-al-success-actions .ux4g-btn {
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
 @media (max-width: 640px) {
   .ux4g-al-form-grid { grid-template-columns: 1fr; }
+  .ux4g-al-success-actions {
+    flex-wrap: wrap;
+  }
 }
 
 /* ---- Mobile OTP verification ---- */
@@ -613,10 +647,14 @@ button.dropdown-toggle {
 }
 
 /* Defensive: keep tall wizard content scrollable inside the modal
-   instead of overflowing the viewport. */
+   instead of overflowing the viewport. Setting overflow-y alone
+   forces overflow-x to compute as "auto" too (CSS spec quirk), which
+   was silently clipping/scrolling wide rows like the step indicator
+   instead of leaving them visible — pin overflow-x explicitly. */
 .ux4g-modal-box {
   max-height: 85vh;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .chart-card {
@@ -746,8 +784,18 @@ button.dropdown-toggle {
 /* ============ KPI / Overview grid ============ */
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 12px;
+}
+@media (max-width: 1100px) {
+  .kpi-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 .kpi-card {
   background: var(--white);
@@ -798,19 +846,36 @@ button.dropdown-toggle {
 }
 
 /* ============ Quick Access grid ============ */
-.quick-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
+/* ---- Quick Access: horizontal carousel ---- */
+.quick-carousel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.quick-track {
+  display: flex;
   gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  padding: 2px;
+  flex: 1;
+  min-width: 0;
+  scrollbar-width: none;
+}
+.quick-track::-webkit-scrollbar {
+  display: none;
 }
 .quick-card {
   background: var(--white);
   border-radius: var(--radius);
-  padding: 14px 16px;
+  padding: 14px 18px;
   box-shadow: var(--shadow-card);
   display: flex;
   align-items: center;
   gap: 12px;
+  flex: 0 0 auto;
+  min-width: 200px;
+  scroll-snap-align: start;
 }
 .icon-badge-sm {
   width: 32px;
@@ -831,15 +896,30 @@ button.dropdown-toggle {
   line-height: 18px;
   letter-spacing: 0.25px;
   color: var(--dark);
+  white-space: nowrap;
 }
-@media (max-width: 1024px) {
-  .quick-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
+.quick-nav {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--white);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+}
+.quick-nav:hover {
+  background: var(--banner-bg);
+}
+.quick-nav:disabled {
+  opacity: 0.35;
+  pointer-events: none;
 }
 @media (max-width: 640px) {
-  .quick-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .quick-card {
+    min-width: 168px;
   }
 }
 
@@ -3016,51 +3096,28 @@ a.quick-card:hover,
   100% { opacity: 1; transform: scale(1); }
 }
 
-/* ---- Page-level entrance ---- */
-.banner,
-.page-head,
-.section,
-.section-block {
-  animation: fadeInUp 0.45s ease both;
-}
-.section:nth-of-type(2),
-.section-block:nth-of-type(2) { animation-delay: 0.06s; }
-.section:nth-of-type(3),
-.section-block:nth-of-type(3) { animation-delay: 0.12s; }
-.section:nth-of-type(4) { animation-delay: 0.18s; }
-.section:nth-of-type(5) { animation-delay: 0.24s; }
+/* ---- Page-level entrance: REMOVED ----
+   Was: animation: fadeInUp ... both; on .banner/.page-head/.section/
+   .section-block, plus a staggered version on grid children below.
+   Root cause of "button only visible after hover": animation-fill-mode
+   both leaves an element frozen at its `from` keyframe (opacity:0) if
+   the browser fails to start the animation while the element is still
+   below the fold at load — a real Chromium quirk. Any later repaint
+   (hover, resize, scroll) forces recalculation and the content
+   "appears". Hit every section that starts off-screen: the Getting
+   Started stepper CTA, Learning Centre cards, Talk to Expert. Purely
+   decorative, not worth the risk — removed rather than patched. */
 
-/* ---- Staggered card reveals ---- */
-.kpi-grid > *,
-.quick-grid > *,
-.uj-grid > *,
-.dept-grid > *,
-.learning-grid > *,
-.officer-list > *,
-.table-rows > *,
-.hier-chips > .hier-chip,
-.chips > .chip {
-  animation: fadeInUp 0.4s ease both;
+/* Belt-and-suspenders: content inside these cards must never depend on a
+   repaint (hover/scroll/resize) to become visible. Guards against any future
+   rule accidentally reintroducing the stuck-at-opacity:0 issue above. */
+.learning-card,
+.learning-card .btn,
+.stepper-cta,
+.step .btn {
+  opacity: 1;
+  visibility: visible;
 }
-.kpi-grid > *:nth-child(1), .quick-grid > *:nth-child(1), .uj-grid > *:nth-child(1),
-.dept-grid > *:nth-child(1), .learning-grid > *:nth-child(1), .officer-list > *:nth-child(1),
-.table-rows > *:nth-child(1) { animation-delay: 0.04s; }
-.kpi-grid > *:nth-child(2), .quick-grid > *:nth-child(2), .uj-grid > *:nth-child(2),
-.dept-grid > *:nth-child(2), .learning-grid > *:nth-child(2), .officer-list > *:nth-child(2),
-.table-rows > *:nth-child(2) { animation-delay: 0.09s; }
-.kpi-grid > *:nth-child(3), .quick-grid > *:nth-child(3), .uj-grid > *:nth-child(3),
-.dept-grid > *:nth-child(3), .learning-grid > *:nth-child(3), .officer-list > *:nth-child(3),
-.table-rows > *:nth-child(3) { animation-delay: 0.14s; }
-.kpi-grid > *:nth-child(4), .quick-grid > *:nth-child(4), .uj-grid > *:nth-child(4),
-.dept-grid > *:nth-child(4), .learning-grid > *:nth-child(4), .officer-list > *:nth-child(4),
-.table-rows > *:nth-child(4) { animation-delay: 0.19s; }
-.kpi-grid > *:nth-child(5), .quick-grid > *:nth-child(5), .uj-grid > *:nth-child(5),
-.officer-list > *:nth-child(5), .table-rows > *:nth-child(5) { animation-delay: 0.24s; }
-.kpi-grid > *:nth-child(6), .uj-grid > *:nth-child(6),
-.table-rows > *:nth-child(6) { animation-delay: 0.29s; }
-.kpi-grid > *:nth-child(7), .uj-grid > *:nth-child(7),
-.table-rows > *:nth-child(7) { animation-delay: 0.34s; }
-.kpi-grid > *:nth-child(8), .uj-grid > *:nth-child(8) { animation-delay: 0.39s; }
 
 /* ---- Hover micro-interactions ---- */
 .kpi-card,
@@ -3347,7 +3404,9 @@ a.quick-card:hover,
 
 /* print: hide chrome, keep the map */
 @media print {
-  .accessibility-bar, .header, .footer, .jur-toolbar-right, .breadcrumb, .tab-switch { display: none !important; }
+  .accessibility-bar, .ux4g-topbar, .header, .footer, .jur-toolbar-right, .breadcrumb, .tab-switch { display: none !important; }
   .org-canvas { background: #fff; }
   body { background: #fff; }
+  .ux4g-al-row-actions, .ux4g-al-search { display: none !important; }
+  .ux4g-al-report-count { margin-top: 0; }
 }
