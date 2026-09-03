@@ -7,7 +7,7 @@
 // Load this BEFORE any page script.
 // ============================================================
 window.Store = (function () {
-  const KEY = "tnsso.v11";
+  const KEY = "tnsso.v12";
 
   // ---- Default seed data ----------------------------------
   // The 3 departments actually "onboarded" in this demo (Admin Logins /
@@ -533,6 +533,11 @@ window.Store = (function () {
       department: "Information Technology Department",
       email: "sunil.kumar@tn.gov.in",
       mobile: "+91 98765 43210",
+      ssoUsername: "superadmin",
+      // Demo-only credential for the Login page — this is a static
+      // front-end prototype with no real auth backend, so this is
+      // deliberately a known, shareable value, not a real secret.
+      password: "TnSso@2026",
       avatar: "assets/imgImage12.png",
     };
   }

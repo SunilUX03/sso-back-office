@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — TN SSO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Roboto:wght@500&display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=20260962" />
+  <link rel="stylesheet" href="login.css?v=20260962" />
+
+  <!-- UX4G Design System (CDN) -->
+  <link rel="stylesheet" href="https://cdn.ux4g.gov.in/UX4G@3.0.18/index.css" />
+  <link rel="stylesheet" href="ux4g-theme.css" />
+</head>
+<body>
+  <!-- No accessibility bar / main nav here on purpose — whoever lands on
+       this page isn't signed in yet. -->
+  <div class="login-shell">
+    <div class="login-card">
+      <!-- ============ Left: form ============ -->
+      <div class="login-form-panel">
+        <div class="login-form-inner">
+          <div class="login-brand">
+            <img class="emblem-img" src="assets/imgImage1.png" alt="Government of Tamil Nadu emblem" />
+            <div class="logo-text">
+              <span class="logo-line-1">Back Office</span>
+              <span class="logo-line-2">TN SSO</span>
+            </div>
+          </div>
+
+          <!-- ---- Step 1: Credentials + Captcha ---- -->
+          <div id="stepCredentials">
+            <div class="login-icon-badge"><span class="material-icons">login</span></div>
+            <h1 class="login-heading">Login to your account</h1>
+            <p class="login-subtext">Sign in with your Name, Email, Mobile Number, or SSO Username.</p>
+
+            <div class="login-error-note" id="credError" hidden>
+              <span class="material-icons" style="font-size:16px">error_outline</span>
+              <span id="credErrorText"></span>
+            </div>
+
+            <form onsubmit="return false">
+              <div class="login-field">
+                <label for="loginId">Login ID</label>
+                <div class="login-input-wrap">
+                  <span class="material-icons leading">person</span>
+                  <input id="loginId" type="text" placeholder="Name, Email, Mobile, or SSO Username" autocomplete="username" />
+                </div>
+              </div>
+
+              <div class="login-field">
+                <label for="loginPassword">Password</label>
+                <div class="login-input-wrap">
+                  <span class="material-icons leading">lock</span>
+                  <input id="loginPassword" type="password" placeholder="Enter your password" autocomplete="current-password" />
+                  <button class="toggle-visibility" type="button" id="togglePassword" aria-label="Show password">
+                    <span class="material-icons">visibility</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="login-field">
+                <label for="captchaAnswer">Security Check</label>
+                <div class="login-captcha-row">
+                  <span class="login-captcha-chip" id="captchaChallenge">7 + 4</span>
+                  <button class="login-captcha-refresh" type="button" id="captchaRefresh" aria-label="Get a new challenge">
+                    <span class="material-icons">refresh</span>
+                  </button>
+                  <div class="login-input-wrap">
+                    <input id="captchaAnswer" type="text" inputmode="numeric" placeholder="Answer" autocomplete="off" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="login-row-between">
+                <label class="login-remember">
+                  <input type="checkbox" id="rememberMe" />
+                  Remember me
+                </label>
+              </div>
+
+              <button class="login-submit-btn" id="continueBtn" type="button">
+                Continue <span class="material-icons" style="font-size:18px">arrow_forward</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- ---- Step 2: OTP ---- -->
+          <div id="stepOtp" hidden>
+            <button class="login-back-link" id="backToCreds" type="button">
+              <span class="material-icons" style="font-size:16px">arrow_back</span> Back
+            </button>
+            <div class="login-icon-badge"><span class="material-icons">verified_user</span></div>
+            <h1 class="login-heading">Verify your identity</h1>
+            <p class="login-subtext">We've sent a one-time code to your registered email and mobile number.</p>
+
+            <div class="login-error-note" id="otpError" hidden>
+              <span class="material-icons" style="font-size:16px">error_outline</span>
+              <span>That code doesn't match. Please try again.</span>
+            </div>
+
+            <div class="login-otp-hint">
+              Demo mode — no real SMS/email is sent in this prototype. Your one-time code is <strong id="otpDemoCode">000000</strong>
+            </div>
+
+            <form onsubmit="return false">
+              <div class="login-field">
+                <label for="otpInput">One-Time Code</label>
+                <div class="login-input-wrap">
+                  <span class="material-icons leading">password</span>
+                  <input id="otpInput" type="text" inputmode="numeric" maxlength="6" placeholder="6-digit code" autocomplete="one-time-code" />
+                </div>
+              </div>
+
+              <button class="login-submit-btn" id="verifyOtpBtn" type="button">
+                Verify &amp; Login <span class="material-icons" style="font-size:18px">arrow_forward</span>
+              </button>
+            </form>
+            <div style="text-align:center;margin-top:16px;">
+              <button class="login-resend" id="resendOtp" type="button">Resend Code</button>
+            </div>
+          </div>
+
+          <!-- ---- Step 3: Success ---- -->
+          <div id="stepSuccess" hidden style="text-align:center;">
+            <div class="success-check" style="margin:0 auto 16px;">&#10003;</div>
+            <h1 class="login-heading">Welcome back, <span id="successName">Admin</span></h1>
+            <p class="login-subtext">Redirecting you to your dashboard&hellip;</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ Right: illustrative panel ============ -->
+      <div class="login-art-panel">
+        <h2 class="login-art-title">One Login, Every <span class="accent">Government Service</span></h2>
+
+        <div class="login-orbit">
+          <div class="login-orbit-ring outer"></div>
+          <div class="login-orbit-ring inner"></div>
+          <div class="login-orbit-center"><img src="assets/imgImage1.png" alt="" /></div>
+          <span class="login-orbit-icon" style="left:140px; top:20px;" title="Departments"><span class="material-icons">account_balance</span></span>
+          <span class="login-orbit-icon" style="left:243.9px; top:80px;" title="Applications"><span class="material-icons">apps</span></span>
+          <span class="login-orbit-icon" style="left:243.9px; top:200px;" title="Officers"><span class="material-icons">groups</span></span>
+          <span class="login-orbit-icon" style="left:140px; top:260px;" title="Jurisdiction Records"><span class="material-icons">description</span></span>
+          <span class="login-orbit-icon" style="left:36.1px; top:200px;" title="Designations"><span class="material-icons">badge</span></span>
+          <span class="login-orbit-icon" style="left:36.1px; top:80px;" title="Verified Access"><span class="material-icons">verified_user</span></span>
+        </div>
+
+        <div>
+          <p class="login-art-caption">Trusted by <strong>75+ departments</strong> across the Government of Tamil Nadu for secure, unified access to every registered application.</p>
+          <div class="login-art-dots">
+            <span class="is-active"></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="store.js?v=20260962"></script>
+  <script src="login.js?v=20260962"></script>
+</body>
+</html>
