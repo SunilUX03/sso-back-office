@@ -2,28 +2,163 @@
 // TN SSO — Back Office Home : dynamic content + interactions
 // ============================================================
 
-// ---- Overview KPI cards (admin health is live from Store) ----
-function getKpiCards() {
-  const admins = Store.departmentAdmins();
-  const activeAdmins = admins.filter((a) => a.status === "active").length;
-  const inactiveAdmins = admins.length - activeAdmins;
+// ---- Coverage metrics: for a given "has this been set up here?" test,
+// how many of the 75 real departments and how many of their real
+// sub-departments have it. Shared shape for Jurisdiction, Designation,
+// and Officer coverage below, so each Overview card reads the same way:
+// "X of 75 departments, Y of N sub-departments." ----
+const TOTAL_DEPARTMENTS = Store.allDepartments().length;
+const TOTAL_SUBDEPARTMENTS = Store.allDepartments().reduce((sum, d) => sum + Store.allSubDepartments(d).length, 0);
+function coverageStats(hasFn) {
+  let deptCount = 0;
+  let subDeptCount = 0;
+  Store.allDepartments().forEach((dept) => {
+    const subs = Store.allSubDepartments(dept);
+    let deptHasAny = hasFn(dept, "");
+    subs.forEach((sub) => {
+      if (hasFn(dept, sub)) {
+        subDeptCount++;
+        deptHasAny = true;
+      }
+    });
+    if (deptHasAny) deptCount++;
+  });
+  return { depts: deptCount, subDepts: subDeptCount };
+}
+
+// ---- Overview: three "X of 75 departments / Y of N sub-departments"
+// coverage cards (Jurisdiction, Designation, Officers) plus one Web vs
+// Mobile application-mix donut — real Store data throughout. ----
+function getComboStatCards() {
+  const jurisdiction = coverageStats((dept, sub) => Store.deptOffices(dept, sub).length > 0);
+  const designation = coverageStats((dept, sub) => Store.deptDesignations(dept, sub).length > 0);
+  const activeOfficers = Store.officers().filter((o) => o.status === "active");
+  const officerCoverage = coverageStats((dept, sub) => activeOfficers.some((o) => o.dept === dept && (o.subDept || "") === sub));
   return [
-    { icon: "domain", number: String(Store.departments().length), label: "Departments", link: "admin-logins.html" },
-    { icon: "check_circle", number: String(activeAdmins), label: "Active Admins", link: "admin-logins.html" },
-    { icon: "cancel", number: String(inactiveAdmins), label: "Inactive Admins", link: "admin-logins.html" },
-    { icon: "check_circle", number: "28", label: "Active Applications", link: "app-management.html" },
-    { icon: "cancel", number: "7", label: "Inactive Applications", link: "app-management.html" },
+    {
+      icon: "account_tree", title: "Jurisdiction Management", link: "jurisdiction.html",
+      items: [
+        { number: jurisdiction.depts, denom: TOTAL_DEPARTMENTS, label: "Departments Configured" },
+        { number: jurisdiction.subDepts, denom: TOTAL_SUBDEPARTMENTS, label: "Sub-Departments Configured" },
+      ],
+    },
+    {
+      icon: "badge", title: "Designation Management", link: "designation.html",
+      items: [
+        { number: designation.depts, denom: TOTAL_DEPARTMENTS, label: "Departments Configured" },
+        { number: designation.subDepts, denom: TOTAL_SUBDEPARTMENTS, label: "Sub-Departments Configured" },
+      ],
+    },
+    {
+      icon: "group", title: "Officers", link: "users.html",
+      items: [
+        { number: officerCoverage.depts, denom: TOTAL_DEPARTMENTS, label: "Departments with Active Officers" },
+        { number: officerCoverage.subDepts, denom: TOTAL_SUBDEPARTMENTS, label: "Sub-Departments with Active Officers" },
+      ],
+    },
   ];
 }
 
-// ---- Quick Access cards ----
+// ---- Applications: Web vs Mobile is a type split, not a coverage count,
+// so it reads better as one donut than as two more number tiles. ----
+const APP_TYPE_COLORS = { web: "#002385", mobile: "#0ea5e9", both: "#64748b" };
+function getAppTypeBreakdown() {
+  const active = Store.applications().filter((a) => a.status === "active");
+  let web = 0, mobile = 0, both = 0;
+  active.forEach((a) => {
+    if (a.type === "Web & Mobile") both++;
+    else if (a.type === "Mobile Application") mobile++;
+    else web++;
+  });
+  return { web, mobile, both, total: active.length };
+}
+function buildDonutSvg(segments, size) {
+  size = size || 96;
+  const r = size / 2 - 9;
+  const cx = size / 2, cy = size / 2;
+  const circumference = 2 * Math.PI * r;
+  const total = segments.reduce((sum, seg) => sum + seg.value, 0);
+  if (!total) {
+    return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--stroke-100)" stroke-width="14" />
+      <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="20" font-weight="700" fill="var(--muted)">0</text>
+    </svg>`;
+  }
+  let offset = 0;
+  const rings = segments
+    .filter((seg) => seg.value > 0)
+    .map((seg) => {
+      const dash = (seg.value / total) * circumference;
+      const circle = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${seg.color}" stroke-width="14" stroke-dasharray="${dash} ${circumference - dash}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})" />`;
+      offset += dash;
+      return circle;
+    })
+    .join("");
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
+    ${rings}
+    <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="20" font-weight="700" fill="var(--heading)">${total}</text>
+  </svg>`;
+}
+
+// ---- Needs Your Attention — only pending accounts, since that's the one
+// thing on Home an admin can't already see at a glance elsewhere. Hidden
+// entirely when there's nothing pending, so it doesn't turn into wallpaper. ----
+function getAttentionCards() {
+  const cards = [];
+  const pendingOfficers = Store.pendingOfficers ? Store.pendingOfficers() : [];
+  const pendingAdmins = Store.pendingDepartmentAdmins ? Store.pendingDepartmentAdmins() : [];
+  if (pendingOfficers.length) {
+    cards.push({
+      icon: "hourglass_empty",
+      number: String(pendingOfficers.length),
+      label: `Officer${pendingOfficers.length === 1 ? "" : "s"} Awaiting Verification`,
+      link: "users.html",
+    });
+  }
+  if (pendingAdmins.length) {
+    cards.push({
+      icon: "hourglass_empty",
+      number: String(pendingAdmins.length),
+      label: `Admin${pendingAdmins.length === 1 ? "" : "s"} Awaiting Verification`,
+      link: "admin-logins.html",
+    });
+  }
+  return cards;
+}
+
+// ---- Needs Your Attention — only pending accounts, since that's the one
+// thing on Home an admin can't already see at a glance elsewhere. Hidden
+// entirely when there's nothing pending, so it doesn't turn into wallpaper. ----
+function getAttentionCards() {
+  const cards = [];
+  const pendingOfficers = Store.pendingOfficers ? Store.pendingOfficers() : [];
+  const pendingAdmins = Store.pendingDepartmentAdmins ? Store.pendingDepartmentAdmins() : [];
+  if (pendingOfficers.length) {
+    cards.push({
+      icon: "hourglass_empty",
+      number: String(pendingOfficers.length),
+      label: `Officer${pendingOfficers.length === 1 ? "" : "s"} Awaiting Verification`,
+      link: "users.html",
+    });
+  }
+  if (pendingAdmins.length) {
+    cards.push({
+      icon: "hourglass_empty",
+      number: String(pendingAdmins.length),
+      label: `Admin${pendingAdmins.length === 1 ? "" : "s"} Awaiting Verification`,
+      link: "admin-logins.html",
+    });
+  }
+  return cards;
+}
+
+// ---- Quick Access cards — only real, working actions ----
 const QUICK_CARDS = [
-  { icon: "domain", label: "Onboard New Department", trigger: "department" },
-  { icon: "account_tree", label: "Add New Jurisdiction", link: "agency.html" },
-  { icon: "badge", label: "Add New Designation", link: "agency-designation.html" },
-  { icon: "schema", label: "Add New Reporting", link: "jurisdiction.html" },
-  { icon: "person_add", label: "Add New Officer", link: "users.html" },
-  { icon: "add_box", label: "Add New Application", link: "#" },
+  { icon: "add_box", label: "Register Application", trigger: "app" },
+  { icon: "person_add", label: "Create User", trigger: "officer" },
+  { icon: "admin_panel_settings", label: "Create Admin Login", trigger: "department" },
+  { icon: "account_tree", label: "Jurisdiction Management", link: "jurisdiction.html" },
+  { icon: "badge", label: "Designation Management", link: "designation.html" },
 ];
 
 // ---- Learning Centre cards ----
@@ -50,11 +185,24 @@ function el(tag, className, html) {
   return node;
 }
 
-// ---- Render KPI cards (re-renders when Store changes) ----
-const kpiGrid = document.querySelector(".kpi-grid");
-function renderKpiCards() {
-  kpiGrid.innerHTML = "";
-  getKpiCards().forEach((c) => {
+// ---- Welcome banner: real identity + last login, same source as Profile ----
+function renderBanner() {
+  const p = Store.superAdmin();
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
+  const firstName = p.name.split(" ")[0];
+  document.getElementById("bannerGreeting").textContent = `${greeting}, ${firstName}`;
+  const history = Store.loginHistory();
+  const lastLogin = history.length ? history[0].timestamp : "—";
+  document.getElementById("bannerSubtitle").innerHTML =
+    `${p.role} &nbsp;&middot;&nbsp; ${p.department} &nbsp;&middot;&nbsp; Last login: ${lastLogin}`;
+}
+renderBanner();
+Store.on(renderBanner);
+
+function renderCardGrid(gridEl, cards) {
+  gridEl.innerHTML = "";
+  cards.forEach((c) => {
     const card = el(
       "a",
       "kpi-card",
@@ -63,8 +211,78 @@ function renderKpiCards() {
          <div class="kpi-label">${c.label}</div>`
     );
     card.href = c.link || "#";
-    kpiGrid.appendChild(card);
+    gridEl.appendChild(card);
   });
+}
+
+// ---- Render Overview (three coverage cards + one app-type donut) and
+// Attention cards (re-renders when Store changes) ----
+const overviewGrid = document.getElementById("overviewGrid");
+const attentionSection = document.getElementById("attentionSection");
+const attentionGrid = document.getElementById("attentionGrid");
+
+function renderComboStatCards() {
+  overviewGrid.innerHTML = "";
+  getComboStatCards().forEach((c) => {
+    const card = el(
+      "a",
+      "combo-stat-card",
+      `<div class="combo-stat-header">
+         <span class="icon-badge"><span class="material-icons">${c.icon}</span></span>
+         <span class="combo-stat-title">${c.title}</span>
+       </div>
+       <div class="combo-stat-body">
+         ${c.items
+           .map(
+             (item) => `
+           <div class="combo-stat-item">
+             <div class="combo-stat-number">${item.number} <span class="combo-stat-denom">of ${item.denom}</span></div>
+             <div class="combo-stat-label">${item.label}</div>
+           </div>`
+           )
+           .join('<div class="combo-stat-divider"></div>')}
+       </div>`
+    );
+    card.href = c.link;
+    overviewGrid.appendChild(card);
+  });
+
+  const breakdown = getAppTypeBreakdown();
+  const donutSegments = [
+    { value: breakdown.web, color: APP_TYPE_COLORS.web },
+    { value: breakdown.mobile, color: APP_TYPE_COLORS.mobile },
+    { value: breakdown.both, color: APP_TYPE_COLORS.both },
+  ];
+  const legendRows = [
+    { label: "Web", value: breakdown.web, color: APP_TYPE_COLORS.web },
+    { label: "Mobile", value: breakdown.mobile, color: APP_TYPE_COLORS.mobile },
+    { label: "Web & Mobile", value: breakdown.both, color: APP_TYPE_COLORS.both },
+  ].filter((row) => row.value > 0);
+  const appCard = el(
+    "a",
+    "combo-stat-card app-chart-card",
+    `<div class="combo-stat-header">
+       <span class="icon-badge"><span class="material-icons">apps</span></span>
+       <span class="combo-stat-title">Applications (Active)</span>
+     </div>
+     <div class="app-chart-body">
+       <div class="app-donut">${buildDonutSvg(donutSegments, 78)}</div>
+       <div class="app-chart-legend">
+         ${legendRows
+           .map((row) => `<div class="legend-row"><span class="legend-swatch" style="background:${row.color}"></span>${row.label} <strong>${row.value}</strong></div>`)
+           .join("") || `<div class="legend-row">No active applications yet.</div>`}
+       </div>
+     </div>`
+  );
+  appCard.href = "app-management.html";
+  overviewGrid.appendChild(appCard);
+}
+
+function renderKpiCards() {
+  renderComboStatCards();
+  const attentionCards = getAttentionCards();
+  attentionSection.hidden = attentionCards.length === 0;
+  renderCardGrid(attentionGrid, attentionCards);
 }
 renderKpiCards();
 Store.on(renderKpiCards);
@@ -114,10 +332,28 @@ LEARNING_CARDS.forEach((c) => {
   );
 });
 
-// ---- Dismiss Getting Started cards ----
+// ---- Getting Started: for now, each card just shows until the admin
+// dismisses it once — dismissing persists for real (Store, not just the
+// DOM) so it doesn't reappear on the next visit. (Not gated on whether
+// setup looks "done" — that's a deliberate demo-mode call for now.) ----
+const gettingStartedSection = document.getElementById("gettingStartedSection");
+const orgSetupCard = document.getElementById("orgSetupCard");
+const appSetupCard = document.getElementById("appSetupCard");
+function renderGettingStarted() {
+  const showOrg = !Store.isGettingStartedDismissed("org");
+  const showApp = !Store.isGettingStartedDismissed("app");
+  orgSetupCard.hidden = !showOrg;
+  appSetupCard.hidden = !showApp;
+  gettingStartedSection.hidden = !(showOrg || showApp);
+}
+renderGettingStarted();
+Store.on(renderGettingStarted);
+
 document.querySelectorAll(".stepper-close").forEach((btn) => {
   btn.addEventListener("click", () => {
-    btn.closest(".stepper-card").remove();
+    const card = btn.closest(".stepper-card");
+    Store.dismissGettingStarted(card.dataset.gettingStarted);
+    renderGettingStarted();
   });
 });
 

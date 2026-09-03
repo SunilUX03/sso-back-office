@@ -1,17 +1,17 @@
 // ============================================================
-// TN SSO — Tamil Nadu e-Governance Agency : interactions
+// TN SSO — Department Jurisdiction (Jurisdiction Management drill-down).
+// Scoped to one department via ?dept=<slug>. Levels + offices are
+// owned by the shared Store, per department (Store.deptLevels /
+// Store.deptOffices), persisted to localStorage.
 // ============================================================
+const params = new URLSearchParams(window.location.search);
+const deptName = Store.deptBySlug(params.get("dept")) || Store.allDepartments()[0];
+const resolvedSub = Store.subDeptBySlug(deptName, params.get("sub"));
+const subDeptName = resolvedSub !== null ? resolvedSub : Store.allSubDepartments(deptName)[0];
 
-// ---- Shared state ----
-// Levels defined via "Define Hierarchy Structure" (index 0 = highest/top level).
-// Seeded with the default Tamil Nadu hierarchy so the Jurisdiction Level
-// dropdown is populated out of the box (these are editable in the modal).
-// Levels + offices are owned by the shared Store (persisted to
-// localStorage and shared with the Designation module). These are
-// live references — Store mutates the arrays in place.
 const state = {
-  levels: Store.levels,
-  offices: Store.offices(),
+  levels: Store.deptLevels(deptName, subDeptName),
+  offices: Store.deptOffices(deptName, subDeptName),
 };
 
 function el(tag, className, html) {
@@ -20,36 +20,60 @@ function el(tag, className, html) {
   if (html !== undefined) node.innerHTML = html;
   return node;
 }
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  }[c]));
+}
+function escapeAttr(s) {
+  return escapeHtml(s);
+}
 
 // ============================================================
-// Tab switcher
+// Page head: scoped title / breadcrumb
 // ============================================================
-document.querySelectorAll(".tab-switch .tab").forEach((tab) => {
-  tab.addEventListener("click", () => {
-    if (tab.dataset.href) {
-      window.location.href = tab.dataset.href;
-      return;
-    }
-    document.querySelectorAll(".tab-switch .tab").forEach((t) => {
-      t.classList.remove("is-active");
-      t.setAttribute("aria-selected", "false");
-    });
-    tab.classList.add("is-active");
-    tab.setAttribute("aria-selected", "true");
-  });
-});
+const subDeptLabel = Store.subDeptLabel(deptName, subDeptName);
+document.getElementById("deptTitle").textContent = subDeptLabel;
+document.getElementById("subDeptCrumb").textContent = subDeptLabel;
+document.title = `${subDeptLabel} — Jurisdiction — TN SSO`;
+// The "General / Department-Level" bucket's label IS the department name,
+// so its own crumb would otherwise repeat the department crumb right
+// before it — skip that crumb entirely rather than show the name twice.
+if (subDeptName === Store.generalSubDept()) {
+  document.getElementById("deptCrumbLink").hidden = true;
+  document.getElementById("deptCrumbSep").hidden = true;
+} else {
+  document.getElementById("deptCrumbLink").textContent = deptName;
+  document.getElementById("deptCrumbLink").href = `jurisdiction-subdept.html?dept=${Store.deptSlug(deptName)}`;
+}
 
 // ============================================================
-// Pagination
+// Overview stat tiles (this department only)
 // ============================================================
-document.querySelectorAll(".page-nums .page-num").forEach((num) => {
-  num.addEventListener("click", () => {
-    document
-      .querySelectorAll(".page-nums .page-num")
-      .forEach((n) => n.classList.remove("is-active"));
-    num.classList.add("is-active");
+const statGrid = document.getElementById("statGrid");
+function renderStats() {
+  statGrid.innerHTML = "";
+  const nonZero = Store.deptLevelCounts(deptName, subDeptName).filter((c) => c.value > 0);
+  if (!nonZero.length) {
+    statGrid.innerHTML = `<div class="empty-list">No jurisdiction offices added yet.</div>`;
+    return;
+  }
+  nonZero.forEach((c) => {
+    statGrid.appendChild(
+      el(
+        "article",
+        "ux4g-card ux4g-card-outline ux4g-al-stat-card",
+        `<div class="ux4g-card-body">
+           <span class="ux4g-al-icon-tile"><span class="ux4g-icon-outlined" style="font-size:20px">domain</span></span>
+           <div>
+             <div class="ux4g-al-stat-number">${c.value}</div>
+             <div class="ux4g-al-stat-label">${escapeHtml(c.label)}</div>
+           </div>
+         </div>`
+      )
+    );
   });
-});
+}
 
 // ============================================================
 // Modal plumbing
@@ -66,15 +90,13 @@ function closeModal(modal) {
   document.body.style.overflow = "";
 }
 
-// open triggers (delegated so dynamically-rendered buttons work too)
 document.addEventListener("click", (e) => {
   const trigger = e.target.closest("[data-open]");
   if (!trigger) return;
   if (trigger.dataset.open === "hierarchy") openHierarchy();
-  else if (trigger.dataset.open === "office") openOffice();
+  else if (trigger.dataset.open === "office") openOffice(null);
 });
 
-// close on [data-close], backdrop click, and Esc
 [hierarchyModal, officeModal].forEach((modal) => {
   modal.querySelectorAll("[data-close]").forEach((b) =>
     b.addEventListener("click", () => closeModal(modal))
@@ -94,7 +116,7 @@ document.addEventListener("keydown", (e) => {
 // Define Hierarchy Structure modal
 // ============================================================
 const levelsList = document.getElementById("levelsList");
-let editLevels = []; // working copy while the modal is open
+let editLevels = [];
 let dragIndex = null;
 
 function openHierarchy() {
@@ -126,7 +148,6 @@ function renderLevelRows() {
       renderLevelRows();
     });
 
-    // drag to reorder
     row.addEventListener("dragstart", () => {
       dragIndex = i;
       row.classList.add("is-dragging");
@@ -167,27 +188,28 @@ document.getElementById("saveHierarchyBtn").addEventListener("click", () => {
     alert("Add at least one level name.");
     return;
   }
-  Store.setLevels(cleaned);
-  state.levels = Store.levels;
+  Store.setDeptLevels(deptName, cleaned, subDeptName);
+  state.levels = Store.deptLevels(deptName, subDeptName);
   renderHierarchyCard();
+  renderStats();
+  resetLevelFilter();
   renderOfficeTable();
   closeModal(hierarchyModal);
 });
 
 // ============================================================
-// "Your Hierarchy Structure" card (defined state with level chips)
+// "Hierarchy Structure" card
 // ============================================================
 const hierarchyCard = document.getElementById("hierarchyCard");
 
 function renderHierarchyCard() {
   if (!state.levels.length) {
-    // empty state
     hierarchyCard.classList.remove("is-defined");
     hierarchyCard.innerHTML = `
       <div class="hierarchy-illustration"><img src="assets/imgImage6.png" alt="" /></div>
       <div class="hierarchy-text">
         <h3 class="hierarchy-title">No Hierarchy Structure</h3>
-        <p class="hierarchy-desc">Define the administrative hierarchy used by your department by specifying each jurisdiction level in order (e.g., State → Division → District → Mandal → Village).</p>
+        <p class="hierarchy-desc">Define the administrative hierarchy used by this department by specifying each jurisdiction level in order (e.g., State → Division → District → Mandal → Village).</p>
         <button class="btn btn-primary btn-lg" data-open="hierarchy">
           <img class="btn-plus" src="assets/imgPlus.svg" alt="" /> Define Hierarchy Structure
         </button>
@@ -202,7 +224,7 @@ function renderHierarchyCard() {
     <div class="hierarchy-illustration"><img src="assets/imgImage6.png" alt="" /></div>
     <div class="hier-main">
       <div class="hier-head">
-        <h3 class="hier-card-title">Your Hierarchy Structure</h3>
+        <h3 class="hier-card-title">Hierarchy Structure</h3>
         <button class="btn-edit-hier" data-open="hierarchy">
           <span class="material-icons">edit</span> Edit Hierarchy Structure
         </button>
@@ -212,16 +234,19 @@ function renderHierarchyCard() {
 }
 
 // ============================================================
-// Add Jurisdiction Office modal
+// Add / Edit Jurisdiction Office modal
 // ============================================================
 const fLevel = document.getElementById("fLevel");
 const fName = document.getElementById("fName");
 const fParent = document.getElementById("fParent");
 const fDesc = document.getElementById("fDesc");
 const parentField = document.getElementById("parentField");
+const officeTitle = document.getElementById("officeTitle");
+const officeSubtitle = officeModal.querySelector(".modal-subtitle");
+const addOfficeBtn = document.getElementById("addOfficeBtn");
+let editingOfficeId = null;
 
-function openOffice() {
-  // populate the level dropdown from the defined hierarchy levels
+function populateFLevel() {
   fLevel.innerHTML = '<option value="" disabled selected>Select a Level</option>';
   state.levels.forEach((name, i) => {
     const opt = el("option");
@@ -229,15 +254,9 @@ function openOffice() {
     opt.textContent = name;
     fLevel.appendChild(opt);
   });
-  fName.value = "";
-  fDesc.value = "";
-  parentField.hidden = true;
-  openModal(officeModal);
 }
 
-fLevel.addEventListener("change", () => {
-  const levelIndex = Number(fLevel.value);
-  // top level (or none) → no parent; otherwise show the parent picker
+function populateParentField(levelIndex, currentParentId) {
   if (Number.isNaN(levelIndex) || levelIndex <= 0) {
     parentField.hidden = true;
     return;
@@ -245,23 +264,52 @@ fLevel.addEventListener("change", () => {
   parentField.hidden = false;
   const parentIndex = levelIndex - 1;
   const parentLevelName = state.levels[parentIndex];
-  const parentOffices = state.offices.filter((o) => o.levelIndex === parentIndex);
+  const parentOffices = state.offices.filter((o) => o.levelIndex === parentIndex && o.id !== editingOfficeId);
 
   fParent.innerHTML = "";
   if (parentOffices.length) {
-    fParent.appendChild(makeOption("", "Select Parent office...", true, true));
-    parentOffices.forEach((o) => fParent.appendChild(makeOption(String(o.id), o.name)));
+    fParent.appendChild(makeOption("", "Select Parent office...", true, !currentParentId));
+    parentOffices.forEach((o) =>
+      fParent.appendChild(makeOption(String(o.id), o.name, false, o.id === currentParentId))
+    );
     fParent.disabled = false;
   } else {
-    // empty state, e.g. "No district offices yet - Add them first"
     fParent.appendChild(
-      makeOption("", `No ${parentLevelName.toLowerCase()} offices yet - Add them first`, true, true)
+      makeOption("", `No ${(parentLevelName || "").toLowerCase()} offices yet - Add them first`, true, true)
     );
     fParent.disabled = true;
   }
+}
+
+function openOffice(office) {
+  editingOfficeId = office ? office.id : null;
+  populateFLevel();
+
+  if (office) {
+    officeTitle.textContent = "Edit Jurisdiction Office";
+    officeSubtitle.textContent = "Update this office's details";
+    addOfficeBtn.textContent = "Save Changes";
+    fLevel.value = String(office.levelIndex);
+    fName.value = office.name;
+    fDesc.value = office.description || "";
+    populateParentField(office.levelIndex, office.parentId);
+  } else {
+    officeTitle.textContent = "Add Jurisdiction Office";
+    officeSubtitle.textContent = "Add an office to this department's jurisdiction hierarchy";
+    addOfficeBtn.textContent = "Add Jurisdiction Office";
+    fName.value = "";
+    fDesc.value = "";
+    parentField.hidden = true;
+  }
+  openModal(officeModal);
+}
+
+fLevel.addEventListener("change", () => {
+  const levelIndex = Number(fLevel.value);
+  populateParentField(levelIndex, null);
 });
 
-document.getElementById("addOfficeBtn").addEventListener("click", () => {
+addOfficeBtn.addEventListener("click", () => {
   const levelIndex = Number(fLevel.value);
   if (Number.isNaN(levelIndex)) {
     alert("Please select a Jurisdiction Level.");
@@ -272,74 +320,226 @@ document.getElementById("addOfficeBtn").addEventListener("click", () => {
     fName.focus();
     return;
   }
-  // parent required when a parent picker is shown AND parent offices exist
   if (!parentField.hidden && !fParent.disabled && !fParent.value) {
     alert("Please select a Parent Office.");
     return;
   }
+  const parentId = !parentField.hidden && fParent.value ? Number(fParent.value) : null;
+  const parent = parentId ? state.offices.find((o) => o.id === parentId) : null;
 
-  Store.addOffice({
+  const payload = {
     name: fName.value.trim(),
     levelIndex,
-    parentId: !parentField.hidden && fParent.value ? Number(fParent.value) : null,
+    parentId,
+    reportsTo: parent ? parent.name : "Top Level",
     description: fDesc.value.trim(),
-  });
-  state.offices = Store.offices();
+  };
+
+  if (editingOfficeId) {
+    Store.updateDeptOffice(deptName, editingOfficeId, payload, subDeptName);
+  } else {
+    Store.addDeptOffice(deptName, payload, subDeptName);
+  }
+  state.offices = Store.deptOffices(deptName, subDeptName);
+  renderStats();
   renderOfficeTable();
   closeModal(officeModal);
 });
 
 // ============================================================
-// Office table render (replaces the empty state once offices exist)
+// Level filter + search
 // ============================================================
-const jurTable = document.querySelector(".jur-table");
-const tableEmpty = document.querySelector(".table-empty");
-const countBadge = document.querySelector(".count-badge");
+const levelFilter = document.getElementById("levelFilter");
+const levelFilterLabel = document.getElementById("levelFilterLabel");
+const officeSearch = document.getElementById("officeSearch");
+let searchText = "";
+let levelFilterValue = "";
 
-function renderOfficeTable() {
-  let rowsWrap = jurTable.querySelector(".table-rows");
-  if (state.offices.length === 0) {
-    if (rowsWrap) rowsWrap.remove();
-    tableEmpty.style.display = "";
+function resetLevelFilter() {
+  levelFilterValue = "";
+  levelFilterLabel.textContent = "All Levels";
+}
+function closeFilterMenus() {
+  document.querySelectorAll(".filter-menu").forEach((m) => m.remove());
+}
+function openLevelFilterMenu() {
+  closeFilterMenus();
+  const menu = document.createElement("div");
+  menu.className = "filter-menu";
+  const options = [{ label: "All Levels", value: "" }].concat(
+    state.levels.map((name, i) => ({ label: name, value: String(i) }))
+  );
+  options.forEach((opt) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = opt.label;
+    if (opt.value === levelFilterValue) b.classList.add("is-active");
+    b.addEventListener("click", () => {
+      levelFilterValue = opt.value;
+      levelFilterLabel.textContent = opt.label;
+      currentPage = 1;
+      renderOfficeTable();
+      closeFilterMenus();
+    });
+    menu.appendChild(b);
+  });
+  document.body.appendChild(menu);
+  const r = levelFilter.getBoundingClientRect();
+  menu.style.top = `${r.bottom + 4}px`;
+  menu.style.left = `${r.left}px`;
+  menu.style.minWidth = `${r.width}px`;
+}
+levelFilter.addEventListener("click", (e) => {
+  e.stopPropagation();
+  if (document.querySelector(".filter-menu")) { closeFilterMenus(); return; }
+  openLevelFilterMenu();
+});
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".filter-menu") && !e.target.closest("#levelFilter")) closeFilterMenus();
+});
+officeSearch.addEventListener("input", (e) => {
+  searchText = e.target.value;
+  currentPage = 1;
+  renderOfficeTable();
+});
+
+// ============================================================
+// Office table + pagination
+// ============================================================
+const officeBody = document.getElementById("officeBody");
+const officeTable = document.getElementById("officeTable");
+const officeEmpty = document.getElementById("officeEmpty");
+const countBadge = document.getElementById("countBadge");
+const paginationEl = document.getElementById("officePagination");
+const pageNumsEl = document.getElementById("pageNums");
+const pagePrevBtn = document.getElementById("pagePrev");
+const pageNextBtn = document.getElementById("pageNext");
+const pageSizeSelect = document.getElementById("pageSize");
+const pageInfoTotal = document.getElementById("pageInfoTotal");
+let currentPage = 1;
+let pageSize = Number(pageSizeSelect.value) || 10;
+
+function pageNumbersToShow(current, total) {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const nums = new Set([1, 2, 3, 4, 5, 6, total]);
+  for (let n = current - 1; n <= current + 1; n++) {
+    if (n >= 1 && n <= total) nums.add(n);
+  }
+  return Array.from(nums).sort((a, b) => a - b);
+}
+
+function renderPagination(totalRows) {
+  const totalPages = Math.max(Math.ceil(totalRows / pageSize), 1);
+  if (currentPage > totalPages) currentPage = totalPages;
+  if (totalRows <= pageSize) {
+    paginationEl.hidden = true;
     return;
   }
-  tableEmpty.style.display = "none";
-  if (!rowsWrap) {
-    rowsWrap = el("div", "table-rows");
-    jurTable.appendChild(rowsWrap);
-  }
-  rowsWrap.innerHTML = "";
-  state.offices.forEach((o) => {
-    const levelName = state.levels[o.levelIndex] || "—";
-    const parent = o.parentId ? state.offices.find((p) => p.id === o.parentId) : null;
-    const reportsTo = o.reportsTo != null ? o.reportsTo : parent ? parent.name : "—";
-    const subCount =
-      o.subCount != null ? o.subCount : state.offices.filter((p) => p.parentId === o.id).length;
-    const row = el("div", "table-row");
-    row.innerHTML = `
-      <span><input type="checkbox" class="table-checkbox" aria-label="Select row" /></span>
-      <span class="cell-name-wrap">
-        <span class="table-cell cell-name">${escapeHtml(o.name)}</span>
-        ${o.subLabel ? `<span class="cell-sub">${escapeHtml(o.subLabel)}</span>` : ""}
-      </span>
-      <span><span class="chip level-chip">${escapeHtml(levelName)}</span></span>
-      <span class="table-cell">${escapeHtml(reportsTo)}</span>
-      <span class="table-cell">${subCount} Sub jurisdiction offices</span>
-      <span class="row-actions">
-        <button class="row-action act-edit" aria-label="Edit office"><span class="material-icons">edit</span></button>
-        <button class="row-action act-del" aria-label="Delete office" data-del="${o.id}"><span class="material-icons">delete</span></button>
-      </span>`;
-    rowsWrap.appendChild(row);
-  });
-  rowsWrap.querySelectorAll("[data-del]").forEach((b) =>
-    b.addEventListener("click", () => {
-      const id = Number(b.dataset.del);
-      Store.removeOffice(id);
-      state.offices = Store.offices();
+  paginationEl.hidden = false;
+
+  const nums = pageNumbersToShow(currentPage, totalPages);
+  pageNumsEl.innerHTML = "";
+  let prevNum = 0;
+  nums.forEach((n) => {
+    if (n - prevNum > 1) pageNumsEl.appendChild(el("span", "page-ellipsis", "..."));
+    const btn = el("button", `page-num${n === currentPage ? " is-active" : ""}`, String(n));
+    btn.type = "button";
+    btn.addEventListener("click", () => {
+      currentPage = n;
       renderOfficeTable();
-    })
-  );
+    });
+    pageNumsEl.appendChild(btn);
+    prevNum = n;
+  });
+
+  pagePrevBtn.classList.toggle("is-disabled", currentPage === 1);
+  pageNextBtn.classList.toggle("is-disabled", currentPage === totalPages);
+  pageInfoTotal.textContent = `of ${totalRows} items`;
 }
+
+pagePrevBtn.addEventListener("click", () => {
+  if (currentPage > 1) { currentPage -= 1; renderOfficeTable(); }
+});
+pageNextBtn.addEventListener("click", () => {
+  currentPage += 1;
+  renderOfficeTable();
+});
+pageSizeSelect.addEventListener("change", () => {
+  pageSize = Number(pageSizeSelect.value) || 10;
+  currentPage = 1;
+  renderOfficeTable();
+});
+
+function renderOfficeTable() {
+  countBadge.textContent = String(state.offices.length);
+
+  if (state.offices.length === 0) {
+    officeTable.hidden = true;
+    officeEmpty.hidden = false;
+    officeBody.innerHTML = "";
+    paginationEl.hidden = true;
+    return;
+  }
+
+  const filtered = state.offices.filter((o) => {
+    if (levelFilterValue !== "" && o.levelIndex !== Number(levelFilterValue)) return false;
+    if (searchText && !o.name.toLowerCase().includes(searchText.toLowerCase())) return false;
+    return true;
+  });
+
+  officeTable.hidden = false;
+  officeEmpty.hidden = true;
+  officeBody.innerHTML = "";
+
+  renderPagination(filtered.length);
+  const start = (currentPage - 1) * pageSize;
+  const rows = filtered.slice(start, start + pageSize);
+
+  rows.forEach((o) => {
+    const levelName = state.levels[o.levelIndex] || "—";
+    const childCount = Store.deptOfficeChildCount(deptName, o.id, subDeptName);
+    const row = el("tr");
+    row.innerHTML = `
+      <td>${escapeHtml(o.name)}</td>
+      <td><span class="chip level-chip">${escapeHtml(levelName)}</span></td>
+      <td>${escapeHtml(o.reportsTo || "Top Level")}</td>
+      <td>${childCount} Sub jurisdiction offices</td>
+      <td>
+        <div class="ux4g-al-row-actions">
+          <button class="ux4g-btn ux4g-btn-outline-neutral ux4g-btn-sm" data-edit-id="${o.id}" aria-label="Edit ${escapeAttr(o.name)}">
+            <span class="ux4g-icon-outlined" style="font-size:15px">edit</span>
+          </button>
+          <button class="ux4g-btn ux4g-btn-outline-neutral ux4g-btn-sm" data-del-id="${o.id}" aria-label="Delete ${escapeAttr(o.name)}">
+            <span class="ux4g-icon-outlined" style="font-size:15px">delete</span>
+          </button>
+        </div>
+      </td>`;
+    officeBody.appendChild(row);
+  });
+}
+
+officeBody.addEventListener("click", (e) => {
+  const delBtn = e.target.closest("[data-del-id]");
+  if (delBtn) {
+    const id = Number(delBtn.dataset.delId);
+    const office = state.offices.find((o) => o.id === id);
+    const childCount = office ? Store.deptOfficeChildCount(deptName, id, subDeptName) : 0;
+    const warning = childCount > 0
+      ? `This will also delete its ${childCount} sub jurisdiction office${childCount === 1 ? "" : "s"}. This can't be undone.`
+      : "This can't be undone.";
+    if (!confirm(`Delete "${office ? office.name : "this office"}"? ${warning}`)) return;
+    Store.removeDeptOffice(deptName, id, subDeptName);
+    state.offices = Store.deptOffices(deptName, subDeptName);
+    renderStats();
+    renderOfficeTable();
+    return;
+  }
+  const editBtn = e.target.closest("[data-edit-id]");
+  if (editBtn) {
+    const office = state.offices.find((o) => o.id === Number(editBtn.dataset.editId));
+    if (office) openOffice(office);
+  }
+});
 
 // ============================================================
 // helpers
@@ -352,17 +552,10 @@ function makeOption(value, text, disabled = false, selected = false) {
   if (selected) opt.selected = true;
   return opt;
 }
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, (c) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
-  }[c]));
-}
-function escapeAttr(s) {
-  return escapeHtml(s);
-}
 
 // ============================================================
 // Initial render
 // ============================================================
+renderStats();
 renderHierarchyCard();
 renderOfficeTable();

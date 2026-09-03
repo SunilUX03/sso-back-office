@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>All Users — TN SSO</title>
+  <title>My Profile — TN SSO</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -13,6 +13,7 @@
     href="https://fonts.googleapis.com/icon?family=Material+Icons"
     rel="stylesheet" />
   <link rel="stylesheet" href="styles.css?v=20260962" />
+  <link rel="stylesheet" href="profile.css?v=20260953" />
 
   <!-- UX4G Design System (CDN) -->
   <link rel="stylesheet" href="https://cdn.ux4g.gov.in/UX4G@3.0.18/index.css" />
@@ -101,17 +102,17 @@
         </div>
 
         <div class="dropdown">
-          <a href="users.html" class="nav-item dropdown-toggle is-active" data-toggle="dropdown">User Management<span class="material-icons">keyboard_arrow_down</span></a>
+          <a href="users.html" class="nav-item dropdown-toggle" data-toggle="dropdown">User Management<span class="material-icons">keyboard_arrow_down</span></a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="#" data-open="officer"><span class="material-icons">person_add</span>Create User</a></li>
-            <li><a class="dropdown-item is-active" href="users.html"><span class="material-icons">group</span>All Users</a></li>
+            <li><a class="dropdown-item" href="users.html"><span class="material-icons">group</span>All Users</a></li>
           </ul>
         </div>
 
         <div class="dropdown">
           <a href="app-management.html" class="nav-item dropdown-toggle" data-toggle="dropdown">App Management<span class="material-icons">keyboard_arrow_down</span></a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="app-management.html"><span class="material-icons">add_box</span>Register Application</a></li>
+            <li><a class="dropdown-item" href="#" data-open="app"><span class="material-icons">add_box</span>Register Application</a></li>
             <li><a class="dropdown-item" href="app-management.html"><span class="material-icons">apps</span>All Applications</a></li>
           </ul>
         </div>
@@ -119,7 +120,7 @@
 
       <div class="dropdown">
         <button class="org-switcher dropdown-toggle" data-toggle="dropdown">
-          <img class="org-avatar" src="assets/imgImage2.png" alt="" />
+          <img class="org-avatar" src="assets/imgImage12.png" alt="" />
           <span class="org-name">Super Admin</span>
           <span class="material-icons">arrow_drop_down</span>
         </button>
@@ -134,45 +135,59 @@
 
   <main id="main" class="page">
     <!-- ============ Page head ============ -->
-    <div class="page-title-block">
-      <h1 class="page-title">All Users</h1>
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="index.html">Home</a>
-        <span class="crumb-sep">/</span>
-        <a href="users.html">User Management</a>
-        <span class="crumb-sep">/</span>
-        <span class="crumb-current">All Users</span>
-      </nav>
+    <div class="page-head">
+      <div class="page-title-block">
+        <h1 class="page-title">My Profile</h1>
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <a href="index.html">Home</a>
+          <span class="crumb-sep">/</span>
+          <span class="crumb-current">My Profile</span>
+        </nav>
+      </div>
     </div>
 
-    <!-- ============ Overview ============ -->
+    <!-- ============ Identity header ============ -->
     <section class="section">
-      <h2 class="section-title">Overview</h2>
-      <div class="ux4g-al-stat-grid" id="overviewTiles"><!-- 3 stat tiles injected by users.js --></div>
+      <div class="profile-header-card">
+        <div class="profile-avatar-wrap">
+          <img class="profile-avatar" src="assets/imgImage12.png" alt="" id="profileAvatar" />
+          <button class="profile-avatar-edit" id="editAvatarBtn" type="button" aria-label="Change photo">
+            <span class="material-icons">photo_camera</span>
+          </button>
+        </div>
+        <div class="profile-header-info">
+          <div class="profile-name-row">
+            <h2 class="profile-name" id="profileName">—</h2>
+            <span class="status-badge is-active" id="profileRole">Super Admin</span>
+          </div>
+          <div class="profile-dept" id="profileDept">—</div>
+          <div class="profile-contact-row">
+            <span class="profile-contact-item"><span class="material-icons">mail</span><span id="profileEmail">—</span></span>
+            <span class="profile-contact-item"><span class="material-icons">call</span><span id="profileMobile">—</span></span>
+          </div>
+        </div>
+        <button class="btn btn-outline btn-lg" id="editProfileBtn" type="button">
+          <span class="material-icons" style="font-size:18px">edit</span>
+          Edit Profile
+        </button>
+      </div>
     </section>
 
-    <!-- ============ All Departments (directory) ============ -->
+    <!-- ============ Account Security ============ -->
     <section class="section">
-      <div class="jur-toolbar">
-        <div class="jur-toolbar-left">
-          <h2 class="section-title" style="margin:0;">All Departments</h2>
-          <span class="count-badge" id="deptCountBadge">76</span>
+      <h2 class="section-title">Account Security</h2>
+      <article class="ux4g-card ux4g-card-outline security-card">
+        <span class="security-card-icon"><span class="material-icons">lock</span></span>
+        <div class="security-card-body">
+          <h3 class="security-card-title">Password</h3>
+          <p class="security-card-desc">Change your account password. You'll need to confirm your current password first.</p>
         </div>
-        <div class="search-box">
-          <img src="assets/imgSearch.svg" alt="" />
-          <input type="text" id="deptSearch" placeholder="Search departments or sub-departments" aria-label="Search departments or sub-departments" />
-        </div>
-      </div>
-      <div class="ux4g-jm-filter-row">
-        <div class="ux4g-jm-config-filter" id="configFilter">
-          <button class="ux4g-jm-config-btn is-active" data-filter="all" type="button">All</button>
-          <button class="ux4g-jm-config-btn" data-filter="configured" type="button">Configured</button>
-          <button class="ux4g-jm-config-btn" data-filter="not-configured" type="button">Not Configured</button>
-        </div>
-        <div class="ux4g-jm-az-strip" id="azStrip"><!-- A–Z buttons injected by users.js --></div>
-      </div>
-      <div class="ux4g-jm-dept-list" id="deptList">
-        <!-- rows injected by users.js -->
+        <button class="btn btn-outline btn-lg" id="changePasswordBtn" type="button">Change Password</button>
+      </article>
+
+      <div class="section-block" style="margin-top:20px;">
+        <h3 class="subsection-title">Login History</h3>
+        <div class="login-history-list" id="loginHistoryList"><!-- rows injected by profile.js --></div>
       </div>
     </section>
   </main>
@@ -189,11 +204,12 @@
     </div>
   </footer>
 
-  <script src="store.js?v=20260940"></script>
+  <script src="store.js?v=20260952"></script>
+  <script src="officer-modals.js?v=20260944"></script>
   <script src="dropdown.js?v=20260901"></script>
   <script src="accessibility.js?v=20260960"></script>
-  <script src="officer-modals.js?v=20260944"></script>
-  <script src="users.js?v=20260936"></script>
+  <script src="app-modals.js?v=20260953"></script>
+  <script src="profile.js?v=20260953"></script>
 
   <!-- UX4G runtime (accessibility bar behavior, theme toggle, etc.) -->
   <script src="https://cdn.ux4g.gov.in/UX4G@3.0.18/ux4g.js"></script>

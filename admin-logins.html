@@ -12,47 +12,58 @@
   <link
     href="https://fonts.googleapis.com/icon?family=Material+Icons"
     rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260831b" />
+  <link rel="stylesheet" href="styles.css?v=20260962" />
 
   <!-- UX4G Design System (CDN) -->
   <link rel="stylesheet" href="https://cdn.ux4g.gov.in/UX4G@3.0.18/index.css" />
   <link rel="stylesheet" href="ux4g-theme.css" />
 </head>
 <body>
-  <!-- ============ Accessibility Bar (UX4G component) ============ -->
-  <header class="ux4g-topbar ux4g-topbar-wide" role="banner">
-    <div class="ux4g-container">
-      <div class="ux4g-topbar__wrap ux4g-d-flex ux4g-jc-between ux4g-ai-center">
-        <div>
-          <a aria-label="Government of Tamil Nadu" class="ux4g-d-flex ux4g-ai-center" href="#">
-            <img src="assets/imgImage1.png" alt="" aria-hidden="true" style="height:20px;width:auto;margin-right:8px" />
-            <span class="ux4g-label-m-default">Government of Tamil Nadu</span>
-          </a>
-        </div>
-        <nav aria-label="Top utilities" class="ux4g-d-flex ux4g-ai-center">
-          <a class="ux4g-label-m-default ux4g-topbar__skip" href="#main">Skip to Main Content</a>
-          <span class="ux4g-bl acc-top-divider"></span>
-          <div aria-label="Text size controls" class="ux4g-topbar__group ux4g-d-flex ux4g-ai-center" role="group">
-            <button aria-label="Decrease text size" class="ux4g-topbar__iconbtn ux4g-d-flex ux4g-jc-center ux4g-ai-center" type="button"><span class="ux4g-icon-outlined ux4g-top-bar-icon">text_decrease</span></button>
-            <button aria-label="Reset text size" class="ux4g-topbar__iconbtn ux4g-d-flex ux4g-jc-center ux4g-ai-center" type="button"><span class="ux4g-icon-outlined ux4g-top-bar-icon">font_download</span></button>
-            <button aria-label="Increase text size" class="ux4g-topbar__iconbtn ux4g-d-flex ux4g-jc-center ux4g-ai-center" type="button"><span class="ux4g-icon-outlined ux4g-top-bar-icon">text_increase</span></button>
-          </div>
-          <span class="ux4g-bl acc-top-divider"></span>
-          <button aria-label="Accessibility options" class="ux4g-topbar__iconbtn ux4g-d-flex ux4g-jc-center ux4g-ai-center" type="button">
-            <span class="ux4g-icon-outlined ux4g-top-bar-icon">accessibility_new</span>
+  <!-- ============ Accessibility Bar ============ -->
+  <div class="accessibility-bar">
+    <div class="access-inner">
+      <a href="https://tnsso.tn.gov.in/login/index.html" class="access-brand" target="_blank" rel="noopener">TNSSO</a>
+      <div class="access-inner-right">
+        <a href="#main" class="skip-link">Skip to Main Content</a>
+        <span class="access-sep"></span>
+        <div class="font-controls" data-a11y-group="size">
+          <button class="access-icon" data-a11y-action="decrease" title="Decrease text size" aria-label="Decrease text size" type="button">
+            <span class="material-icons">text_decrease</span>
           </button>
-          <span class="ux4g-bl acc-top-divider"></span>
-          <div class="ux4g-topbar__select">
-            <button aria-expanded="false" aria-haspopup="listbox" class="ux4g-topbar__selectbtn ux4g-d-inline-flex ux4g-ai-center" type="button">
-              <span class="ux4g-icon-outlined ux4g-top-bar-icon">language</span>
-              <span class="ux4g-label-m-default">English</span>
-              <span class="ux4g-icon-outlined">arrow_drop_down</span>
-            </button>
-          </div>
-        </nav>
+          <button class="access-icon" data-a11y-action="reset" title="Reset text size" aria-label="Reset text size" type="button">
+            <span class="material-icons">format_size</span>
+          </button>
+          <button class="access-icon" data-a11y-action="increase" title="Increase text size" aria-label="Increase text size" type="button">
+            <span class="material-icons">text_increase</span>
+          </button>
+        </div>
+        <span class="access-sep"></span>
+        <div class="font-controls" data-a11y-group="spacing">
+          <button class="access-icon" data-a11y-action="decrease" title="Decrease text spacing" aria-label="Decrease text spacing" type="button">
+            <span class="material-icons">remove</span>
+          </button>
+          <button class="access-icon" data-a11y-action="reset" title="Reset text spacing" aria-label="Reset text spacing" type="button">
+            <span class="material-icons">space_bar</span>
+          </button>
+          <button class="access-icon" data-a11y-action="increase" title="Increase text spacing" aria-label="Increase text spacing" type="button">
+            <span class="material-icons">add</span>
+          </button>
+        </div>
+        <span class="access-sep"></span>
+        <div class="font-controls" data-a11y-group="lineheight">
+          <button class="access-icon" data-a11y-action="decrease" title="Decrease line height" aria-label="Decrease line height" type="button">
+            <span class="material-icons">remove</span>
+          </button>
+          <button class="access-icon" data-a11y-action="reset" title="Reset line height" aria-label="Reset line height" type="button">
+            <span class="material-icons">format_line_spacing</span>
+          </button>
+          <button class="access-icon" data-a11y-action="increase" title="Increase line height" aria-label="Increase line height" type="button">
+            <span class="material-icons">add</span>
+          </button>
+        </div>
       </div>
     </div>
-  </header>
+  </div>
 
   <!-- ============ Header / Main Nav ============ -->
   <header class="header">
@@ -75,7 +86,8 @@
           <a href="admin-logins.html" class="nav-item dropdown-toggle is-active" data-toggle="dropdown">Administration<span class="material-icons">keyboard_arrow_down</span></a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item is-active" href="admin-logins.html"><span class="material-icons">admin_panel_settings</span>Admin Logins</a></li>
-            <li><a class="dropdown-item" href="reports.html"><span class="material-icons">summarize</span>Reports &amp; Export</a></li>
+            <li><a class="dropdown-item" href="dept-directory.html"><span class="material-icons">edit_note</span>Edit Dept &amp; Sub Dept Names</a></li>
+            <li><a class="dropdown-item" href="reports.html"><span class="material-icons">summarize</span>Reports</a></li>
           </ul>
         </div>
 
@@ -91,9 +103,8 @@
         <div class="dropdown">
           <a href="users.html" class="nav-item dropdown-toggle" data-toggle="dropdown">User Management<span class="material-icons">keyboard_arrow_down</span></a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#"><span class="material-icons">person_add</span>Create User</a></li>
+            <li><a class="dropdown-item" href="#" data-open="officer"><span class="material-icons">person_add</span>Create User</a></li>
             <li><a class="dropdown-item" href="users.html"><span class="material-icons">group</span>All Users</a></li>
-            <li><a class="dropdown-item" href="#"><span class="material-icons">admin_panel_settings</span>Roles &amp; Permissions</a></li>
           </ul>
         </div>
 
@@ -113,8 +124,7 @@
           <span class="material-icons">arrow_drop_down</span>
         </button>
         <ul class="dropdown-menu dropdown-menu-end">
-          <li><a class="dropdown-item is-active" href="#"><span class="material-icons">person</span>My Profile</a></li>
-          <li><a class="dropdown-item" href="#"><span class="material-icons">settings</span>Settings</a></li>
+          <li><a class="dropdown-item is-active" href="profile.html"><span class="material-icons">person</span>My Profile</a></li>
           <li><hr class="dropdown-divider" /></li>
           <li><a class="dropdown-item" href="#"><span class="material-icons">logout</span>Sign Out</a></li>
         </ul>
@@ -134,8 +144,8 @@
         </nav>
       </div>
       <button class="ux4g-btn ux4g-btn-primary ux4g-btn-md" type="button" data-open="department">
-        <span class="ux4g-icon-outlined" style="font-size:18px">add</span>
-        Onboard New Department
+        <span class="ux4g-icon-outlined" style="font-size:18px">person_add</span>
+        Create Admin Login
       </button>
     </div>
 
@@ -144,6 +154,32 @@
       <h2 class="section-title">Overview</h2>
       <div class="ux4g-al-stat-grid" id="kpiGrid">
         <!-- ux4g-card stats injected by admin-logins.js -->
+      </div>
+    </section>
+
+    <!-- ============ Pending Accounts ============ -->
+    <section class="section" id="pendingSection" hidden>
+      <div class="jur-toolbar">
+        <div class="jur-toolbar-left">
+          <h2 class="section-title" style="margin:0;">Pending Accounts</h2>
+          <span class="count-badge" id="pendingCountBadge">0</span>
+        </div>
+      </div>
+      <p class="hierarchy-desc" style="margin:-8px 0 16px;">Logins waiting on their own verification link before they can sign in — resend it, or fix a typo in their contact details.</p>
+      <div class="ux4g-al-table-wrap">
+        <table class="ux4g-table ux4g-table-rounded ux4g-table-m">
+          <thead>
+            <tr>
+              <th><div class="ux4g-table-th-content">Department</div></th>
+              <th><div class="ux4g-table-th-content">Admin</div></th>
+              <th><div class="ux4g-table-th-content">Contact</div></th>
+              <th><div class="ux4g-table-th-content">Action</div></th>
+            </tr>
+          </thead>
+          <tbody id="pendingList">
+            <!-- rows injected by admin-logins.js -->
+          </tbody>
+        </table>
       </div>
     </section>
 
@@ -187,10 +223,12 @@
     </div>
   </footer>
 
-  <script src="store.js"></script>
-  <script src="dropdown.js"></script>
-  <script src="admin-login-modals.js"></script>
-  <script src="admin-logins.js"></script>
+  <script src="store.js?v=20260940"></script>
+  <script src="officer-modals.js?v=20260944"></script>
+  <script src="dropdown.js?v=20260901"></script>
+  <script src="accessibility.js?v=20260960"></script>
+  <script src="admin-login-modals.js?v=20260944"></script>
+  <script src="admin-logins.js?v=20260940"></script>
 
   <!-- UX4G runtime (accessibility bar behavior, theme toggle, etc.) -->
   <script src="https://cdn.ux4g.gov.in/UX4G@3.0.18/ux4g.js"></script>

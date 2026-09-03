@@ -17,7 +17,7 @@
   --stroke-100: #dddddd;
   --stroke-50: #f3f3f3;
   --white: #ffffff;
-  --primary-50: #faefff;
+  --primary-50: #eef1ff;
 
   --radius: 8px;
   --radius-sm: 4px;
@@ -51,16 +51,20 @@ a {
   color: inherit;
 }
 
-/* Excludes ux4g-* components: this is an unlayered rule, so per CSS
-   Cascade Layers it would otherwise always beat UX4G's own layered
-   component styles (e.g. .ux4g-btn-primary's background), regardless
-   of specificity. Also excludes our own .btn family (btn, btn-primary,
-   btn-block, ...) — button:not([class*="ux4g-"]) has higher specificity
-   than a single .btn-primary class, so without this it silently strips
-   the background from every <button class="btn btn-primary ...">,
-   leaving white text on a transparent background (invisible except on
-   :hover, whose higher-specificity rule wins the fight back). */
-button:not([class*="ux4g-"]):not([class*="btn"]) {
+/* Strips native OS button chrome from bare buttons. Wrapped in :where()
+   so this rule's specificity is always zero — it can never again beat a
+   real class selector (.tab.is-active, .btn-primary, .page-num,
+   .level-dropdown, .org-switcher, .access-icon, ...), no matter what gets
+   added later. Previously this used button:not([class*="ux4g-"]), which
+   has enough specificity to beat a single class and silently stripped the
+   background from any custom button — .btn-primary went transparent
+   (invisible except on :hover, whose rule has higher specificity and
+   "fixed" it back), and the same thing was quietly happening to the
+   Jurisdiction Management tab pill, pagination, and other buttons. Still
+   excludes ux4g-* components, which live in their own CSS layer and would
+   otherwise always lose to this (unlayered beats layered regardless of
+   specificity). */
+:where(button:not([class*="ux4g-"])) {
   font-family: inherit;
   cursor: pointer;
   border: none;
@@ -90,9 +94,23 @@ button:not([class*="ux4g-"]):not([class*="btn"]) {
   height: 42px;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 12px;
-  padding: 0 150px 0 24px;
+  padding: 0 45px;
+}
+.access-brand {
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-decoration: none;
+  flex: 0 0 auto;
+}
+.access-brand:hover { text-decoration: underline; }
+.access-inner-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 .skip-link {
   color: var(--white);
@@ -128,18 +146,16 @@ button:not([class*="ux4g-"]):not([class*="btn"]) {
 .access-icon:hover {
   background: rgba(255, 255, 255, 0.12);
 }
-.access-more {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--white);
-  font-family: "Roboto", sans-serif;
-  font-weight: 500;
-  font-size: 12px;
-}
-.access-more .material-icons {
-  font-size: 20px;
-}
+/* ---- Accessibility bar: Text Spacing / Line Height overrides. Applied
+   as an html-level class + !important, since a toolbar preference has to
+   reach every element regardless of its own component CSS. Spacing
+   level 2 and line-height level 1 meet the WCAG 1.4.12 minimums. ---- */
+html.a11y-spacing-1 body, html.a11y-spacing-1 body * { letter-spacing: 0.05em !important; word-spacing: 0.1em !important; }
+html.a11y-spacing-2 body, html.a11y-spacing-2 body * { letter-spacing: 0.12em !important; word-spacing: 0.16em !important; }
+html.a11y-spacing-3 body, html.a11y-spacing-3 body * { letter-spacing: 0.2em !important; word-spacing: 0.3em !important; }
+html.a11y-lineheight-1 body, html.a11y-lineheight-1 body * { line-height: 1.5 !important; }
+html.a11y-lineheight-2 body, html.a11y-lineheight-2 body * { line-height: 1.8 !important; }
+html.a11y-lineheight-3 body, html.a11y-lineheight-3 body * { line-height: 2.2 !important; }
 
 /* ============ Header ============ */
 .header {
@@ -477,6 +493,292 @@ button.dropdown-toggle {
   .ux4g-al-stat-grid { grid-template-columns: 1fr; }
 }
 
+/* ============================================================
+   Jurisdiction Management (UX4G Card) — department list +
+   single-department drill-down page
+   ============================================================ */
+.ux4g-jm-dept-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ux4g-jm-dept-card { padding: 0; }
+.ux4g-jm-dept-card .ux4g-card-body { padding: 0; }
+.ux4g-jm-dept-link {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  color: inherit;
+  text-decoration: none;
+}
+.ux4g-jm-dept-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--ux4g-radius-md, 8px);
+  background: var(--ux4g-bg-primary-soft);
+  color: var(--ux4g-text-brand-primary-default);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+.ux4g-jm-dept-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ux4g-jm-dept-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.ux4g-jm-dept-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ux4g-jm-subdept-status {
+  display: inline-block;
+  font-size: 12px;
+  color: var(--muted, #6b7280);
+  cursor: pointer;
+}
+.ux4g-jm-subdept-status:hover,
+.ux4g-jm-subdept-status:focus-visible {
+  color: var(--primary);
+  text-decoration: underline;
+}
+.ux4g-jm-empty-chip {
+  background: var(--wire-fill, #f0f1f4);
+  color: var(--muted);
+}
+.ux4g-jm-dept-arrow {
+  flex: 0 0 auto;
+  align-self: center;
+  color: var(--primary);
+  display: flex;
+  transition: transform 0.15s ease;
+}
+.ux4g-jm-dept-link:hover .ux4g-jm-dept-arrow { transform: translateX(3px); }
+
+/* ---- A department-directory "hit" card: a sub-department the search
+   matched directly, so its parent department is shown as context under
+   the name and the card links straight past the sub-department picker. */
+.ux4g-jm-dept-name-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ux4g-jm-dept-parent {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted, #6b7280);
+}
+.ux4g-jm-group-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted, #6b7280);
+  padding-top: 12px;
+  border-top: 1px dashed var(--stroke-100);
+}
+
+/* ---- Directory filter row: Configured/All segmented toggle + A–Z strip ---- */
+.ux4g-jm-filter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.ux4g-jm-config-filter {
+  display: flex;
+  gap: 4px;
+  background: var(--wire-fill, #f0f1f4);
+  border-radius: 100px;
+  padding: 3px;
+}
+.ux4g-jm-config-btn {
+  border: 0;
+  background: transparent;
+  border-radius: 100px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--hint);
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.ux4g-jm-config-btn:hover { color: var(--ink); }
+.ux4g-jm-config-btn.is-active {
+  background: var(--white);
+  color: var(--primary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+.ux4g-jm-az-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.ux4g-jm-az-btn {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--stroke-100);
+  border-radius: 6px;
+  background: var(--white);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ux4g-jm-az-btn:hover:not(:disabled):not(.is-active) { border-color: var(--primary); color: var(--primary); }
+.ux4g-jm-az-btn.is-active {
+  background: var(--primary-alt);
+  border-color: var(--primary-alt);
+  color: var(--white);
+}
+.ux4g-jm-az-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   Edit Dept & Sub Dept Names (directory management)
+   ============================================================ */
+.ux4g-dd-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ux4g-dd-dept-card {
+  background: var(--white);
+  border: 1px solid var(--stroke-100);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.ux4g-dd-dept-row,
+.ux4g-dd-subdept-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+}
+.ux4g-dd-subdept-row {
+  padding-left: 52px;
+  border-top: 1px solid var(--stroke-100);
+}
+.ux4g-dd-expand-btn {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  transition: transform 0.15s ease;
+  flex: 0 0 auto;
+}
+.ux4g-dd-expand-btn.is-expanded { transform: rotate(90deg); }
+.ux4g-dd-expand-btn:disabled { visibility: hidden; }
+.ux4g-dd-dept-name,
+.ux4g-dd-subdept-name {
+  font-weight: 600;
+  color: var(--ink);
+  flex: 1;
+  min-width: 0;
+}
+.ux4g-dd-subdept-name { font-weight: 500; }
+.ux4g-dd-status-badge {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 100px;
+  flex: 0 0 auto;
+}
+.ux4g-dd-status-badge.is-active { background: #e6f4ea; color: #1e7e34; }
+.ux4g-dd-status-badge.is-deactivated { background: #f0f1f4; color: var(--muted); }
+.ux4g-dd-subdept-summary {
+  font-size: 12px;
+  color: var(--muted);
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.ux4g-dd-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+.ux4g-dd-actions button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ux4g-dd-actions button:hover { background: var(--wire-fill, #f0f1f4); color: var(--primary); }
+.ux4g-dd-actions button .material-icons { font-size: 18px; }
+.ux4g-dd-subdept-list { display: flex; flex-direction: column; }
+.ux4g-dd-subdept-empty {
+  padding: 12px 16px 14px 52px;
+  border-top: 1px solid var(--stroke-100);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ---- Single-department page header ---- */
+.ux4g-jm-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--primary);
+  text-decoration: none;
+  margin-top: 6px;
+}
+.ux4g-jm-back-link:hover { text-decoration: underline; }
+
+/* ---- Toolbar: search + level filter ---- */
+.ux4g-jm-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ux4g-jm-level-select {
+  height: 40px;
+  padding: 0 32px 0 12px;
+  border-radius: var(--ux4g-radius-md, 8px);
+  border: 1px solid var(--ux4g-border-color-neutral-default, #d0d0d0);
+  background: var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23565c6b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
+  background-size: 16px;
+  appearance: none;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+}
+.ux4g-jm-empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
 /* ---- Admin Login wizard (UX4G Modal + Input + Badge) ---- */
 /* Many UX4G component classes (.ux4g-btn, .ux4g-otp, etc.) set
    `display` directly, which beats the browser's [hidden] default at
@@ -496,6 +798,12 @@ button.dropdown-toggle {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  /* Without this, a grid item defaults to min-width:auto — so a <select>
+     whose longest option text (e.g. "General / Department-Level (this
+     department itself)") is wider than the column forces the whole
+     column, and the card around it, to overflow rather than letting the
+     select itself clip/ellipsis at the column's actual width. */
+  min-width: 0;
 }
 .ux4g-al-field:has(textarea) {
   grid-column: 1 / -1;
@@ -503,25 +811,156 @@ button.dropdown-toggle {
 .ux4g-al-req {
   color: var(--ux4g-text-error-default, #c0392b);
 }
+/* Custom dropdown trigger for dwDept/dwSubDept — the real <select> stays
+   in the DOM as a hidden data-holder (.ux4g-al-select-native) so every
+   other function in admin-login-modals.js keeps reading/writing it via
+   .value unchanged; this button + the shared .filter-menu popup is what
+   the user actually sees and clicks, matching the app's own dropdown
+   component instead of the browser's native list. Sized to match
+   .ux4g-input.ux4g-input-md exactly (47px tall, 8px radius, #e5e5e5
+   border) so it sits flush with the UX4G inputs beside it. */
+.ux4g-al-select-native { display: none; }
+.ux4g-al-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  height: 47px;
+  padding: 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  background: #fff;
+  font-family: "Noto Sans", system-ui, sans-serif;
+  font-size: 14px;
+  color: #171721;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+.ux4g-al-select:hover { border-color: #c7cfe6; }
+.ux4g-al-select:disabled { opacity: 0.6; cursor: not-allowed; }
+.ux4g-al-select .ux4g-icon-outlined { font-size: 18px; color: #6b7280; flex: 0 0 auto; }
+.ux4g-al-select-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.ux4g-al-select-label.is-placeholder { color: #8a8a8a; }
 .ux4g-al-step-intro {
   color: var(--ux4g-text-neutral-secondary);
   font-size: 13.5px;
   margin: 0 0 16px;
 }
+.ux4g-al-field-hint {
+  font-size: 11.5px;
+  color: var(--ux4g-text-neutral-secondary);
+}
+.ux4g-al-field-hint.is-error {
+  color: var(--ux4g-text-error-default, #c0392b);
+  font-weight: 500;
+}
 
+/* ---- "Make an existing user an admin" lookup ---- */
+.ux4g-al-existing-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--ux4g-bg-primary-soft);
+  color: var(--ux4g-text-brand-primary-default);
+  border-radius: var(--ux4g-radius-md, 8px);
+  padding: 14px 16px;
+  cursor: pointer;
+}
+.ux4g-al-existing-copy {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ux4g-al-existing-title {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.ux4g-al-existing-sub {
+  font-size: 11.5px;
+  opacity: 0.85;
+}
+.ux4g-al-existing-chevron {
+  flex: 0 0 auto;
+}
+.ux4g-al-existing-panel {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.ux4g-al-existing-search {
+  display: flex;
+  gap: 10px;
+}
+.ux4g-al-existing-search .ux4g-input { flex: 1; }
+.ux4g-al-existing-empty {
+  font-size: 12.5px;
+  color: var(--ux4g-text-neutral-secondary);
+  margin: 0;
+}
+/* The found-user card reuses .ux4g-al-review-card, whose light-blue fill
+   is fine against a plain white step but stacks awkwardly on top of the
+   already-blue "Make an existing user" banner above it — flatten it to
+   white here so the two blocks don't blur together. */
+#dwExistingResult .ux4g-al-review-card {
+  background: var(--white);
+  border-color: var(--ux4g-border-color-neutral-subtle, #e5e5e5);
+}
+#dwMakeAdmin {
+  display: block;
+  margin-left: auto;
+  margin-top: 14px;
+}
+.ux4g-al-or-divider {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  color: var(--ux4g-text-neutral-secondary);
+  margin: 16px 0;
+}
 .ux4g-al-steps {
   display: flex;
   align-items: center;
-  margin-bottom: 22px;
+  margin-bottom: 26px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid #eef0f5;
   width: 100%;
   min-width: 0;
 }
 .ux4g-al-step {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex: 0 1 auto;
   min-width: 0;
+}
+.ux4g-al-step-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #eef0f5;
+  color: #9aa0ad;
+  font-size: 13px;
+  font-weight: 700;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+.ux4g-al-step-badge .ux4g-icon-outlined { font-size: 16px; }
+.ux4g-al-step.is-active .ux4g-al-step-badge {
+  background: var(--ux4g-bg-primary-strong, #002385);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(0, 35, 133, 0.14);
+}
+.ux4g-al-step.is-done .ux4g-al-step-badge {
+  background: var(--ux4g-bg-primary-strong, #002385);
+  color: #fff;
 }
 .ux4g-al-step-label {
   font-size: 12.5px;
@@ -537,14 +976,16 @@ button.dropdown-toggle {
   font-weight: 600;
 }
 .ux4g-al-step-line {
-  flex: 1 1 12px;
+  flex: 1 1 32px;
   height: 2px;
-  background: var(--ux4g-border-color-neutral-subtle, #e5e5e5);
-  margin: 0 8px;
-  min-width: 12px;
+  border-radius: 999px;
+  background: #eef0f5;
+  margin: 0 10px;
+  min-width: 24px;
+  transition: background 0.2s ease;
 }
 .ux4g-al-step-line.is-done {
-  background: var(--ux4g-bg-primary-strong);
+  background: var(--ux4g-bg-primary-strong, #002385);
 }
 @media (max-width: 460px) {
   .ux4g-al-step-label {
@@ -655,130 +1096,6 @@ button.dropdown-toggle {
   max-height: 85vh;
   overflow-y: auto;
   overflow-x: hidden;
-}
-
-.chart-card {
-  background: var(--white);
-  border: 1px solid var(--stroke-100);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-step);
-  padding: 24px 28px;
-}
-
-/* ---- Donut variant ---- */
-.donut-chart {
-  display: flex;
-  align-items: center;
-  gap: 40px;
-  flex-wrap: wrap;
-}
-.donut-svg-wrap {
-  position: relative;
-  flex: 0 0 auto;
-  width: 220px;
-  height: 220px;
-}
-.donut-svg-wrap svg {
-  display: block;
-}
-.donut-center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  pointer-events: none;
-}
-.donut-center-value {
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--heading);
-}
-.donut-center-label {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-  color: var(--muted);
-  text-transform: uppercase;
-}
-.donut-legend {
-  flex: 1;
-  min-width: 220px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.donut-legend-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.donut-swatch {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-  flex: 0 0 auto;
-}
-.donut-legend-label {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--dark);
-  flex: 1;
-}
-.donut-legend-value {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--heading);
-}
-@media (max-width: 640px) {
-  .donut-chart {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-
-.hbar-chart {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.hbar-row {
-  display: grid;
-  grid-template-columns: 180px 1fr 90px;
-  align-items: center;
-  gap: 16px;
-}
-.hbar-label {
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.25px;
-  color: var(--muted);
-}
-.hbar-track {
-  background: var(--stroke-50);
-  border-radius: 7px;
-  height: 14px;
-  overflow: hidden;
-}
-.hbar-fill {
-  height: 100%;
-  border-radius: 7px;
-  transition: width 0.4s ease;
-}
-.hbar-value {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--heading);
-  text-align: right;
-}
-@media (max-width: 768px) {
-  .hbar-row {
-    grid-template-columns: 110px 1fr 70px;
-    gap: 8px;
-  }
 }
 
 /* ============ KPI / Overview grid ============ */
@@ -1249,13 +1566,16 @@ button.dropdown-toggle {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 24px;
+  flex-wrap: wrap;
+  gap: 12px 24px;
   margin-bottom: 8px;
 }
 .page-title-block {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  flex: 1 1 320px;
+  min-width: 0;
 }
 .page-title {
   margin: 0;
@@ -1263,12 +1583,14 @@ button.dropdown-toggle {
   font-weight: 600;
   line-height: 28px;
   color: var(--primary);
+  overflow-wrap: break-word;
 }
 .breadcrumb {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  row-gap: 4px;
   gap: 8px;
-  white-space: nowrap;
 }
 .breadcrumb a {
   font-size: 14px;
@@ -1534,6 +1856,10 @@ button.dropdown-toggle {
   font-weight: 500;
   color: var(--hint);
   white-space: nowrap;
+}
+.level-dropdown:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 .level-dropdown img {
   width: 10px;
@@ -2170,6 +2496,10 @@ select.field-control:invalid {
 .field-hint .material-icons {
   font-size: 16px;
   color: var(--hint);
+}
+.field-hint.field-error,
+.field-hint.field-error .material-icons {
+  color: #c0392b;
 }
 
 /* ---- table rows (offices added) ---- */
@@ -2883,6 +3213,7 @@ select.field-control:invalid {
   gap: 6px;
   cursor: pointer;
 }
+.transfer-banner + .transfer-banner { margin-top: 10px; }
 .transfer-banner .tb-link {
   font-size: 13px;
   font-weight: 500;
@@ -2892,6 +3223,14 @@ select.field-control:invalid {
   font-size: 11px;
   color: var(--hint);
 }
+.link-existing-panel {
+  background: var(--white);
+  border: 1px solid var(--stroke-100);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-top: 10px;
+}
+.link-existing-panel .empty-list { padding: 16px 4px; font-size: 13px; }
 .or-divider {
   text-align: center;
   font-size: 12px;
@@ -3226,7 +3565,11 @@ a.quick-card:hover,
    ============================================================ */
 .filter-menu {
   position: fixed;
-  z-index: 200;
+  /* Higher than the UX4G modal backdrop's z-index:1000, so a filter
+     popup opened from inside a modal (e.g. the Create Admin Login
+     Department/Sub-Department pickers) renders above the modal box
+     instead of behind it. */
+  z-index: 1100;
   background: #fff;
   border: 1px solid #e2e6f0;
   border-radius: 8px;
@@ -3264,17 +3607,142 @@ a.quick-card:hover,
    Hierarchy Map — org chart (node 1-7765)
    ============================================================ */
 .org-canvas {
-  background: #ececec;
+  background-color: #f6f7fb;
+  background-image: radial-gradient(circle, #d7dceb 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+  border: 1px solid #e4e7f0;
   border-radius: 16px;
-  padding: 56px 32px 72px;
+  padding: 24px 32px 40px;
   margin-top: 12px;
-  overflow-x: auto;
+  overflow: auto;
+  height: 80vh;
 }
+/* Every level (State / Department / Sub-Department / real jurisdiction
+   offices / designations) renders through the one connector-line
+   org-chart node style below, so the whole map — not just a configured
+   sub-department's leaf content — looks and behaves the same way. With
+   up to 75 departments branching side by side, this is a wide canvas
+   that scrolls horizontally, which is why .org-canvas scrolls both axes. */
 .org-tree {
   display: flex;
   justify-content: center;
   min-width: max-content;
 }
+
+/* ---- Hierarchy Map toolbar: search + dept/sub-dept/view-mode filters +
+   toggle + download. Row 1 sits beside the "Hierarchy Map" heading
+   (.jur-toolbar-right); row 2 sits below it (.org-toolbar-row2). ---- */
+.org-toolbar-row2 { display: flex; align-items: center; gap: 12px; justify-content: flex-end; flex-wrap: wrap; margin-bottom: 16px; }
+#selectDept, #selectSubDept, #selectViewMode { max-width: 220px; }
+#selectDept > span:first-child, #selectSubDept > span:first-child, #selectViewMode > span:first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* ---- Full-screen canvas: an icon at the canvas's top-right expands it
+   to fill the screen (Fullscreen API on the wrapper below). While full
+   screen, hierarchy.js relocates the filter toolbar into a single
+   right-aligned strip ABOVE the canvas (not floating on top of it) —
+   the canvas then flexes to fill the rest of the screen with nothing
+   overlapping it, so panning around the tree has room to breathe. ---- */
+.org-fullscreen-wrap { position: relative; }
+.org-fullscreen-wrap.is-fullscreen {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #f6f7fb;
+  padding: 16px;
+}
+.org-fullscreen-wrap.is-fullscreen .org-canvas {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+  width: 100%;
+  margin-top: 0;
+  border-radius: 12px;
+}
+.org-fullscreen-toggle {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 20;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e4e7f0;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.15s ease;
+  flex: 0 0 auto;
+}
+.org-fullscreen-toggle:hover { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14); }
+/* In fullscreen the toggle becomes the rightmost control in the merged
+   toolbar strip (a plain flex item) instead of floating over the canvas. */
+.org-fullscreen-wrap.is-fullscreen .org-fullscreen-toggle { position: static; }
+.org-fullscreen-toolbar { display: none; }
+.org-fullscreen-wrap.is-fullscreen .org-fullscreen-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  flex: 0 0 auto;
+  background: #fff;
+  border: 1px solid #e4e7f0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+}
+/* Unwrap the two moved containers so their buttons flow directly into
+   the one toolbar strip above, instead of nesting two separate cards. */
+.org-fullscreen-toolbar .jur-toolbar-right,
+.org-fullscreen-toolbar .org-toolbar-row2 {
+  display: contents;
+}
+.org-configured-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--stroke-100);
+  border-radius: var(--radius);
+  background: var(--white);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+}
+.org-configured-toggle .ux4g-dd-status-badge { pointer-events: none; }
+.org-configured-toggle-switch {
+  width: 30px;
+  height: 18px;
+  border-radius: 100px;
+  background: var(--stroke-100);
+  position: relative;
+  flex: 0 0 auto;
+  transition: background 0.15s ease;
+}
+.org-configured-toggle-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--white);
+  transition: transform 0.15s ease;
+}
+.org-configured-toggle.is-on .org-configured-toggle-switch { background: var(--primary-alt); }
+.org-configured-toggle.is-on .org-configured-toggle-switch::after { transform: translateX(12px); }
 
 /* node wrapper (one per node, stacks card above its subtree) */
 .org-node-wrap {
@@ -3381,8 +3849,11 @@ a.quick-card:hover,
   content: "";
   position: absolute;
   top: 0;
-  left: 0;
-  right: 0;
+  /* Extends past this wrap's own edges by half the row gap, so a
+     sibling's segment and this one meet in the middle of the gap
+     instead of leaving a visible break where the parent's line lands. */
+  left: -14px;
+  right: -14px;
   height: 2px;
   background: #bdbdbd;
 }
@@ -3402,11 +3873,186 @@ a.quick-card:hover,
   border-top: 6px solid #bdbdbd;
 }
 
-/* print: hide chrome, keep the map */
+/* print: hide chrome, keep the map. The on-screen canvas is a fixed-height
+   scroll box (see .org-canvas above) so exploring a big tree doesn't grow
+   the whole page — but printing that same fixed height would cut off
+   everything below the fold, which is exactly the "Download Map" bug this
+   fixes: let the canvas grow to its full natural height only for print. */
+@page { size: A4 landscape; margin: 12mm; }
 @media print {
-  .accessibility-bar, .ux4g-topbar, .header, .footer, .jur-toolbar-right, .breadcrumb, .tab-switch { display: none !important; }
-  .org-canvas { background: #fff; }
+  .accessibility-bar, .ux4g-topbar, .header, .footer, .jur-toolbar-right, .org-toolbar-row2, .org-fullscreen-toggle, .breadcrumb, .tab-switch { display: none !important; }
+  .org-canvas {
+    background: #fff;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  /* The connector-line org-chart can be wider than any printable page —
+     hierarchy.js measures it at print time and scales #orgTree down to
+     fit (see beforeprint/afterprint in hierarchy.js), which is what was
+     getting cut off/going off the page before this fix. */
   body { background: #fff; }
   .ux4g-al-row-actions, .ux4g-al-search { display: none !important; }
   .ux4g-al-report-count { margin-top: 0; }
+  /* Reports page: only the Preview section (every selected data set,
+     each with its own heading + table) should print — the catalog
+     checkboxes and Select All control aren't part of the report. */
+  #catalogSection { display: none !important; }
+  .preview-block { page-break-inside: avoid; margin-bottom: 24px; }
 }
+
+/* ============================================================
+   Verify account / set password (set-password.html) — a standalone
+   pre-auth page reached via the link sent to a newly-created login's
+   own email/mobile, so it has no main app nav (nothing to navigate to
+   until the account is active).
+   ============================================================ */
+.auth-shell { min-height: 100vh; background: #f4f6fb; display: flex; }
+.auth-page { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+.auth-card {
+  width: 100%;
+  max-width: 480px;
+  background: #fff;
+  border: 1px solid #e6e6e6;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+}
+.auth-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.auth-brand .emblem-img { height: 40px; width: auto; }
+.auth-title { font-size: 20px; font-weight: 700; color: var(--primary); margin: 0 0 6px; }
+.auth-subtitle { font-size: 13.5px; color: var(--ux4g-text-neutral-secondary, #6b7280); margin: 0 0 20px; line-height: 1.5; }
+.auth-locked-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #f6f7fb;
+  border: 1px solid #e6e6e6;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.auth-locked-field { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.auth-locked-label { font-size: 12.5px; color: #6b7280; font-weight: 500; flex: 0 0 auto; }
+.auth-locked-value { font-size: 14px; color: #171721; font-weight: 600; text-align: right; overflow-wrap: anywhere; }
+.pw-checklist { list-style: none; margin: 14px 0 20px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.pw-checklist li { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #8a8a8a; }
+.pw-checklist li .material-icons { font-size: 16px; color: #c7cbd3; }
+.pw-checklist li.is-met { color: #1aa54a; }
+.pw-checklist li.is-met .material-icons { color: #1aa54a; }
+
+/* ============================================================
+   Add New User wizard — Single/Bulk mode toggle + Bulk Upload panel
+   ============================================================ */
+.mode-toggle {
+  display: inline-flex;
+  gap: 0;
+  background: var(--stroke-50, #f2f3f6);
+  padding: 4px;
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+}
+.mode-toggle-btn {
+  padding: 8px 16px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--hint);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.mode-toggle-btn.is-active {
+  background: var(--white);
+  color: var(--primary);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+.field-control-readonly {
+  background: var(--stroke-50, #f6f7fb);
+  border: 1px solid var(--stroke-100);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+/* Bulk mode has far less content than the single-user form (one dropdown
+   in Step 1; a couple of buttons in Step 2) — the 1116px modal built for
+   the full single-user form leaves it looking sparse and off-balance, so
+   it narrows specifically for bulk mode instead. */
+.modal.is-bulk-mode { width: 720px; }
+.bulk-upload-intro { margin-bottom: 16px; }
+.bulk-columns-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: var(--stroke-50, #f6f7fb);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--hint);
+  margin-bottom: 14px;
+}
+.bulk-columns-note .material-icons { font-size: 16px; color: var(--hint); flex: 0 0 auto; margin-top: 1px; }
+.bulk-columns-note strong { color: var(--ink); font-weight: 600; }
+.bulk-upload-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+}
+.bulk-file-label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.link-existing-actions { display: flex; justify-content: flex-end; }
+.bulk-file-name { font-size: 12.5px; color: var(--hint); font-weight: 500; }
+.bulk-preview-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+.bulk-preview-summary .material-icons { font-size: 18px; color: var(--primary); }
+.bulk-preview-table-wrap {
+  border: 1px solid var(--stroke-100);
+  border-radius: var(--radius);
+  overflow: auto;
+  max-height: 320px;
+}
+.bulk-preview-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.bulk-preview-table th {
+  position: sticky;
+  top: 0;
+  background: var(--stroke-50, #f6f7fb);
+  text-align: left;
+  padding: 8px 10px;
+  font-weight: 600;
+  color: var(--hint);
+  white-space: nowrap;
+  border-bottom: 1px solid var(--stroke-100);
+}
+.bulk-preview-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--stroke-100);
+  color: var(--ink);
+  vertical-align: top;
+}
+.bulk-preview-table tr.is-error td { background: #fdf2f2; }
+.bulk-status { display: inline-flex; align-items: center; gap: 4px; font-weight: 500; white-space: normal; }
+.bulk-status .material-icons { font-size: 14px; }
+.bulk-status.is-ok { color: #1aa54a; }
+.bulk-status.is-error { color: #c0392b; }
+.bulk-results-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--banner-bg);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  font-size: 13.5px;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.bulk-results-banner .material-icons { color: var(--primary); flex: 0 0 auto; }

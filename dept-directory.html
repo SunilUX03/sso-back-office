@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>All Users — TN SSO</title>
+  <title>Edit Dept &amp; Sub Dept Names — TN SSO</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -83,10 +83,10 @@
       <nav class="main-nav" aria-label="Primary">
         <a href="index.html" class="nav-item">Home</a>
                 <div class="dropdown">
-          <a href="admin-logins.html" class="nav-item dropdown-toggle" data-toggle="dropdown">Administration<span class="material-icons">keyboard_arrow_down</span></a>
+          <a href="admin-logins.html" class="nav-item dropdown-toggle is-active" data-toggle="dropdown">Administration<span class="material-icons">keyboard_arrow_down</span></a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="admin-logins.html"><span class="material-icons">admin_panel_settings</span>Admin Logins</a></li>
-            <li><a class="dropdown-item" href="dept-directory.html"><span class="material-icons">edit_note</span>Edit Dept &amp; Sub Dept Names</a></li>
+            <li><a class="dropdown-item is-active" href="dept-directory.html"><span class="material-icons">edit_note</span>Edit Dept &amp; Sub Dept Names</a></li>
             <li><a class="dropdown-item" href="reports.html"><span class="material-icons">summarize</span>Reports</a></li>
           </ul>
         </div>
@@ -101,10 +101,10 @@
         </div>
 
         <div class="dropdown">
-          <a href="users.html" class="nav-item dropdown-toggle is-active" data-toggle="dropdown">User Management<span class="material-icons">keyboard_arrow_down</span></a>
+          <a href="users.html" class="nav-item dropdown-toggle" data-toggle="dropdown">User Management<span class="material-icons">keyboard_arrow_down</span></a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="#" data-open="officer"><span class="material-icons">person_add</span>Create User</a></li>
-            <li><a class="dropdown-item is-active" href="users.html"><span class="material-icons">group</span>All Users</a></li>
+            <li><a class="dropdown-item" href="users.html"><span class="material-icons">group</span>All Users</a></li>
           </ul>
         </div>
 
@@ -134,29 +134,33 @@
 
   <main id="main" class="page">
     <!-- ============ Page head ============ -->
-    <div class="page-title-block">
-      <h1 class="page-title">All Users</h1>
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="index.html">Home</a>
-        <span class="crumb-sep">/</span>
-        <a href="users.html">User Management</a>
-        <span class="crumb-sep">/</span>
-        <span class="crumb-current">All Users</span>
-      </nav>
+    <div class="page-head">
+      <div class="page-title-block">
+        <h1 class="page-title">Edit Dept &amp; Sub Dept Names</h1>
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <a href="index.html">Home</a>
+          <span class="crumb-sep">/</span>
+          <span class="crumb-current">Edit Dept &amp; Sub Dept Names</span>
+        </nav>
+      </div>
+      <button class="ux4g-btn ux4g-btn-primary ux4g-btn-md" type="button" id="addDeptBtn">
+        <span class="ux4g-icon-outlined" style="font-size:18px">add</span>
+        Add Department
+      </button>
     </div>
 
     <!-- ============ Overview ============ -->
     <section class="section">
       <h2 class="section-title">Overview</h2>
-      <div class="ux4g-al-stat-grid" id="overviewTiles"><!-- 3 stat tiles injected by users.js --></div>
+      <div class="ux4g-al-stat-grid" id="overviewTiles"><!-- injected by dept-directory.js --></div>
     </section>
 
-    <!-- ============ All Departments (directory) ============ -->
+    <!-- ============ Directory ============ -->
     <section class="section">
       <div class="jur-toolbar">
         <div class="jur-toolbar-left">
-          <h2 class="section-title" style="margin:0;">All Departments</h2>
-          <span class="count-badge" id="deptCountBadge">76</span>
+          <h2 class="section-title" style="margin:0;">Departments</h2>
+          <span class="count-badge" id="deptCountBadge">0</span>
         </div>
         <div class="search-box">
           <img src="assets/imgSearch.svg" alt="" />
@@ -164,16 +168,13 @@
         </div>
       </div>
       <div class="ux4g-jm-filter-row">
-        <div class="ux4g-jm-config-filter" id="configFilter">
+        <div class="ux4g-jm-config-filter" id="statusFilter">
           <button class="ux4g-jm-config-btn is-active" data-filter="all" type="button">All</button>
-          <button class="ux4g-jm-config-btn" data-filter="configured" type="button">Configured</button>
-          <button class="ux4g-jm-config-btn" data-filter="not-configured" type="button">Not Configured</button>
+          <button class="ux4g-jm-config-btn" data-filter="active" type="button">Active</button>
+          <button class="ux4g-jm-config-btn" data-filter="deactivated" type="button">Deactivated</button>
         </div>
-        <div class="ux4g-jm-az-strip" id="azStrip"><!-- A–Z buttons injected by users.js --></div>
       </div>
-      <div class="ux4g-jm-dept-list" id="deptList">
-        <!-- rows injected by users.js -->
-      </div>
+      <div class="ux4g-dd-list" id="deptList"><!-- injected by dept-directory.js --></div>
     </section>
   </main>
 
@@ -189,11 +190,80 @@
     </div>
   </footer>
 
+  <!-- ============ Add / Edit Department modal ============ -->
+  <div class="modal-backdrop" id="deptModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="deptModalTitle">
+      <div class="modal-header">
+        <div class="modal-heading">
+          <h2 class="modal-title" id="deptModalTitle">Add Department</h2>
+          <p class="modal-subtitle">Added here so it can be selected across Jurisdiction Management, Designation Management and Hierarchy Map.</p>
+        </div>
+        <button class="modal-close" data-close aria-label="Close"><span class="material-icons">close</span></button>
+      </div>
+      <form class="form-fields" id="deptForm">
+        <div class="field">
+          <label class="field-label" for="deptNameInput">Department Name <span class="field-req">*</span></label>
+          <input class="field-control" id="deptNameInput" type="text" placeholder="e.g. Health & Family Welfare Department" required />
+        </div>
+      </form>
+      <div class="modal-footer">
+        <button class="btn-cancel" data-close>Cancel</button>
+        <button class="btn-modal-primary" id="saveDeptBtn">Add Department</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Add / Edit Sub-Department modal ============ -->
+  <div class="modal-backdrop" id="subDeptModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="subDeptModalTitle">
+      <div class="modal-header">
+        <div class="modal-heading">
+          <h2 class="modal-title" id="subDeptModalTitle">Add Sub-Department</h2>
+          <p class="modal-subtitle" id="subDeptModalSubtitle">Under this department</p>
+        </div>
+        <button class="modal-close" data-close aria-label="Close"><span class="material-icons">close</span></button>
+      </div>
+      <form class="form-fields" id="subDeptForm">
+        <div class="field">
+          <label class="field-label" for="subDeptNameInput">Sub-Department Name <span class="field-req">*</span></label>
+          <input class="field-control" id="subDeptNameInput" type="text" placeholder="e.g. Directorate of Public Health" required />
+        </div>
+      </form>
+      <div class="modal-footer">
+        <button class="btn-cancel" data-close>Cancel</button>
+        <button class="btn-modal-primary" id="saveSubDeptBtn">Add Sub-Department</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Deactivate confirmation (password-gated) modal ============ -->
+  <div class="modal-backdrop" id="deactivateModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="deactivateModalTitle">
+      <div class="modal-header">
+        <div class="modal-heading">
+          <h2 class="modal-title" id="deactivateModalTitle">Deactivate</h2>
+          <p class="modal-subtitle" id="deactivateModalSubtitle">This hides it from every picker until it's reactivated.</p>
+        </div>
+        <button class="modal-close" data-close aria-label="Close"><span class="material-icons">close</span></button>
+      </div>
+      <form class="form-fields" id="deactivateForm">
+        <div class="field">
+          <label class="field-label" for="deactivatePasswordInput">Confirm Your Password <span class="field-req">*</span></label>
+          <input class="field-control" id="deactivatePasswordInput" type="password" placeholder="Enter your account password" required />
+          <span class="field-hint field-error" id="deactivatePasswordError" hidden><span class="material-icons">error</span>Incorrect password. Try again.</span>
+        </div>
+      </form>
+      <div class="modal-footer">
+        <button class="btn-cancel" data-close>Cancel</button>
+        <button class="btn-modal-primary" id="confirmDeactivateBtn">Deactivate</button>
+      </div>
+    </div>
+  </div>
+
   <script src="store.js?v=20260940"></script>
   <script src="dropdown.js?v=20260901"></script>
   <script src="accessibility.js?v=20260960"></script>
-  <script src="officer-modals.js?v=20260944"></script>
-  <script src="users.js?v=20260936"></script>
+  <script src="dept-directory.js?v=20260921"></script>
 
   <!-- UX4G runtime (accessibility bar behavior, theme toggle, etc.) -->
   <script src="https://cdn.ux4g.gov.in/UX4G@3.0.18/ux4g.js"></script>

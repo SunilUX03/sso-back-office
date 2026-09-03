@@ -12,34 +12,52 @@
   <link
     href="https://fonts.googleapis.com/icon?family=Material+Icons"
     rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260831b" />
+  <link rel="stylesheet" href="styles.css?v=20260962" />
 </head>
 <body>
   <!-- ============ Accessibility Bar ============ -->
   <div class="accessibility-bar">
     <div class="access-inner">
-      <a href="#main" class="skip-link">Skip to Main Content</a>
-      <span class="access-sep"></span>
-      <div class="font-controls">
-        <button class="access-icon" title="Increase font size" aria-label="Increase font size">
-          <span class="material-icons">text_increase</span>
-        </button>
-        <button class="access-icon is-active" title="Default font size" aria-label="Default font size">
-          <span class="material-icons">format_size</span>
-        </button>
-        <button class="access-icon" title="Decrease font size" aria-label="Decrease font size">
-          <span class="material-icons">text_decrease</span>
-        </button>
+      <a href="https://tnsso.tn.gov.in/login/index.html" class="access-brand" target="_blank" rel="noopener">TNSSO</a>
+      <div class="access-inner-right">
+        <a href="#main" class="skip-link">Skip to Main Content</a>
+        <span class="access-sep"></span>
+        <div class="font-controls" data-a11y-group="size">
+          <button class="access-icon" data-a11y-action="decrease" title="Decrease text size" aria-label="Decrease text size" type="button">
+            <span class="material-icons">text_decrease</span>
+          </button>
+          <button class="access-icon" data-a11y-action="reset" title="Reset text size" aria-label="Reset text size" type="button">
+            <span class="material-icons">format_size</span>
+          </button>
+          <button class="access-icon" data-a11y-action="increase" title="Increase text size" aria-label="Increase text size" type="button">
+            <span class="material-icons">text_increase</span>
+          </button>
+        </div>
+        <span class="access-sep"></span>
+        <div class="font-controls" data-a11y-group="spacing">
+          <button class="access-icon" data-a11y-action="decrease" title="Decrease text spacing" aria-label="Decrease text spacing" type="button">
+            <span class="material-icons">remove</span>
+          </button>
+          <button class="access-icon" data-a11y-action="reset" title="Reset text spacing" aria-label="Reset text spacing" type="button">
+            <span class="material-icons">space_bar</span>
+          </button>
+          <button class="access-icon" data-a11y-action="increase" title="Increase text spacing" aria-label="Increase text spacing" type="button">
+            <span class="material-icons">add</span>
+          </button>
+        </div>
+        <span class="access-sep"></span>
+        <div class="font-controls" data-a11y-group="lineheight">
+          <button class="access-icon" data-a11y-action="decrease" title="Decrease line height" aria-label="Decrease line height" type="button">
+            <span class="material-icons">remove</span>
+          </button>
+          <button class="access-icon" data-a11y-action="reset" title="Reset line height" aria-label="Reset line height" type="button">
+            <span class="material-icons">format_line_spacing</span>
+          </button>
+          <button class="access-icon" data-a11y-action="increase" title="Increase line height" aria-label="Increase line height" type="button">
+            <span class="material-icons">add</span>
+          </button>
+        </div>
       </div>
-      <span class="access-sep"></span>
-      <button class="access-icon" title="Toggle contrast" aria-label="Toggle contrast">
-        <span class="material-icons">contrast</span>
-      </button>
-      <span class="access-sep"></span>
-      <button class="access-more" aria-label="More accessibility options">
-        <span class="material-icons">accessibility_new</span>
-        <span>More</span>
-      </button>
     </div>
   </div>
 
@@ -64,7 +82,8 @@
           <a href="admin-logins.html" class="nav-item dropdown-toggle" data-toggle="dropdown">Administration<span class="material-icons">keyboard_arrow_down</span></a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="admin-logins.html"><span class="material-icons">admin_panel_settings</span>Admin Logins</a></li>
-            <li><a class="dropdown-item" href="reports.html"><span class="material-icons">summarize</span>Reports &amp; Export</a></li>
+            <li><a class="dropdown-item" href="dept-directory.html"><span class="material-icons">edit_note</span>Edit Dept &amp; Sub Dept Names</a></li>
+            <li><a class="dropdown-item" href="reports.html"><span class="material-icons">summarize</span>Reports</a></li>
           </ul>
         </div>
 
@@ -80,9 +99,8 @@
         <div class="dropdown">
           <a href="users.html" class="nav-item dropdown-toggle" data-toggle="dropdown">User Management<span class="material-icons">keyboard_arrow_down</span></a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#"><span class="material-icons">person_add</span>Create User</a></li>
+            <li><a class="dropdown-item" href="#" data-open="officer"><span class="material-icons">person_add</span>Create User</a></li>
             <li><a class="dropdown-item" href="users.html"><span class="material-icons">group</span>All Users</a></li>
-            <li><a class="dropdown-item" href="#"><span class="material-icons">admin_panel_settings</span>Roles &amp; Permissions</a></li>
           </ul>
         </div>
 
@@ -102,8 +120,7 @@
           <span class="material-icons">arrow_drop_down</span>
         </button>
         <ul class="dropdown-menu dropdown-menu-end">
-          <li><a class="dropdown-item is-active" href="#"><span class="material-icons">person</span>My Profile</a></li>
-          <li><a class="dropdown-item" href="#"><span class="material-icons">settings</span>Settings</a></li>
+          <li><a class="dropdown-item is-active" href="profile.html"><span class="material-icons">person</span>My Profile</a></li>
           <li><hr class="dropdown-divider" /></li>
           <li><a class="dropdown-item" href="#"><span class="material-icons">logout</span>Sign Out</a></li>
         </ul>
@@ -121,7 +138,7 @@
           <span class="crumb-sep">/</span>
           <a href="jurisdiction.html">Organisation Management</a>
           <span class="crumb-sep">/</span>
-          <span class="crumb-current">Reporting Management</span>
+          <span class="crumb-current">Hierarchy Map</span>
         </nav>
       </div>
 
@@ -141,22 +158,45 @@
         </div>
         <div class="jur-toolbar-right">
           <button class="level-dropdown" id="selectDept">
-            <span id="selectDeptLabel">Select Department</span>
+            <span id="selectDeptLabel">All Departments</span>
             <img src="assets/imgFilterChevron.svg" alt="" />
           </button>
-          <button class="level-dropdown" id="selectType">
-            <span id="selectTypeLabel">Select Type</span>
+          <button class="level-dropdown" id="selectSubDept" disabled>
+            <span id="selectSubDeptLabel">All Sub-Departments</span>
             <img src="assets/imgFilterChevron.svg" alt="" />
           </button>
-          <button class="btn btn-primary" id="downloadMap">
-            <span class="material-icons">download</span>Download Map
+          <button class="level-dropdown" id="selectViewMode">
+            <span id="selectViewModeLabel">Jurisdiction + Designation</span>
+            <img src="assets/imgFilterChevron.svg" alt="" />
           </button>
         </div>
       </div>
 
+      <div class="org-toolbar-row2">
+        <button class="org-configured-toggle" id="configuredToggle" type="button" aria-pressed="false">
+          <span class="org-configured-toggle-switch"></span>
+          Configured Only
+        </button>
+        <button class="btn btn-outline" id="toggleExpand">
+          <span class="material-icons" style="font-size:18px">unfold_more</span>
+          Expand All
+        </button>
+        <button class="level-dropdown" id="downloadMap">
+          <span class="material-icons" style="font-size:18px">download</span>
+          <span>Download</span>
+          <img src="assets/imgFilterChevron.svg" alt="" />
+        </button>
+      </div>
+
       <!-- ============ Org chart canvas ============ -->
-      <div class="org-canvas" id="orgCanvas">
-        <div class="org-tree" id="orgTree"><!-- rendered by hierarchy.js --></div>
+      <div class="org-fullscreen-wrap" id="orgCanvasWrap">
+        <button class="org-fullscreen-toggle" id="fullscreenToggle" type="button" aria-label="Expand map to full screen">
+          <span class="material-icons">fullscreen</span>
+        </button>
+        <div class="org-fullscreen-toolbar" id="fullscreenToolbar"><!-- filters moved here while full screen --></div>
+        <div class="org-canvas" id="orgCanvas">
+          <div class="org-tree" id="orgTree"><!-- rendered by hierarchy.js --></div>
+        </div>
       </div>
     </section>
   </main>
@@ -173,8 +213,10 @@
     </div>
   </footer>
 
-  <script src="store.js"></script>
-  <script src="dropdown.js"></script>
-  <script src="hierarchy.js"></script>
+  <script src="store.js?v=20260940"></script>
+  <script src="officer-modals.js?v=20260944"></script>
+  <script src="dropdown.js?v=20260901"></script>
+  <script src="accessibility.js?v=20260960"></script>
+  <script src="hierarchy.js?v=20260932"></script>
 </body>
 </html>

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Designations — Tamil Nadu e-Governance Agency — TN SSO</title>
+  <title>Department Designations — TN SSO</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -12,34 +12,56 @@
   <link
     href="https://fonts.googleapis.com/icon?family=Material+Icons"
     rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260831b" />
+  <link rel="stylesheet" href="styles.css?v=20260962" />
+
+  <!-- UX4G Design System (CDN) -->
+  <link rel="stylesheet" href="https://cdn.ux4g.gov.in/UX4G@3.0.18/index.css" />
+  <link rel="stylesheet" href="ux4g-theme.css" />
 </head>
 <body>
   <!-- ============ Accessibility Bar ============ -->
   <div class="accessibility-bar">
     <div class="access-inner">
-      <a href="#main" class="skip-link">Skip to Main Content</a>
-      <span class="access-sep"></span>
-      <div class="font-controls">
-        <button class="access-icon" title="Increase font size" aria-label="Increase font size">
-          <span class="material-icons">text_increase</span>
-        </button>
-        <button class="access-icon is-active" title="Default font size" aria-label="Default font size">
-          <span class="material-icons">format_size</span>
-        </button>
-        <button class="access-icon" title="Decrease font size" aria-label="Decrease font size">
-          <span class="material-icons">text_decrease</span>
-        </button>
+      <a href="https://tnsso.tn.gov.in/login/index.html" class="access-brand" target="_blank" rel="noopener">TNSSO</a>
+      <div class="access-inner-right">
+        <a href="#main" class="skip-link">Skip to Main Content</a>
+        <span class="access-sep"></span>
+        <div class="font-controls" data-a11y-group="size">
+          <button class="access-icon" data-a11y-action="decrease" title="Decrease text size" aria-label="Decrease text size" type="button">
+            <span class="material-icons">text_decrease</span>
+          </button>
+          <button class="access-icon" data-a11y-action="reset" title="Reset text size" aria-label="Reset text size" type="button">
+            <span class="material-icons">format_size</span>
+          </button>
+          <button class="access-icon" data-a11y-action="increase" title="Increase text size" aria-label="Increase text size" type="button">
+            <span class="material-icons">text_increase</span>
+          </button>
+        </div>
+        <span class="access-sep"></span>
+        <div class="font-controls" data-a11y-group="spacing">
+          <button class="access-icon" data-a11y-action="decrease" title="Decrease text spacing" aria-label="Decrease text spacing" type="button">
+            <span class="material-icons">remove</span>
+          </button>
+          <button class="access-icon" data-a11y-action="reset" title="Reset text spacing" aria-label="Reset text spacing" type="button">
+            <span class="material-icons">space_bar</span>
+          </button>
+          <button class="access-icon" data-a11y-action="increase" title="Increase text spacing" aria-label="Increase text spacing" type="button">
+            <span class="material-icons">add</span>
+          </button>
+        </div>
+        <span class="access-sep"></span>
+        <div class="font-controls" data-a11y-group="lineheight">
+          <button class="access-icon" data-a11y-action="decrease" title="Decrease line height" aria-label="Decrease line height" type="button">
+            <span class="material-icons">remove</span>
+          </button>
+          <button class="access-icon" data-a11y-action="reset" title="Reset line height" aria-label="Reset line height" type="button">
+            <span class="material-icons">format_line_spacing</span>
+          </button>
+          <button class="access-icon" data-a11y-action="increase" title="Increase line height" aria-label="Increase line height" type="button">
+            <span class="material-icons">add</span>
+          </button>
+        </div>
       </div>
-      <span class="access-sep"></span>
-      <button class="access-icon" title="Toggle contrast" aria-label="Toggle contrast">
-        <span class="material-icons">contrast</span>
-      </button>
-      <span class="access-sep"></span>
-      <button class="access-more" aria-label="More accessibility options">
-        <span class="material-icons">accessibility_new</span>
-        <span>More</span>
-      </button>
     </div>
   </div>
 
@@ -64,7 +86,8 @@
           <a href="admin-logins.html" class="nav-item dropdown-toggle" data-toggle="dropdown">Administration<span class="material-icons">keyboard_arrow_down</span></a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="admin-logins.html"><span class="material-icons">admin_panel_settings</span>Admin Logins</a></li>
-            <li><a class="dropdown-item" href="reports.html"><span class="material-icons">summarize</span>Reports &amp; Export</a></li>
+            <li><a class="dropdown-item" href="dept-directory.html"><span class="material-icons">edit_note</span>Edit Dept &amp; Sub Dept Names</a></li>
+            <li><a class="dropdown-item" href="reports.html"><span class="material-icons">summarize</span>Reports</a></li>
           </ul>
         </div>
 
@@ -80,9 +103,8 @@
         <div class="dropdown">
           <a href="users.html" class="nav-item dropdown-toggle" data-toggle="dropdown">User Management<span class="material-icons">keyboard_arrow_down</span></a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#"><span class="material-icons">person_add</span>Create User</a></li>
+            <li><a class="dropdown-item" href="#" data-open="officer"><span class="material-icons">person_add</span>Create User</a></li>
             <li><a class="dropdown-item" href="users.html"><span class="material-icons">group</span>All Users</a></li>
-            <li><a class="dropdown-item" href="#"><span class="material-icons">admin_panel_settings</span>Roles &amp; Permissions</a></li>
           </ul>
         </div>
 
@@ -102,8 +124,7 @@
           <span class="material-icons">arrow_drop_down</span>
         </button>
         <ul class="dropdown-menu dropdown-menu-end">
-          <li><a class="dropdown-item is-active" href="#"><span class="material-icons">person</span>My Profile</a></li>
-          <li><a class="dropdown-item" href="#"><span class="material-icons">settings</span>Settings</a></li>
+          <li><a class="dropdown-item is-active" href="profile.html"><span class="material-icons">person</span>My Profile</a></li>
           <li><hr class="dropdown-divider" /></li>
           <li><a class="dropdown-item" href="#"><span class="material-icons">logout</span>Sign Out</a></li>
         </ul>
@@ -112,93 +133,103 @@
   </header>
 
   <main id="main" class="page">
-    <!-- ============ Page head: title + breadcrumb + tabs ============ -->
+    <!-- ============ Page head: scoped breadcrumb ============ -->
     <div class="page-head">
       <div class="page-title-block">
-        <div class="page-title-row">
-          <img class="title-icon" src="assets/imgIconBadgeTitle.svg" alt="" />
-          <h1 class="page-title">Tamil Nadu e-Governance Agency</h1>
-        </div>
+        <h1 class="page-title" id="deptTitle">Department Designations</h1>
         <nav class="breadcrumb" aria-label="Breadcrumb">
           <a href="index.html">Home</a>
           <span class="crumb-sep">/</span>
           <a href="jurisdiction.html">Organisation Management</a>
           <span class="crumb-sep">/</span>
-          <a href="jurisdiction.html">Jurisdiction Management</a>
+          <a href="designation.html">Designation Management</a>
+          <span class="crumb-sep" id="deptCrumbSep">/</span>
+          <a href="designation-subdept.html" id="deptCrumbLink">Department</a>
           <span class="crumb-sep">/</span>
-          <span class="crumb-current">Tamil Nadu e Governance Agency</span>
+          <span class="crumb-current" id="subDeptCrumb">Sub-Department</span>
         </nav>
-      </div>
-
-      <div class="tab-switch" role="tablist">
-        <button class="tab" role="tab" aria-selected="false" data-href="agency.html">Jurisdiction Management</button>
-        <button class="tab is-active" role="tab" aria-selected="true">Designation Management</button>
-        <button class="tab" role="tab" aria-selected="false" data-href="hierarchy.html">Hierarchy Map</button>
       </div>
     </div>
 
-    <!-- ============ Add Designations card ============ -->
-    <section class="section-block">
-      <h2 class="section-title">Your Hierarchy Structure</h2>
-      <div class="hierarchy-card">
-        <div class="hierarchy-illustration">
-          <img src="assets/imgImage7.png" alt="" />
-        </div>
-        <div class="hierarchy-text">
-          <h3 class="hierarchy-title">Add Designations</h3>
-          <p class="hierarchy-desc">
-            Add designations for each jurisdiction level. Specify each role's rank and who they report
-            to — either another officer or an office.
-          </p>
-          <button class="btn btn-primary btn-lg" data-open="designation">
-            <img class="btn-plus" src="assets/imgPlus.svg" alt="" />
-            Add Designation
-          </button>
-        </div>
+    <!-- ============ This department's overview ============ -->
+    <section class="section">
+      <h2 class="section-title">Overview</h2>
+      <div class="ux4g-al-stat-grid" id="statGrid">
+        <!-- stat tiles injected by designation-agency.js -->
       </div>
     </section>
 
-    <!-- ============ All Designations ============ -->
+    <!-- ============ Designation records ============ -->
     <section class="section-block">
       <div class="jur-toolbar">
         <div class="jur-toolbar-left">
-          <h2 class="section-title">All Designations</h2>
-          <span class="count-badge">123</span>
+          <h2 class="section-title">Designations</h2>
+          <span class="count-badge" id="countBadge">0</span>
         </div>
-        <div class="jur-toolbar-right">
-          <div class="search-box">
-            <img src="assets/imgSearch.svg" alt="" />
-            <input type="text" placeholder="Search Designation..." aria-label="Search Designation" />
+        <div class="ux4g-jm-toolbar">
+          <div class="ux4g-input ux4g-input-md ux4g-al-search">
+            <span class="ux4g-input-leading-icon"><span class="ux4g-icon-outlined" style="font-size:18px">search</span></span>
+            <input class="ux4g-input-input" type="text" id="desigSearch" placeholder="Search designations" aria-label="Search designations" />
           </div>
-          <button class="level-dropdown">
-            All Levels
-            <img src="assets/imgFilterChevron.svg" alt="" />
+          <button class="ux4g-jm-level-select" id="levelFilter" type="button" aria-label="Filter by level" aria-haspopup="true">
+            <span id="levelFilterLabel">All Levels</span>
+          </button>
+          <button class="ux4g-btn ux4g-btn-primary ux4g-btn-md" type="button" data-open="designation">
+            <span class="ux4g-icon-outlined" style="font-size:18px">add</span>
+            Add Designation
           </button>
         </div>
       </div>
 
-      <!-- Designations table -->
-      <div class="jur-table tbl-desig" id="desigTable">
-        <div class="table-head" role="row">
-          <span class="th"><input type="checkbox" class="table-checkbox" aria-label="Select all" /></span>
-          <span class="th">Name of the Designation</span>
-          <span class="th">Short Code</span>
-          <span class="th">Level of the Jurisdiction office</span>
-          <span class="th">Reports to</span>
-          <span class="th">Action</span>
+      <div class="ux4g-al-table-wrap">
+        <table class="ux4g-table ux4g-table-rounded ux4g-table-m" id="desigTable">
+          <thead>
+            <tr>
+              <th><div class="ux4g-table-th-content">Name</div></th>
+              <th><div class="ux4g-table-th-content">Code</div></th>
+              <th><div class="ux4g-table-th-content">Level</div></th>
+              <th><div class="ux4g-table-th-content">Reports To</div></th>
+              <th><div class="ux4g-table-th-content">Action</div></th>
+            </tr>
+          </thead>
+          <tbody id="desigBody">
+            <!-- rows injected by designation-agency.js -->
+          </tbody>
+        </table>
+      </div>
+      <div class="table-empty" id="desigEmpty" hidden>
+        <div class="empty-illustration" aria-hidden="true">
+          <img class="empty-l9" src="assets/imgEmpty9.svg" alt="" />
+          <img class="empty-l11" src="assets/imgEmpty11.svg" alt="" />
+          <img class="empty-l10" src="assets/imgEmpty10.svg" alt="" />
+          <img class="empty-group" src="assets/imgEmptyGroup.svg" alt="" />
         </div>
-        <div class="table-empty">
-          <div class="empty-illustration" aria-hidden="true">
-            <img class="empty-l9" src="assets/imgEmpty9.svg" alt="" />
-            <img class="empty-l11" src="assets/imgEmpty11.svg" alt="" />
-            <img class="empty-l10" src="assets/imgEmpty10.svg" alt="" />
-            <img class="empty-group" src="assets/imgEmptyGroup.svg" alt="" />
-          </div>
-          <p class="empty-msg">No Designations added yet. Click "+ Add Designations" to begin.</p>
-          <button class="btn btn-primary-alt btn-lg" data-open="designation">
-            <img class="btn-plus" src="assets/imgPlus.svg" alt="" />
-            Add Designation
-          </button>
+        <p class="empty-msg">No Designations added yet. Click "+ Add Designation" to begin.</p>
+        <button class="ux4g-btn ux4g-btn-primary ux4g-btn-md" type="button" data-open="designation">
+          <span class="ux4g-icon-outlined" style="font-size:18px">add</span>
+          Add Designation
+        </button>
+      </div>
+
+      <div class="pagination" id="desigPagination" hidden>
+        <button class="page-arrow" id="pagePrev" aria-label="Previous page">
+          <span class="material-icons">chevron_left</span>
+        </button>
+        <div class="page-nums" id="pageNums"></div>
+        <button class="page-arrow" id="pageNext" aria-label="Next page">
+          <span class="material-icons">chevron_right</span>
+        </button>
+        <div class="page-info">
+          <span>Showing</span>
+          <span class="page-size">
+            <select id="pageSize" aria-label="Items per page">
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </span>
+          <span id="pageInfoTotal">of 0 items</span>
         </div>
       </div>
     </section>
@@ -216,7 +247,7 @@
     </div>
   </footer>
 
-  <!-- ============ Modal: Add Designation ============ -->
+  <!-- ============ Modal: Add / Edit Designation ============ -->
   <div class="modal-backdrop" id="designationModal" hidden>
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="desigTitle">
       <div class="modal-header">
@@ -232,7 +263,7 @@
       <div class="tip-box">
         <span class="tip-label">Tip:</span>
         <span class="tip-text">
-          A designation is a role or post within your department. Assign it to the jurisdiction level
+          A designation is a role or post within this department. Assign it to the jurisdiction level
           where this role exists, and set who this role reports to — either a specific officer
           designation or an entire office.
         </span>
@@ -269,17 +300,25 @@
         </div>
 
         <div class="field" id="reportsOfficerField" hidden>
-          <label class="field-label" for="dOfficer">Reports to Designation <span class="field-req">*</span></label>
-          <select class="field-control" id="dOfficer">
-            <option value="" disabled selected>Select Designation</option>
+          <label class="field-label" for="dOfficerLevel">Level of Officer <span class="field-req">*</span></label>
+          <select class="field-control" id="dOfficerLevel">
+            <option value="" disabled selected>Select a Level</option>
+          </select>
+          <label class="field-label" for="dOfficer" style="margin-top:12px">Reports to Designation <span class="field-req">*</span></label>
+          <select class="field-control" id="dOfficer" disabled>
+            <option value="" disabled selected>Select a Level first</option>
           </select>
           <span class="field-hint"><span class="material-icons">info</span>This officer reports to the officer holding this designation</span>
         </div>
 
         <div class="field" id="reportsOfficeField" hidden>
-          <label class="field-label" for="dOffice">Reports to Office <span class="field-req">*</span></label>
-          <select class="field-control" id="dOffice">
-            <option value="" disabled selected>Select Office</option>
+          <label class="field-label" for="dOfficeLevel">Level of Office <span class="field-req">*</span></label>
+          <select class="field-control" id="dOfficeLevel">
+            <option value="" disabled selected>Select a Level</option>
+          </select>
+          <label class="field-label" for="dOffice" style="margin-top:12px">Reports to Office <span class="field-req">*</span></label>
+          <select class="field-control" id="dOffice" disabled>
+            <option value="" disabled selected>Select a Level first</option>
           </select>
           <span class="field-hint"><span class="material-icons">info</span>This officer reports directly to the office (Not a specific person)</span>
         </div>
@@ -297,8 +336,14 @@
     </div>
   </div>
 
-  <script src="store.js"></script>
-  <script src="dropdown.js"></script>
-  <script src="designation-agency.js"></script>
+  <script src="store.js?v=20260940"></script>
+  <script src="officer-modals.js?v=20260944"></script>
+  <script src="dropdown.js?v=20260901"></script>
+  <script src="accessibility.js?v=20260960"></script>
+  <script src="designation-agency.js?v=20260920"></script>
+
+  <!-- UX4G runtime (accessibility bar behavior, theme toggle, etc.) -->
+  <script src="https://cdn.ux4g.gov.in/UX4G@3.0.18/ux4g.js"></script>
+  <script src="https://cdn.ux4g.gov.in/UX4G@3.0.18/ux4g-custom.js"></script>
 </body>
 </html>

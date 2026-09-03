@@ -12,6 +12,38 @@
 #appSuccess .modal,
 #accessModal .modal { position: relative; }
 
+/* More breathing room between the title block and the stepper than the
+   shared .wizard-title default (4px) leaves — scoped to this wizard only
+   since .wizard-title is shared with the Add New User wizard's own header. */
+#appWizard .wizard-title { margin-bottom: 20px; }
+
+/* Overview stat tiles that link into the flat "All Applications" list
+   (All / Web / Mobile) — "Departments Registered" stays a plain readout. */
+.ux4g-al-stat-card.is-clickable {
+  position: relative;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.ux4g-al-stat-card.is-clickable:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 14px rgba(0, 35, 133, 0.1);
+}
+.ux4g-al-stat-link {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.ux4g-al-stat-card .ux4g-jm-dept-arrow { margin-left: auto; }
+
+/* Department name shown above the sub-department chip on the flat
+   All Applications list, where there's no page-level department context. */
+.app-card-dept {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
 /* "12 Apps" inline badge next to a section title */
 .apps-count {
   background: var(--banner-bg);
@@ -178,6 +210,17 @@
   font-weight: 600;
   color: var(--primary);
 }
+/* A label for a group NESTED inside a .section-title or .form-section-title
+   block (e.g. "Login History" under "Account Security", or "System
+   Integrator" under a wizard step) — deliberately smaller and quieter than
+   either, so the hierarchy reads correctly instead of the sub-heading
+   outweighing its own parent. */
+.subsection-title {
+  margin: 0 0 18px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--heading);
+}
 .form-divider {
   border: none;
   border-top: 1px solid var(--stroke-100);
@@ -277,6 +320,63 @@
 .note-box .material-icons { font-size: 18px; flex: 0 0 auto; }
 .note-warn { background: #fff8e8; border: 1px solid #f0d28a; color: #7a5a13; }
 .note-success { background: #f2f9f2; border: 1px solid rgba(40, 179, 92, 0.25); color: #15612e; }
+.note-danger { background: #fdedec; border: 1px solid rgba(210, 59, 59, 0.35); color: #a3271f; align-items: flex-start; }
+
+/* "This app is open to all officers by default" toggle (Register Application) */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 16px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--dark);
+}
+.toggle-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
+
+/* Sign-in mode: two plain-language option cards instead of a bare dropdown */
+.signin-choice {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 6px;
+}
+.signin-option {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 10px;
+  row-gap: 2px;
+  border: 1px solid var(--stroke-100);
+  border-radius: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+}
+.signin-option input[type="radio"] { grid-row: 1 / 3; align-self: start; margin-top: 2px; accent-color: var(--primary); }
+.signin-option-title { font-size: 13px; font-weight: 600; color: var(--heading); }
+.signin-option-desc { font-size: 12px; line-height: 16px; color: var(--muted); }
+.signin-option.is-selected { border-color: var(--primary); background: var(--banner-bg); }
+/* "Who can use it" audience choice has a third option (Both) — 3 even
+   columns instead of the 2-column default used for Login Method/Sign-in. */
+.signin-choice.has-3 { grid-template-columns: repeat(3, 1fr); }
+
+.ms-empty { padding: 10px 12px; font-size: 12px; color: var(--muted); }
+
+/* Fallback styling for the UX4G "Step X of Y" header subtitle, in case the
+   CDN stylesheet doesn't define it in this UX4G version — harmless no-op
+   if it does, since the CDN loads after this file and wins either way. */
+.ux4g-modal-header-sub-heading {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin: 2px 0 0;
+  text-align: left;
+}
+
+/* .btn-lg's default padding (10px 24px 10px 16px) is deliberately
+   lopsided so a leading icon balances visually against the extra right
+   padding. A plain-text button (Back / Next Step / Register Application)
+   has no icon, so that same padding reads as off-center text — this
+   modifier gives text-only buttons even padding on both sides instead. */
+.btn-lg.is-text-only { padding: 10px 20px; }
 
 /* review (step 5) cards */
 .review-card {
@@ -431,4 +531,142 @@
   .app-grid { grid-template-columns: repeat(2, 1fr); }
   .form-grid, .form-grid-3, .review-grid, .upload-row { grid-template-columns: 1fr; }
   .access-options { flex-direction: column; }
+}
+
+/* ---- Reports: data set catalog (pick-your-own-export) ---- */
+.dataset-catalog {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.dataset-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--white);
+  border: 1px solid var(--stroke-100);
+  border-radius: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+.dataset-row:has(input:checked) { border-color: var(--primary); background: var(--banner-bg); }
+.dataset-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); flex: 0 0 auto; }
+.dataset-row-icon {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--badge-bg);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dataset-row-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.dataset-row-title { font-size: 13.5px; font-weight: 600; color: var(--heading); }
+.dataset-row-desc { font-size: 12px; color: var(--muted); }
+
+/* ---- Reports: preview blocks (also the PDF print source) ---- */
+.preview-block + .preview-block { margin-top: 28px; }
+.preview-block .subsection-title { display: flex; align-items: center; gap: 8px; }
+
+/* ---- Home: Overview combo-stat cards (dept + sub-dept coverage per
+   management area) and the Applications web/mobile donut ---- */
+.combo-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+@media (max-width: 1100px) {
+  .combo-stat-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .combo-stat-grid { grid-template-columns: 1fr; }
+}
+.combo-stat-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  color: inherit;
+  text-decoration: none;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+.combo-stat-card:hover {
+  box-shadow: var(--shadow-header);
+  transform: translateY(-1px);
+}
+.combo-stat-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.combo-stat-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--heading);
+}
+.combo-stat-body {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+}
+.combo-stat-item {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.combo-stat-number {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--heading);
+  line-height: 1.15;
+}
+.combo-stat-denom {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.combo-stat-label {
+  font-size: 11.5px;
+  color: var(--muted);
+  line-height: 17px;
+}
+.combo-stat-divider {
+  width: 1px;
+  background: var(--stroke-100);
+  flex: 0 0 auto;
+  align-self: center;
+  height: 46px;
+}
+
+/* ---- Applications donut card ---- */
+.app-chart-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.app-donut { flex: 0 0 auto; display: flex; }
+.app-donut svg { display: block; }
+.app-chart-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--dark);
+}
+.legend-row { display: flex; align-items: center; gap: 8px; }
+.legend-row strong { margin-left: auto; color: var(--heading); }
+.legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex: 0 0 auto;
 }

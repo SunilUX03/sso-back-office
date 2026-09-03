@@ -1,11 +1,9 @@
 // ============================================================
-// TN SSO — App Management: department detail page. Reads ?dept=
-// (and optional &sub=) from the URL, resolves them against the
-// real 75-department directory, and renders that department's
-// actual registered applications from Store — replacing the old
-// hardcoded "Tamil Nadu e-Governance Agency" page that showed the
-// same 4 fake app types cycled to 12 cards regardless of which
-// department link was clicked.
+// TN SSO — App Management: flat "All Applications" list across every
+// department, not scoped to one. Reads ?type=web|mobile from the URL
+// so the Overview tiles on app-management.html ("Web Applications" /
+// "Mobile Applications") can link straight into this list pre-filtered,
+// instead of only being static counts.
 // ============================================================
 function el(tag, className, html) {
   const node = document.createElement(tag);
@@ -19,114 +17,100 @@ function escapeHtml(s) {
   }[c]));
 }
 
-// ---- resolve ?dept=&sub= against the real directory ----
 const params = new URLSearchParams(location.search);
-const deptName = Store.deptBySlug(params.get("dept") || "");
-const subSlugParam = params.get("sub");
-const subDeptName = deptName && subSlugParam != null ? Store.subDeptBySlug(deptName, subSlugParam) : null;
-
-if (!deptName) {
-  document.getElementById("deptTitle").textContent = "Department not found";
-  document.querySelector(".page").innerHTML =
-    '<div class="page-head"><div class="page-title-block"><h1 class="page-title">Department not found</h1></div></div>' +
-    '<div class="empty-list">This department link is invalid or the department no longer exists. <a href="app-management.html">Go back to All Applications</a>.</div>';
-  throw new Error("app-agency: unknown department slug");
-}
-
-// ---- page head: dynamic title + breadcrumb ----
-// Department-level view (no ?sub=): the department itself is the current
-// crumb, no further segment. Sub-department view: department becomes a
-// clickable link back to its whole-department page, sub-department is
-// the current crumb.
-const deptCrumbLink = document.getElementById("deptCrumbLink");
-const subDeptCrumbEl = document.getElementById("subDeptCrumb");
-const subDeptCrumbSepEl = document.getElementById("subDeptCrumbSep");
-if (subDeptName != null) {
-  document.getElementById("deptTitle").textContent = Store.subDeptLabel(deptName, subDeptName);
-  deptCrumbLink.textContent = deptName;
-  deptCrumbLink.href = "app-management-agency.html?dept=" + Store.deptSlug(deptName);
-  subDeptCrumbEl.textContent = Store.subDeptLabel(deptName, subDeptName);
-} else {
-  document.getElementById("deptTitle").textContent = deptName;
-  deptCrumbLink.outerHTML = `<span class="crumb-current">${escapeHtml(deptName)}</span>`;
-  subDeptCrumbSepEl.remove();
-  subDeptCrumbEl.remove();
-}
-
-// ---- scope: whole department (all sub-depts) unless a sub-dept is picked ----
-let subDeptFilter = subDeptName; // null = All Sub-Departments
+const TYPE_OPTIONS = [
+  { value: "all", label: "All Types" },
+  { value: "web", label: "Web Applications" },
+  { value: "mobile", label: "Mobile Applications" },
+];
+let typeFilter = TYPE_OPTIONS.some((o) => o.value === params.get("type")) ? params.get("type") : "all";
 let statusFilter = "all"; // all | active | inactive
 let searchQuery = "";
 
-function scopedApps() {
-  return subDeptFilter != null ? Store.appsByDept(deptName, subDeptFilter) : Store.appsByDept(deptName);
+function matchesType(a, filter) {
+  if (filter === "web") return a.type === "Web Application" || a.type === "Web & Mobile";
+  if (filter === "mobile") return a.type === "Mobile Application" || a.type === "Web & Mobile";
+  return true;
 }
 function visibleApps() {
-  let apps = scopedApps();
+  let apps = Store.applications();
+  if (typeFilter !== "all") apps = apps.filter((a) => matchesType(a, typeFilter));
   if (statusFilter !== "all") apps = apps.filter((a) => a.status === statusFilter);
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
-    apps = apps.filter((a) => a.name.toLowerCase().includes(q) || (a.description || "").toLowerCase().includes(q));
+    apps = apps.filter(
+      (a) =>
+        a.name.toLowerCase().includes(q) ||
+        (a.description || "").toLowerCase().includes(q) ||
+        a.dept.toLowerCase().includes(q) ||
+        (a.subDept || "").toLowerCase().includes(q)
+    );
   }
   return apps;
 }
 
 // ---- Overview stat tiles ----
 function renderOverview() {
-  const apps = scopedApps();
+  const apps = Store.applications();
+  const deptsWithApps = new Set(apps.map((a) => a.dept)).size;
   const webCount = apps.filter((a) => a.type === "Web Application" || a.type === "Web & Mobile").length;
   const mobileCount = apps.filter((a) => a.type === "Mobile Application" || a.type === "Web & Mobile").length;
-  const activeCount = apps.filter((a) => a.status === "active").length;
   const tiles = [
-    { icon: "apps", value: String(apps.length), label: "Total Applications" },
-    { icon: "check_circle", value: String(activeCount), label: "Active" },
-    { icon: "language", value: String(webCount), label: "Web Applications" },
-    { icon: "phone_iphone", value: String(mobileCount), label: "Mobile Applications" },
+    { icon: "apps", value: String(apps.length), label: "All Applications", type: "all" },
+    { icon: "domain", value: `${deptsWithApps} of ${Store.allDepartments().length}`, label: "Departments Registered", type: null },
+    { icon: "language", value: String(webCount), label: "Web Applications", type: "web" },
+    { icon: "phone_iphone", value: String(mobileCount), label: "Mobile Applications", type: "mobile" },
   ];
-  document.getElementById("statGrid").innerHTML = tiles
+  document.getElementById("overviewTiles").innerHTML = tiles
     .map(
       (t) => `
-      <article class="ux4g-card ux4g-card-outline ux4g-al-stat-card">
+      <article class="ux4g-card ux4g-card-outline ux4g-al-stat-card${t.type ? " is-clickable" : ""}"${t.type ? ` data-type-tile="${t.type}"` : ""}>
         <div class="ux4g-card-body">
           <span class="ux4g-al-icon-tile"><span class="ux4g-icon-outlined" style="font-size:20px">${t.icon}</span></span>
           <div>
             <div class="ux4g-al-stat-number">${t.value}</div>
             <div class="ux4g-al-stat-label">${t.label}</div>
           </div>
+          ${t.type ? `<span class="ux4g-jm-dept-arrow"><span class="material-icons">arrow_forward</span></span>` : ""}
         </div>
       </article>`
     )
     .join("");
+  document.querySelectorAll("[data-type-tile]").forEach((tile) => {
+    tile.addEventListener("click", () => {
+      typeFilter = tile.dataset.typeTile;
+      selectTypeLabel.textContent = TYPE_OPTIONS.find((o) => o.value === typeFilter).label;
+      selectTypeBtn.classList.toggle("has-filter", typeFilter !== "all");
+      renderList();
+      document.getElementById("appGrid").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
 }
 
-// ---- Sub-Department filter dropdown (only meaningful when opened at the
-// whole-department level; hidden when the URL already scopes to one) ----
-const selectSubDeptBtn = document.getElementById("selectSubDept");
-const selectSubDeptLabel = document.getElementById("selectSubDeptLabel");
-if (subDeptName != null) {
-  selectSubDeptBtn.hidden = true;
-} else {
-  const subDepts = Store.allSubDepartments(deptName);
-  selectSubDeptBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    closeMenus();
-    const menu = el("div", "filter-menu");
-    const allOpt = el("button", "filter-menu-item" + (subDeptFilter === null ? " is-active" : ""), "All Sub-Departments");
-    allOpt.type = "button";
-    allOpt.addEventListener("click", () => { subDeptFilter = null; selectSubDeptLabel.textContent = "All Sub-Departments"; selectSubDeptBtn.classList.remove("has-filter"); closeMenus(); renderAll(); });
-    menu.appendChild(allOpt);
-    const genOpt = el("button", "filter-menu-item" + (subDeptFilter === "" ? " is-active" : ""), "General / Department-Level");
-    genOpt.type = "button";
-    genOpt.addEventListener("click", () => { subDeptFilter = ""; selectSubDeptLabel.textContent = "General / Department-Level"; selectSubDeptBtn.classList.add("has-filter"); closeMenus(); renderAll(); });
-    menu.appendChild(genOpt);
-    subDepts.forEach((s) => {
-      const opt = el("button", "filter-menu-item" + (subDeptFilter === s ? " is-active" : ""), escapeHtml(s));
-      opt.type = "button";
-      opt.addEventListener("click", () => { subDeptFilter = s; selectSubDeptLabel.textContent = s; selectSubDeptBtn.classList.add("has-filter"); closeMenus(); renderAll(); });
-      menu.appendChild(opt);
+// ---- Type filter dropdown ----
+const selectTypeBtn = document.getElementById("selectType");
+const selectTypeLabel = document.getElementById("selectTypeLabel");
+selectTypeBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  closeMenus();
+  const menu = el("div", "filter-menu");
+  TYPE_OPTIONS.forEach((o) => {
+    const opt = el("button", "filter-menu-item" + (typeFilter === o.value ? " is-active" : ""), o.label);
+    opt.type = "button";
+    opt.addEventListener("click", () => {
+      typeFilter = o.value;
+      selectTypeLabel.textContent = o.label;
+      selectTypeBtn.classList.toggle("has-filter", o.value !== "all");
+      closeMenus();
+      renderList();
     });
-    positionMenu(menu, selectSubDeptBtn);
+    menu.appendChild(opt);
   });
+  positionMenu(menu, selectTypeBtn);
+});
+if (typeFilter !== "all") {
+  selectTypeLabel.textContent = TYPE_OPTIONS.find((o) => o.value === typeFilter).label;
+  selectTypeBtn.classList.add("has-filter");
 }
 
 // ---- Status filter dropdown ----
@@ -149,7 +133,7 @@ selectStatusBtn.addEventListener("click", (e) => {
       selectStatusLabel.textContent = o.label;
       selectStatusBtn.classList.toggle("has-filter", o.value !== "all");
       closeMenus();
-      renderAll();
+      renderList();
     });
     menu.appendChild(opt);
   });
@@ -202,6 +186,7 @@ function renderList() {
         <div class="app-access-icons">${accessIcons(a)}</div>
       </div>
       <h3 class="app-name">${escapeHtml(a.name)}</h3>
+      <span class="app-card-dept">${escapeHtml(a.dept)}</span>
       <span class="chip">${escapeHtml(a.subDept ? a.subDept : "General / Department-Level")}</span>
       <span class="status-badge ${a.status === "active" ? "is-active" : "is-inactive"}">${a.status === "active" ? "Active" : "Inactive"}</span>
       <p class="app-desc">${escapeHtml(a.description || "No description provided.")}</p>

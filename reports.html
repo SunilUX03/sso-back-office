@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reports &amp; Export — TN SSO</title>
+  <title>Reports — TN SSO</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -12,47 +12,59 @@
   <link
     href="https://fonts.googleapis.com/icon?family=Material+Icons"
     rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260831b" />
+  <link rel="stylesheet" href="styles.css?v=20260962" />
+  <link rel="stylesheet" href="app-management.css?v=20260956" />
 
   <!-- UX4G Design System (CDN) -->
   <link rel="stylesheet" href="https://cdn.ux4g.gov.in/UX4G@3.0.18/index.css" />
   <link rel="stylesheet" href="ux4g-theme.css" />
 </head>
 <body>
-  <!-- ============ Accessibility Bar (UX4G component) ============ -->
-  <header class="ux4g-topbar ux4g-topbar-wide" role="banner">
-    <div class="ux4g-container">
-      <div class="ux4g-topbar__wrap ux4g-d-flex ux4g-jc-between ux4g-ai-center">
-        <div>
-          <a aria-label="Government of Tamil Nadu" class="ux4g-d-flex ux4g-ai-center" href="#">
-            <img src="assets/imgImage1.png" alt="" aria-hidden="true" style="height:20px;width:auto;margin-right:8px" />
-            <span class="ux4g-label-m-default">Government of Tamil Nadu</span>
-          </a>
-        </div>
-        <nav aria-label="Top utilities" class="ux4g-d-flex ux4g-ai-center">
-          <a class="ux4g-label-m-default ux4g-topbar__skip" href="#main">Skip to Main Content</a>
-          <span class="ux4g-bl acc-top-divider"></span>
-          <div aria-label="Text size controls" class="ux4g-topbar__group ux4g-d-flex ux4g-ai-center" role="group">
-            <button aria-label="Decrease text size" class="ux4g-topbar__iconbtn ux4g-d-flex ux4g-jc-center ux4g-ai-center" type="button"><span class="ux4g-icon-outlined ux4g-top-bar-icon">text_decrease</span></button>
-            <button aria-label="Reset text size" class="ux4g-topbar__iconbtn ux4g-d-flex ux4g-jc-center ux4g-ai-center" type="button"><span class="ux4g-icon-outlined ux4g-top-bar-icon">font_download</span></button>
-            <button aria-label="Increase text size" class="ux4g-topbar__iconbtn ux4g-d-flex ux4g-jc-center ux4g-ai-center" type="button"><span class="ux4g-icon-outlined ux4g-top-bar-icon">text_increase</span></button>
-          </div>
-          <span class="ux4g-bl acc-top-divider"></span>
-          <button aria-label="Accessibility options" class="ux4g-topbar__iconbtn ux4g-d-flex ux4g-jc-center ux4g-ai-center" type="button">
-            <span class="ux4g-icon-outlined ux4g-top-bar-icon">accessibility_new</span>
+  <!-- ============ Accessibility Bar ============ -->
+  <div class="accessibility-bar">
+    <div class="access-inner">
+      <a href="https://tnsso.tn.gov.in/login/index.html" class="access-brand" target="_blank" rel="noopener">TNSSO</a>
+      <div class="access-inner-right">
+        <a href="#main" class="skip-link">Skip to Main Content</a>
+        <span class="access-sep"></span>
+        <div class="font-controls" data-a11y-group="size">
+          <button class="access-icon" data-a11y-action="decrease" title="Decrease text size" aria-label="Decrease text size" type="button">
+            <span class="material-icons">text_decrease</span>
           </button>
-          <span class="ux4g-bl acc-top-divider"></span>
-          <div class="ux4g-topbar__select">
-            <button aria-expanded="false" aria-haspopup="listbox" class="ux4g-topbar__selectbtn ux4g-d-inline-flex ux4g-ai-center" type="button">
-              <span class="ux4g-icon-outlined ux4g-top-bar-icon">language</span>
-              <span class="ux4g-label-m-default">English</span>
-              <span class="ux4g-icon-outlined">arrow_drop_down</span>
-            </button>
-          </div>
-        </nav>
+          <button class="access-icon" data-a11y-action="reset" title="Reset text size" aria-label="Reset text size" type="button">
+            <span class="material-icons">format_size</span>
+          </button>
+          <button class="access-icon" data-a11y-action="increase" title="Increase text size" aria-label="Increase text size" type="button">
+            <span class="material-icons">text_increase</span>
+          </button>
+        </div>
+        <span class="access-sep"></span>
+        <div class="font-controls" data-a11y-group="spacing">
+          <button class="access-icon" data-a11y-action="decrease" title="Decrease text spacing" aria-label="Decrease text spacing" type="button">
+            <span class="material-icons">remove</span>
+          </button>
+          <button class="access-icon" data-a11y-action="reset" title="Reset text spacing" aria-label="Reset text spacing" type="button">
+            <span class="material-icons">space_bar</span>
+          </button>
+          <button class="access-icon" data-a11y-action="increase" title="Increase text spacing" aria-label="Increase text spacing" type="button">
+            <span class="material-icons">add</span>
+          </button>
+        </div>
+        <span class="access-sep"></span>
+        <div class="font-controls" data-a11y-group="lineheight">
+          <button class="access-icon" data-a11y-action="decrease" title="Decrease line height" aria-label="Decrease line height" type="button">
+            <span class="material-icons">remove</span>
+          </button>
+          <button class="access-icon" data-a11y-action="reset" title="Reset line height" aria-label="Reset line height" type="button">
+            <span class="material-icons">format_line_spacing</span>
+          </button>
+          <button class="access-icon" data-a11y-action="increase" title="Increase line height" aria-label="Increase line height" type="button">
+            <span class="material-icons">add</span>
+          </button>
+        </div>
       </div>
     </div>
-  </header>
+  </div>
 
   <!-- ============ Header / Main Nav ============ -->
   <header class="header">
@@ -76,7 +88,8 @@
           <a href="admin-logins.html" class="nav-item dropdown-toggle is-active" data-toggle="dropdown">Administration<span class="material-icons">keyboard_arrow_down</span></a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="admin-logins.html"><span class="material-icons">admin_panel_settings</span>Admin Logins</a></li>
-            <li><a class="dropdown-item is-active" href="reports.html"><span class="material-icons">summarize</span>Reports &amp; Export</a></li>
+            <li><a class="dropdown-item" href="dept-directory.html"><span class="material-icons">edit_note</span>Edit Dept &amp; Sub Dept Names</a></li>
+            <li><a class="dropdown-item is-active" href="reports.html"><span class="material-icons">summarize</span>Reports</a></li>
           </ul>
         </div>
 
@@ -92,9 +105,8 @@
         <div class="dropdown">
           <a href="users.html" class="nav-item dropdown-toggle" data-toggle="dropdown">User Management<span class="material-icons">keyboard_arrow_down</span></a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#"><span class="material-icons">person_add</span>Create User</a></li>
+            <li><a class="dropdown-item" href="#" data-open="officer"><span class="material-icons">person_add</span>Create User</a></li>
             <li><a class="dropdown-item" href="users.html"><span class="material-icons">group</span>All Users</a></li>
-            <li><a class="dropdown-item" href="#"><span class="material-icons">admin_panel_settings</span>Roles &amp; Permissions</a></li>
           </ul>
         </div>
 
@@ -114,8 +126,7 @@
           <span class="material-icons">arrow_drop_down</span>
         </button>
         <ul class="dropdown-menu dropdown-menu-end">
-          <li><a class="dropdown-item is-active" href="#"><span class="material-icons">person</span>My Profile</a></li>
-          <li><a class="dropdown-item" href="#"><span class="material-icons">settings</span>Settings</a></li>
+          <li><a class="dropdown-item is-active" href="profile.html"><span class="material-icons">person</span>My Profile</a></li>
           <li><hr class="dropdown-divider" /></li>
           <li><a class="dropdown-item" href="#"><span class="material-icons">logout</span>Sign Out</a></li>
         </ul>
@@ -127,46 +138,42 @@
     <!-- ============ Page head: title + breadcrumb ============ -->
     <div class="page-head">
       <div class="page-title-block">
-        <h1 class="page-title">Reports &amp; Export</h1>
+        <h1 class="page-title">Reports</h1>
         <nav class="breadcrumb" aria-label="Breadcrumb">
           <a href="index.html">Home</a>
           <span class="crumb-sep">/</span>
-          <span class="crumb-current">Reports &amp; Export</span>
+          <span class="crumb-current">Reports</span>
         </nav>
       </div>
       <div class="ux4g-al-row-actions">
-        <button class="ux4g-btn ux4g-btn-outline-neutral ux4g-btn-md" id="exportCsv" type="button">
+        <button class="ux4g-btn ux4g-btn-outline-neutral ux4g-btn-md" id="exportCsv" type="button" disabled>
           <span class="ux4g-icon-outlined" style="font-size:18px">download</span>
           Export CSV
         </button>
-        <button class="ux4g-btn ux4g-btn-primary ux4g-btn-md" id="exportPdf" type="button">
+        <button class="ux4g-btn ux4g-btn-primary ux4g-btn-md" id="exportPdf" type="button" disabled>
           <span class="ux4g-icon-outlined" style="font-size:18px">picture_as_pdf</span>
           Export PDF
         </button>
       </div>
     </div>
 
-    <!-- ============ Dataset picker ============ -->
-    <section class="section">
+    <!-- ============ Available Data Sets ============ -->
+    <section class="section" id="catalogSection">
       <div class="jur-toolbar">
-        <div class="tab-switch" role="tablist" id="datasetTabs">
-          <button class="tab is-active" role="tab" aria-selected="true" data-dataset="departments">Departments</button>
-          <button class="tab" role="tab" aria-selected="false" data-dataset="jurisdictions">Jurisdictions</button>
-          <button class="tab" role="tab" aria-selected="false" data-dataset="designations">Designations</button>
-          <button class="tab" role="tab" aria-selected="false" data-dataset="officers">Officers</button>
+        <div class="jur-toolbar-left">
+          <h2 class="section-title" style="margin:0;">Available Data Sets</h2>
+          <span class="count-badge" id="selectedCountBadge">0 selected</span>
         </div>
-        <div class="ux4g-input ux4g-input-md ux4g-al-search">
-          <span class="ux4g-input-leading-icon"><span class="ux4g-icon-outlined" style="font-size:18px">search</span></span>
-          <input class="ux4g-input-input" type="text" id="reportSearch" placeholder="Search this dataset" aria-label="Search this dataset" />
-        </div>
+        <button class="btn-text" id="selectAllBtn" type="button">Select All</button>
       </div>
-      <p class="ux4g-al-report-count" id="reportCount"></p>
-      <div class="ux4g-al-table-wrap">
-        <table class="ux4g-table ux4g-table-rounded ux4g-table-m" id="reportTable">
-          <thead id="reportHead"></thead>
-          <tbody id="reportBody"></tbody>
-        </table>
-      </div>
+      <p class="wizard-subtitle" style="margin:-4px 0 16px;">Pick whichever data sets you need — each one exports as its own CSV, or as a section in a combined PDF.</p>
+      <div class="dataset-catalog" id="datasetCatalog"><!-- rows injected by reports.js --></div>
+    </section>
+
+    <!-- ============ Preview (also what prints for PDF export) ============ -->
+    <section class="section" id="previewSection" hidden>
+      <h2 class="section-title">Preview</h2>
+      <div id="previewList"><!-- blocks injected by reports.js --></div>
     </section>
   </main>
 
@@ -182,9 +189,11 @@
     </div>
   </footer>
 
-  <script src="store.js"></script>
-  <script src="dropdown.js"></script>
-  <script src="reports.js"></script>
+  <script src="store.js?v=20260955"></script>
+  <script src="officer-modals.js?v=20260944"></script>
+  <script src="dropdown.js?v=20260901"></script>
+  <script src="accessibility.js?v=20260960"></script>
+  <script src="reports.js?v=20260955"></script>
 
   <!-- UX4G runtime (accessibility bar behavior, theme toggle, etc.) -->
   <script src="https://cdn.ux4g.gov.in/UX4G@3.0.18/ux4g.js"></script>

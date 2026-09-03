@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>All Users — TN SSO</title>
+  <title>All Applications — TN SSO</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -13,6 +13,7 @@
     href="https://fonts.googleapis.com/icon?family=Material+Icons"
     rel="stylesheet" />
   <link rel="stylesheet" href="styles.css?v=20260962" />
+  <link rel="stylesheet" href="app-management.css?v=20260956" />
 
   <!-- UX4G Design System (CDN) -->
   <link rel="stylesheet" href="https://cdn.ux4g.gov.in/UX4G@3.0.18/index.css" />
@@ -101,17 +102,17 @@
         </div>
 
         <div class="dropdown">
-          <a href="users.html" class="nav-item dropdown-toggle is-active" data-toggle="dropdown">User Management<span class="material-icons">keyboard_arrow_down</span></a>
+          <a href="users.html" class="nav-item dropdown-toggle" data-toggle="dropdown">User Management<span class="material-icons">keyboard_arrow_down</span></a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="#" data-open="officer"><span class="material-icons">person_add</span>Create User</a></li>
-            <li><a class="dropdown-item is-active" href="users.html"><span class="material-icons">group</span>All Users</a></li>
+            <li><a class="dropdown-item" href="users.html"><span class="material-icons">group</span>All Users</a></li>
           </ul>
         </div>
 
         <div class="dropdown">
-          <a href="app-management.html" class="nav-item dropdown-toggle" data-toggle="dropdown">App Management<span class="material-icons">keyboard_arrow_down</span></a>
+          <a href="app-management.html" class="nav-item dropdown-toggle is-active" data-toggle="dropdown">App Management<span class="material-icons">keyboard_arrow_down</span></a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="app-management.html"><span class="material-icons">add_box</span>Register Application</a></li>
+            <li><a class="dropdown-item" href="#" data-open="app"><span class="material-icons">add_box</span>Register Application</a></li>
             <li><a class="dropdown-item" href="app-management.html"><span class="material-icons">apps</span>All Applications</a></li>
           </ul>
         </div>
@@ -119,7 +120,7 @@
 
       <div class="dropdown">
         <button class="org-switcher dropdown-toggle" data-toggle="dropdown">
-          <img class="org-avatar" src="assets/imgImage2.png" alt="" />
+          <img class="org-avatar" src="assets/imgImage12.png" alt="" />
           <span class="org-name">Super Admin</span>
           <span class="material-icons">arrow_drop_down</span>
         </button>
@@ -134,48 +135,67 @@
 
   <main id="main" class="page">
     <!-- ============ Page head ============ -->
-    <div class="page-title-block">
-      <h1 class="page-title">All Users</h1>
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="index.html">Home</a>
-        <span class="crumb-sep">/</span>
-        <a href="users.html">User Management</a>
-        <span class="crumb-sep">/</span>
-        <span class="crumb-current">All Users</span>
-      </nav>
+    <div class="page-head">
+      <div class="page-title-block">
+        <h1 class="page-title">All Applications</h1>
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <a href="index.html">Home</a>
+          <span class="crumb-sep">/</span>
+          <a href="app-management.html">App Management</a>
+          <span class="crumb-sep">/</span>
+          <span class="crumb-current">All Applications</span>
+        </nav>
+      </div>
+      <button class="btn btn-primary-alt btn-lg" data-open="app">
+        <span class="material-icons" style="font-size:18px">add_box</span>
+        Register Application
+      </button>
     </div>
 
     <!-- ============ Overview ============ -->
     <section class="section">
       <h2 class="section-title">Overview</h2>
-      <div class="ux4g-al-stat-grid" id="overviewTiles"><!-- 3 stat tiles injected by users.js --></div>
+      <div class="ux4g-al-stat-grid" id="overviewTiles">
+        <!-- stat tiles injected by app-management-all.js -->
+      </div>
     </section>
 
-    <!-- ============ All Departments (directory) ============ -->
-    <section class="section">
+    <!-- ============ Applications ============ -->
+    <section class="section-block">
       <div class="jur-toolbar">
         <div class="jur-toolbar-left">
-          <h2 class="section-title" style="margin:0;">All Departments</h2>
-          <span class="count-badge" id="deptCountBadge">76</span>
+          <h2 class="section-title">Applications</h2>
+          <span class="count-badge" id="countBadge">0</span>
         </div>
-        <div class="search-box">
-          <img src="assets/imgSearch.svg" alt="" />
-          <input type="text" id="deptSearch" placeholder="Search departments or sub-departments" aria-label="Search departments or sub-departments" />
+        <div class="jur-toolbar-right">
+          <div class="search-box">
+            <img src="assets/imgSearch.svg" alt="" />
+            <input type="text" id="appSearch" placeholder="Search applications or departments" aria-label="Search applications or departments" />
+          </div>
+          <button class="level-dropdown" id="selectType">
+            <span id="selectTypeLabel">All Types</span>
+            <img src="assets/imgFilterChevron.svg" alt="" />
+          </button>
+          <button class="level-dropdown" id="selectStatus">
+            <span id="selectStatusLabel">All Status</span>
+            <img src="assets/imgFilterChevron.svg" alt="" />
+          </button>
         </div>
       </div>
-      <div class="ux4g-jm-filter-row">
-        <div class="ux4g-jm-config-filter" id="configFilter">
-          <button class="ux4g-jm-config-btn is-active" data-filter="all" type="button">All</button>
-          <button class="ux4g-jm-config-btn" data-filter="configured" type="button">Configured</button>
-          <button class="ux4g-jm-config-btn" data-filter="not-configured" type="button">Not Configured</button>
-        </div>
-        <div class="ux4g-jm-az-strip" id="azStrip"><!-- A–Z buttons injected by users.js --></div>
-      </div>
-      <div class="ux4g-jm-dept-list" id="deptList">
-        <!-- rows injected by users.js -->
-      </div>
+      <div class="app-grid" id="appGrid"><!-- cards injected by app-management-all.js --></div>
     </section>
   </main>
+
+  <!-- ============ "Select one to access" modal ============ -->
+  <div class="modal-backdrop" id="accessModal" hidden>
+    <div class="modal modal-sm" role="dialog" aria-modal="true" aria-label="Access application">
+      <button class="modal-close" data-access-close aria-label="Close" style="position:absolute;top:24px;right:24px;">
+        <span class="material-icons">close</span>
+      </button>
+      <h2 class="access-modal-title">Select one to access the application</h2>
+      <div class="access-options" id="accessOptions"></div>
+    </div>
+  </div>
 
   <!-- ============ Footer ============ -->
   <footer class="footer">
@@ -189,11 +209,12 @@
     </div>
   </footer>
 
-  <script src="store.js?v=20260940"></script>
+  <script src="store.js?v=20260947"></script>
+  <script src="officer-modals.js?v=20260944"></script>
   <script src="dropdown.js?v=20260901"></script>
   <script src="accessibility.js?v=20260960"></script>
-  <script src="officer-modals.js?v=20260944"></script>
-  <script src="users.js?v=20260936"></script>
+  <script src="app-modals.js?v=20260953"></script>
+  <script src="app-management-all.js?v=20260951"></script>
 
   <!-- UX4G runtime (accessibility bar behavior, theme toggle, etc.) -->
   <script src="https://cdn.ux4g.gov.in/UX4G@3.0.18/ux4g.js"></script>
