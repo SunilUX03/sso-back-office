@@ -7,7 +7,7 @@
 // Load this BEFORE any page script.
 // ============================================================
 window.Store = (function () {
-  const KEY = "tnsso.v12";
+  const KEY = "tnsso.v15";
 
   // ---- Default seed data ----------------------------------
   // The 3 departments actually "onboarded" in this demo (Admin Logins /
@@ -510,8 +510,11 @@ window.Store = (function () {
 
   function seedDepartmentAdmins() {
     // One onboarded admin per seed department, so the Departments page
-    // isn't empty on first load.
-    return DEPARTMENTS.map((name, i) => ({
+    // isn't empty on first load. Each carries a known demo password (like
+    // the Super Admin's own) so it can actually sign in on the Login page,
+    // not just appear in a list — this is a static prototype with no real
+    // auth backend, so a known, shareable demo credential is deliberate.
+    const deptAdmins = DEPARTMENTS.map((name, i) => ({
       id: i + 1,
       dept: name,
       code: ["ITD", "RDM", "RDPR"][i] || "",
@@ -520,7 +523,42 @@ window.Store = (function () {
       mobile: "9" + String(800000000 + i * 111111).slice(0, 9),
       sso: "deptadmin" + (i + 1),
       status: "active",
+      password: "DeptAdmin@2026",
     }));
+    // One Tier-2 demo login too — a Sub-Department Admin, scoped one level
+    // narrower than a Department Admin (their own department AND their own
+    // sub-department only), granted here by IT Department the same way a
+    // Department Admin would grant one via Create Admin Login.
+    deptAdmins.push({
+      id: deptAdmins.length + 1,
+      dept: "Information Technology Department",
+      subDept: "Tamilnadu e-Governance Agency (TNeGA)/ Directorate of e-Governance(AB)",
+      code: "TNeGA",
+      name: "Karthik Raja",
+      email: "tnegaadmin@tn.gov.in",
+      mobile: "9800333333",
+      sso: "tnegaadmin",
+      status: "active",
+      password: "SubDeptAdmin@2026",
+    });
+    // One Tier-3 demo login too — a jurisdiction-level admin, scoped to one
+    // real office (here, a Division: "Chennai Region") and everything
+    // beneath it (its District, its Sub-Division), same as any real
+    // jurisdiction office an admin above them could grant this scope for.
+    deptAdmins.push({
+      id: deptAdmins.length + 1,
+      dept: "Information Technology Department",
+      subDept: "Tamilnadu e-Governance Agency (TNeGA)/ Directorate of e-Governance(AB)",
+      office: "Chennai Region",
+      code: "TNeGA-CR",
+      name: "Ravi Shankar",
+      email: "chennairegionadmin@tn.gov.in",
+      mobile: "9800444444",
+      sso: "chennairegionadmin",
+      status: "active",
+      password: "OfficeAdmin@2026",
+    });
+    return deptAdmins;
   }
 
   // The logged-in Super Admin's own profile (Profile page) — a single
@@ -705,6 +743,195 @@ window.Store = (function () {
     allSubDepartmentRecords(deptName) { return data.directory.subDepartments[deptName] || []; },
     verifyAdminPassword(pw) { return pw === SUPER_ADMIN_PASSWORD; },
 
+    // ---- Session (who is signed in right now) ----
+    // A single stored object, not scattered flags — {role:"super-admin"}
+    // or {role:"dept-admin", dept, subDept, office, name}. subDept is "" for
+    // a Department Admin (Tier 1, scoped to the whole department) and a real
+    // sub-department name for a Sub-Department Admin (Tier 2, scoped one
+    // level narrower). office goes one level further still — a real
+    // jurisdiction office name (e.g. a Division) scopes the admin to that
+    // office and everything beneath it in the real hierarchy (its
+    // Districts, Sub-Divisions, ...), the same way a real Division Officer
+    // oversees everything under their Division. Same role throughout, one
+    // extra dimension at a time, rather than a growing list of role names.
+    // Read by every page to decide what they're allowed to see, and by the
+    // Login page to decide who just signed in.
+    session() {
+      try {
+        const raw = localStorage.getItem("tnsso.session");
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) { return null; }
+    },
+    setSession(session) {
+      try { localStorage.setItem("tnsso.session", JSON.stringify(session)); } catch (e) { /* private browsing etc. */ }
+    },
+    clearSession() {
+      try { localStorage.removeItem("tnsso.session"); } catch (e) { /* ignore */ }
+    },
+    // Normalized scope derived from the session — every page reads this,
+    // never the raw session object, so "no session yet" (nobody's actually
+    // signed in on this static prototype's other pages) safely behaves
+    // like Super Admin instead of crashing.
+    myScope() {
+      const s = this.session();
+      if (s && s.role === "dept-admin" && s.dept) {
+        return { role: "dept-admin", dept: s.dept, subDept: s.subDept || "", office: s.office || "" };
+      }
+      return { role: "super-admin" };
+    },
+    // Departments visible to whoever is signed in — every real department
+    // for Super Admin, just their own for a Department Admin (Tier 1 or
+    // Tier 2 alike — a Sub-Department Admin still only has one department).
+    // Every department-directory page (Jurisdiction/Designation/User
+    // Management, the Home overview, Reports) reads this instead of
+    // allDepartments() directly so a Department Admin's view narrows
+    // automatically.
+    visibleDepartments() {
+      const scope = this.myScope();
+      return scope.role === "dept-admin" ? [scope.dept] : this.allDepartments();
+    },
+    // Sub-departments visible to whoever is signed in, within one given
+    // department — every real sub-department for Super Admin and a
+    // Department Admin (Tier 1), just their own single one for a
+    // Sub-Department Admin (Tier 2) looking at their own department.
+    visibleSubDepartments(deptName) {
+      const scope = this.myScope();
+      if (scope.role === "dept-admin" && scope.subDept && deptName === scope.dept) return [scope.subDept];
+      return this.allSubDepartments(deptName);
+    },
+    // Every office at-or-beneath a given root office, within one
+    // department + sub-department's own hierarchy (parentId links stay
+    // scoped to that one bucket) — the real "this office and everything
+    // under it" set a jurisdiction-level admin's authority spans.
+    officeSubtreeIds(deptName, subDeptName, rootId) {
+      const offices = this.deptOffices(deptName, subDeptName);
+      const ids = new Set([rootId]);
+      let grew = true;
+      while (grew) {
+        grew = false;
+        offices.forEach((o) => {
+          if (o.parentId != null && ids.has(o.parentId) && !ids.has(o.id)) {
+            ids.add(o.id);
+            grew = true;
+          }
+        });
+      }
+      return ids;
+    },
+    // Jurisdiction offices visible to whoever is signed in, within one
+    // department + sub-department — every office for Super Admin and a
+    // Department/Sub-Department Admin (Tier 1/2), just the signed-in
+    // office and its descendants for a jurisdiction-level admin (Tier 3+).
+    visibleOffices(deptName, subDeptName) {
+      const scope = this.myScope();
+      const all = this.deptOffices(deptName, subDeptName);
+      if (scope.role === "dept-admin" && scope.office && deptName === scope.dept && subDeptName === scope.subDept) {
+        const root = all.find((o) => o.name === scope.office);
+        if (!root) return all;
+        const ids = this.officeSubtreeIds(deptName, subDeptName, root.id);
+        return all.filter((o) => ids.has(o.id));
+      }
+      return all;
+    },
+    // Designations visible to whoever is signed in, within one department +
+    // sub-department — every designation for Super Admin and a
+    // Department/Sub-Department Admin, just the ones at-or-below the
+    // signed-in office's own level for a jurisdiction-level admin (a
+    // Division admin manages Division-and-below designations, not the
+    // department's own Secretary-level one above them).
+    visibleDeptDesignations(deptName, subDeptName) {
+      const scope = this.myScope();
+      const all = this.deptDesignations(deptName, subDeptName);
+      if (scope.role === "dept-admin" && scope.office && deptName === scope.dept && subDeptName === scope.subDept) {
+        const root = this.deptOffices(deptName, subDeptName).find((o) => o.name === scope.office);
+        if (!root) return all;
+        return all.filter((d) => d.levelIndex >= root.levelIndex);
+      }
+      return all;
+    },
+    // Officer accounts visible to whoever is signed in — every officer for
+    // Super Admin, narrowed by department, then sub-department, then (for a
+    // jurisdiction-level admin) to officers whose own jurisdiction office
+    // falls within the signed-in office's subtree.
+    visibleOfficers() {
+      const scope = this.myScope();
+      if (scope.role !== "dept-admin") return this.officers();
+      let list = this.officers().filter((o) => o.dept === scope.dept && (!scope.subDept || o.subDept === scope.subDept));
+      if (scope.office) {
+        const officeNames = new Set(this.visibleOffices(scope.dept, scope.subDept).map((o) => o.name));
+        list = list.filter((o) => officeNames.has(o.jurisdiction));
+      }
+      return list;
+    },
+    // Applications visible to whoever is signed in — every registered
+    // application for Super Admin, narrowed the same way as officers for
+    // a Department/Sub-Department Admin.
+    visibleApplications() {
+      const scope = this.myScope();
+      const all = this.applications();
+      if (scope.role !== "dept-admin") return all;
+      return all.filter((a) => a.dept === scope.dept && (!scope.subDept || a.subDept === scope.subDept));
+    },
+    // Admin-login records visible to whoever is signed in — every record
+    // for Super Admin, narrowed the same way as officers for a
+    // Department/Sub-Department Admin.
+    scopedDepartmentAdmins() {
+      const scope = this.myScope();
+      const all = this.departmentAdmins();
+      if (scope.role !== "dept-admin") return all;
+      let list = all.filter((a) => a.dept === scope.dept && (!scope.subDept || a.subDept === scope.subDept));
+      if (scope.office) {
+        // Only admins scoped to an office within this subtree — a broader
+        // Department/Sub-Department Admin (no office of their own) isn't
+        // narrower than this admin, so they don't belong in this list.
+        const officeNames = new Set(this.visibleOffices(scope.dept, scope.subDept).map((o) => o.name));
+        list = list.filter((a) => a.office && officeNames.has(a.office));
+      }
+      return list;
+    },
+    // Resolves a requested department name (usually a ?dept= URL param)
+    // against the current session's scope. Super Admin gets what they
+    // asked for (or the first real department as a fallback). A
+    // Department Admin who requests — or, by editing the URL, tries to
+    // reach — a department that isn't their own is bounced back to their
+    // own department's version of the same page instead of shown it.
+    resolveScopedDept(requestedName) {
+      const scope = this.myScope();
+      if (scope.role === "dept-admin") {
+        if (requestedName && requestedName !== scope.dept) {
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.set("dept", this.deptSlug(scope.dept));
+            url.searchParams.delete("sub");
+            window.location.replace(url.toString());
+          } catch (e) { /* ignore */ }
+        }
+        return scope.dept;
+      }
+      return requestedName || this.allDepartments()[0];
+    },
+    // Resolves a requested sub-department name against the current
+    // session's scope, once the department itself is already settled. A
+    // Sub-Department Admin who requests — or tries to reach via the URL —
+    // a sub-department that isn't their own is bounced to their own,
+    // exactly like resolveScopedDept does one level up. Everyone else
+    // (Super Admin, a Tier-1 Department Admin) gets what they asked for,
+    // or the first real sub-department as a fallback.
+    resolveScopedSubDept(deptName, requestedSub) {
+      const scope = this.myScope();
+      if (scope.role === "dept-admin" && scope.subDept && deptName === scope.dept) {
+        if (requestedSub !== scope.subDept) {
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.set("sub", this.subDeptSlug(scope.subDept));
+            window.location.replace(url.toString());
+          } catch (e) { /* ignore */ }
+        }
+        return scope.subDept;
+      }
+      return requestedSub != null ? requestedSub : (this.allSubDepartments(deptName)[0] || "");
+    },
+
     // ---- Edit Dept & Sub Dept Names (directory management) ----
     directoryDepartmentExists(name) {
       return data.directory.departments.some((d) => d.name.toLowerCase() === name.toLowerCase());
@@ -809,10 +1036,12 @@ window.Store = (function () {
     // name is picked from the real department directory (Store.allDepartments),
     // so it may already be one of the onboarded departments — only add it to
     // the small onboarded list if it isn't there yet, rather than pushing a
-    // duplicate every time a second admin login is created for it. subDept is
-    // optional context only (which real sub-department prompted the login) —
-    // it never narrows what the resulting admin can see.
-    addDepartment({ name, code, admin, subDept, pending }) {
+    // duplicate every time a second admin login is created for it. subDept
+    // (Tier 2) and office (Tier 3+, a specific jurisdiction office within
+    // that sub-department, plus everything beneath it) each narrow what the
+    // resulting admin can see one level further — leaving both blank keeps
+    // a Tier 1, whole-department admin.
+    addDepartment({ name, code, admin, subDept, office, pending }) {
       if (!data.departments.includes(name)) {
         data.departments.push(name);
         if (!data.subDepartments[name]) data.subDepartments[name] = [];
@@ -822,6 +1051,7 @@ window.Store = (function () {
         id: ++data.seqs.department,
         dept: name,
         subDept: subDept || "",
+        office: office || "",
         code: code || "",
         name: admin.name,
         email: admin.email,
@@ -834,7 +1064,7 @@ window.Store = (function () {
       persist();
       return record;
     },
-    updateDepartment(id, { name, code, admin, subDept }) {
+    updateDepartment(id, { name, code, admin, subDept, office }) {
       const a = this.departmentAdmins().find((x) => x.id === id);
       if (!a) return null;
       if (name && name !== a.dept) {
@@ -845,6 +1075,7 @@ window.Store = (function () {
         a.dept = name;
       }
       a.subDept = subDept || "";
+      a.office = office || "";
       a.code = code || "";
       a.name = admin.name;
       a.email = admin.email;

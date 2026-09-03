@@ -17,9 +17,16 @@ function esc(s) {
 // Offices and Designations data sets below, so they reflect the real
 // 75-department directory instead of a stale, unrelated seed list.
 function forEachDeptSubDept(fn) {
-  Store.allDepartments().forEach((dept) => {
+  const scope = Store.myScope();
+  Store.visibleDepartments().forEach((dept) => {
+    // A Sub-Department Admin's own General/Department-Level bucket isn't
+    // theirs — only their one sub-department's data is.
+    if (scope.role === "dept-admin" && scope.subDept && dept === scope.dept) {
+      fn(dept, scope.subDept);
+      return;
+    }
     fn(dept, "");
-    Store.allSubDepartments(dept).forEach((sub) => fn(dept, sub));
+    Store.visibleSubDepartments(dept).forEach((sub) => fn(dept, sub));
   });
 }
 
@@ -30,10 +37,15 @@ const DATASETS = {
     description: "The full department and sub-department directory.",
     columns: ["Department", "Sub-Department", "Status"],
     rows() {
+      const scope = Store.myScope();
       const rows = [];
-      Store.allDepartments().forEach((dept) => {
+      Store.visibleDepartments().forEach((dept) => {
+        if (scope.role === "dept-admin" && scope.subDept && dept === scope.dept) {
+          rows.push([dept, scope.subDept, "Active"]);
+          return;
+        }
         rows.push([dept, "General / Department-Level", "Active"]);
-        Store.allSubDepartments(dept).forEach((sub) => rows.push([dept, sub, "Active"]));
+        Store.visibleSubDepartments(dept).forEach((sub) => rows.push([dept, sub, "Active"]));
       });
       return rows;
     },
@@ -47,7 +59,7 @@ const DATASETS = {
       const rows = [];
       forEachDeptSubDept((dept, sub) => {
         const levels = Store.deptLevels(dept, sub);
-        Store.deptOffices(dept, sub).forEach((o) => {
+        Store.visibleOffices(dept, sub).forEach((o) => {
           rows.push([dept, sub || "General", o.name, levels[o.levelIndex] || "—", o.reportsTo || "—"]);
         });
       });
@@ -62,7 +74,7 @@ const DATASETS = {
     rows() {
       const rows = [];
       forEachDeptSubDept((dept, sub) => {
-        Store.deptDesignations(dept, sub).forEach((d) => {
+        Store.visibleDeptDesignations(dept, sub).forEach((d) => {
           rows.push([dept, sub || "General", d.name, d.code || "—"]);
         });
       });
@@ -75,7 +87,7 @@ const DATASETS = {
     description: "Every officer account, active, deactivated, or pending.",
     columns: ["Name", "Designation", "Department", "Sub-Department", "Jurisdiction", "Mobile", "Email", "Status"],
     rows() {
-      return Store.officers().map((o) => [
+      return Store.visibleOfficers().map((o) => [
         o.name, o.role || o.designation || "—", o.dept || "—", o.subDept || "—", o.jurisdiction || "—",
         o.mobile || "—", o.email || "—",
         o.status === "active" ? "Active" : o.status === "pending" ? "Pending" : "Deactivated",
@@ -88,7 +100,7 @@ const DATASETS = {
     description: "Department admin accounts and their status.",
     columns: ["Department", "Admin Name", "Email", "Mobile", "Status"],
     rows() {
-      return Store.departmentAdmins().map((a) => [
+      return Store.scopedDepartmentAdmins().map((a) => [
         a.dept, a.name, a.email, a.mobile,
         a.status === "active" ? "Active" : a.status === "pending" ? "Pending" : "Deactivated",
       ]);
@@ -100,7 +112,7 @@ const DATASETS = {
     description: "Every registered application across all departments.",
     columns: ["Application", "Department", "Sub-Department", "Type", "Audience", "Status"],
     rows() {
-      return Store.applications().map((a) => [
+      return Store.visibleApplications().map((a) => [
         a.name, a.dept, a.subDept || "General", a.type,
         a.audience === "public" ? "General Public" : a.audience === "both" ? "Both Officers & Public" : "Government Officers",
         a.status === "active" ? "Active" : "Inactive",
@@ -113,8 +125,11 @@ const DATASETS = {
     description: "Officer and admin accounts still awaiting verification.",
     columns: ["Name", "Account Type", "Department", "Contact"],
     rows() {
-      const officers = (Store.pendingOfficers ? Store.pendingOfficers() : []).map((o) => [o.name, "Officer", o.dept || "—", o.email || o.mobile || "—"]);
-      const admins = (Store.pendingDepartmentAdmins ? Store.pendingDepartmentAdmins() : []).map((a) => [a.name, "Admin Login", a.dept || "—", a.email || a.mobile || "—"]);
+      const scope = Store.myScope();
+      const inScope = (dept, subDept) =>
+        scope.role !== "dept-admin" || (dept === scope.dept && (!scope.subDept || (subDept || "") === scope.subDept));
+      const officers = (Store.pendingOfficers ? Store.pendingOfficers() : []).filter((o) => inScope(o.dept, o.subDept)).map((o) => [o.name, "Officer", o.dept || "—", o.email || o.mobile || "—"]);
+      const admins = (Store.pendingDepartmentAdmins ? Store.pendingDepartmentAdmins() : []).filter((a) => inScope(a.dept, a.subDept)).map((a) => [a.name, "Admin Login", a.dept || "—", a.email || a.mobile || "—"]);
       return officers.concat(admins);
     },
   },

@@ -120,6 +120,7 @@
   color: var(--heading);
 }
 .app-card .chip { align-self: flex-start; }
+.app-card .status-badge { align-self: center; }
 .app-desc {
   font-size: 12px;
   line-height: 16px;

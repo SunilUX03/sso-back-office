@@ -6,9 +6,9 @@
 // "onboarded" list.
 // ============================================================
 const params = new URLSearchParams(window.location.search);
-const deptName = Store.deptBySlug(params.get("dept")) || Store.allDepartments()[0];
+const deptName = Store.resolveScopedDept(Store.deptBySlug(params.get("dept")));
 const resolvedSub = Store.subDeptBySlug(deptName, params.get("sub"));
-const subDeptName = resolvedSub !== null ? resolvedSub : Store.allSubDepartments(deptName)[0];
+const subDeptName = Store.resolveScopedSubDept(deptName, resolvedSub);
 
 const subDeptLabel = Store.subDeptLabel(deptName, subDeptName);
 document.getElementById("deptTitle").textContent = subDeptLabel;
@@ -23,6 +23,28 @@ if (subDeptName === Store.generalSubDept()) {
 } else {
   document.getElementById("deptCrumbLink").textContent = deptName;
   document.getElementById("deptCrumbLink").href = `users-subdept.html?dept=${Store.deptSlug(deptName)}`;
+}
+// A jurisdiction-office admin's real scope is their own office, not the
+// whole sub-department — the heading and breadcrumb name that office (and
+// its level) instead, with the sub-department demoted to a mid-crumb.
+{
+  const officeScope = Store.myScope();
+  const scopedOffice =
+    officeScope.role === "dept-admin" && officeScope.office && deptName === officeScope.dept && subDeptName === officeScope.subDept
+      ? Store.deptOffices(deptName, subDeptName).find((o) => o.name === officeScope.office)
+      : null;
+  if (scopedOffice) {
+    const levels = Store.deptLevels(deptName, subDeptName);
+    const levelLabel = levels[scopedOffice.levelIndex] || "";
+    const officeLabel = levelLabel ? `${scopedOffice.name} (${levelLabel})` : scopedOffice.name;
+    document.getElementById("deptTitle").textContent = officeLabel;
+    document.title = `${officeLabel} — Officers — TN SSO`;
+    document.getElementById("subDeptCrumb").classList.remove("crumb-current");
+    document.getElementById("officeCrumbSep").hidden = false;
+    const officeCrumbEl = document.getElementById("officeCrumb");
+    officeCrumbEl.hidden = false;
+    officeCrumbEl.textContent = officeLabel;
+  }
 }
 
 const officerListEl = document.getElementById("officerList");
@@ -59,7 +81,13 @@ function officerLevelIndex(o) {
 
 // ---- filtering ----
 function baseList() {
-  return Store.officers().filter((o) => o.dept === deptName && o.subDept === subDeptName && o.status === mode);
+  const scope = Store.myScope();
+  let list = Store.officers().filter((o) => o.dept === deptName && o.subDept === subDeptName && o.status === mode);
+  if (scope.role === "dept-admin" && scope.office && deptName === scope.dept && subDeptName === scope.subDept) {
+    const officeNames = new Set(Store.visibleOffices(deptName, subDeptName).map((o) => o.name));
+    list = list.filter((o) => officeNames.has(o.jurisdiction));
+  }
+  return list;
 }
 function filtered() {
   let list = baseList();
@@ -225,7 +253,12 @@ function openFilterMenu(btn, options, current, onPick) {
 // department AND, once a Level is picked, to just that level — so
 // picking "District" leaves only district-level names to choose from.
 function uniqueValues(key) {
+  const scope = Store.myScope();
   let list = Store.officers().filter((o) => o.dept === deptName && o.subDept === subDeptName);
+  if (scope.role === "dept-admin" && scope.office && deptName === scope.dept && subDeptName === scope.subDept) {
+    const officeNames = new Set(Store.visibleOffices(deptName, subDeptName).map((o) => o.name));
+    list = list.filter((o) => officeNames.has(o.jurisdiction));
+  }
   if (levelFilter !== "") list = list.filter((o) => officerLevelIndex(o) === Number(levelFilter));
   return [...new Set(list.map((o) => o[key]).filter(Boolean))].sort();
 }

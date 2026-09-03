@@ -5,6 +5,13 @@
 // "Mobile Applications") can link straight into this list pre-filtered,
 // instead of only being static counts.
 // ============================================================
+// App Management doesn't exist below Sub-Department — applications aren't
+// tied to a specific jurisdiction office in the data model — so a
+// jurisdiction-office admin who reaches this URL directly is bounced away.
+if (Store.myScope().role === "dept-admin" && Store.myScope().office) {
+  window.location.replace("index.html");
+}
+
 function el(tag, className, html) {
   const node = document.createElement(tag);
   if (className) node.className = className;
@@ -33,7 +40,7 @@ function matchesType(a, filter) {
   return true;
 }
 function visibleApps() {
-  let apps = Store.applications();
+  let apps = Store.visibleApplications();
   if (typeFilter !== "all") apps = apps.filter((a) => matchesType(a, typeFilter));
   if (statusFilter !== "all") apps = apps.filter((a) => a.status === statusFilter);
   if (searchQuery) {
@@ -51,13 +58,13 @@ function visibleApps() {
 
 // ---- Overview stat tiles ----
 function renderOverview() {
-  const apps = Store.applications();
+  const apps = Store.visibleApplications();
   const deptsWithApps = new Set(apps.map((a) => a.dept)).size;
   const webCount = apps.filter((a) => a.type === "Web Application" || a.type === "Web & Mobile").length;
   const mobileCount = apps.filter((a) => a.type === "Mobile Application" || a.type === "Web & Mobile").length;
   const tiles = [
     { icon: "apps", value: String(apps.length), label: "All Applications", type: "all" },
-    { icon: "domain", value: `${deptsWithApps} of ${Store.allDepartments().length}`, label: "Departments Registered", type: null },
+    { icon: "domain", value: `${deptsWithApps} of ${Store.visibleDepartments().length}`, label: "Departments Registered", type: null },
     { icon: "language", value: String(webCount), label: "Web Applications", type: "web" },
     { icon: "phone_iphone", value: String(mobileCount), label: "Mobile Applications", type: "mobile" },
   ];
@@ -159,11 +166,12 @@ document.getElementById("appSearch").addEventListener("input", (e) => {
 // ---- Application cards ----
 const appGrid = document.getElementById("appGrid");
 const countBadge = document.getElementById("countBadge");
+// One badge per card, never two — "Web & Mobile" gets its own icon meaning
+// "both", rather than showing the mobile and desktop icons side by side.
 function accessIcons(a) {
-  let h = "";
-  if (a.type === "Mobile Application" || a.type === "Web & Mobile") h += `<span class="app-access-icon" title="Mobile app"><span class="material-icons">phone_iphone</span></span>`;
-  if (a.type === "Web Application" || a.type === "Web & Mobile") h += `<span class="app-access-icon" title="Browser"><span class="material-icons">desktop_windows</span></span>`;
-  return h;
+  if (a.type === "Mobile Application") return `<span class="app-access-icon" title="Mobile app"><span class="material-icons">phone_iphone</span></span>`;
+  if (a.type === "Web & Mobile") return `<span class="app-access-icon" title="Web &amp; Mobile"><span class="material-icons">devices</span></span>`;
+  return `<span class="app-access-icon" title="Browser"><span class="material-icons">desktop_windows</span></span>`;
 }
 function statusBtn(a) {
   return a.status === "active"

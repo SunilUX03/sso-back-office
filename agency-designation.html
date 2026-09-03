@@ -12,7 +12,7 @@
   <link
     href="https://fonts.googleapis.com/icon?family=Material+Icons"
     rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260962" />
+  <link rel="stylesheet" href="styles.css?v=20261000" />
 
   <!-- UX4G Design System (CDN) -->
   <link rel="stylesheet" href="https://cdn.ux4g.gov.in/UX4G@3.0.18/index.css" />
@@ -86,7 +86,7 @@
           <a href="admin-logins.html" class="nav-item dropdown-toggle" data-toggle="dropdown">Administration<span class="material-icons">keyboard_arrow_down</span></a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="admin-logins.html"><span class="material-icons">admin_panel_settings</span>Admin Logins</a></li>
-            <li><a class="dropdown-item" href="dept-directory.html"><span class="material-icons">edit_note</span>Edit Dept &amp; Sub Dept Names</a></li>
+            <li data-super-admin-only><a class="dropdown-item" href="dept-directory.html"><span class="material-icons">edit_note</span>Edit Dept &amp; Sub Dept Names</a></li>
             <li><a class="dropdown-item" href="reports.html"><span class="material-icons">summarize</span>Reports</a></li>
           </ul>
         </div>
@@ -108,10 +108,10 @@
           </ul>
         </div>
 
-        <div class="dropdown">
+        <div class="dropdown" data-office-scope-hide>
           <a href="app-management.html" class="nav-item dropdown-toggle" data-toggle="dropdown">App Management<span class="material-icons">keyboard_arrow_down</span></a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="app-management.html"><span class="material-icons">add_box</span>Register Application</a></li>
+            <li><a class="dropdown-item" href="#" data-open="app"><span class="material-icons">add_box</span>Register Application</a></li>
             <li><a class="dropdown-item" href="app-management.html"><span class="material-icons">apps</span>All Applications</a></li>
           </ul>
         </div>
@@ -140,13 +140,13 @@
         <nav class="breadcrumb" aria-label="Breadcrumb">
           <a href="index.html">Home</a>
           <span class="crumb-sep">/</span>
-          <a href="jurisdiction.html">Organisation Management</a>
-          <span class="crumb-sep">/</span>
           <a href="designation.html">Designation Management</a>
           <span class="crumb-sep" id="deptCrumbSep">/</span>
           <a href="designation-subdept.html" id="deptCrumbLink">Department</a>
           <span class="crumb-sep">/</span>
           <span class="crumb-current" id="subDeptCrumb">Sub-Department</span>
+          <span class="crumb-sep" id="officeCrumbSep" hidden>/</span>
+          <span class="crumb-current" id="officeCrumb" hidden>Office</span>
         </nav>
       </div>
     </div>
@@ -260,6 +260,12 @@
         </button>
       </div>
 
+      <div class="mode-toggle" id="desigModeToggle">
+        <button type="button" class="mode-toggle-btn is-active" data-mode="single">Add Single Designation</button>
+        <button type="button" class="mode-toggle-btn" data-mode="bulk">Bulk Upload</button>
+      </div>
+
+      <div id="desigSinglePanel">
       <div class="tip-box">
         <span class="tip-label">Tip:</span>
         <span class="tip-text">
@@ -277,7 +283,11 @@
 
         <div class="field">
           <label class="field-label" for="dLevel">Jurisdiction Level <span class="field-req">*</span></label>
-          <select class="field-control" id="dLevel" required>
+          <button type="button" class="ux4g-al-select" id="dLevelTrigger">
+            <span class="ux4g-al-select-label is-placeholder" id="dLevelTriggerLabel">Select a Level</span>
+            <span class="material-icons">expand_more</span>
+          </button>
+          <select class="ux4g-al-select-native" id="dLevel" required>
             <option value="" disabled selected>Select a Level</option>
           </select>
           <span class="field-hint"><span class="material-icons">info</span>e.g. District, Taluk</span>
@@ -301,11 +311,19 @@
 
         <div class="field" id="reportsOfficerField" hidden>
           <label class="field-label" for="dOfficerLevel">Level of Officer <span class="field-req">*</span></label>
-          <select class="field-control" id="dOfficerLevel">
+          <button type="button" class="ux4g-al-select" id="dOfficerLevelTrigger">
+            <span class="ux4g-al-select-label is-placeholder" id="dOfficerLevelTriggerLabel">Select a Level</span>
+            <span class="material-icons">expand_more</span>
+          </button>
+          <select class="ux4g-al-select-native" id="dOfficerLevel">
             <option value="" disabled selected>Select a Level</option>
           </select>
           <label class="field-label" for="dOfficer" style="margin-top:12px">Reports to Designation <span class="field-req">*</span></label>
-          <select class="field-control" id="dOfficer" disabled>
+          <button type="button" class="ux4g-al-select" id="dOfficerTrigger" disabled>
+            <span class="ux4g-al-select-label is-placeholder" id="dOfficerTriggerLabel">Select a Level first</span>
+            <span class="material-icons">expand_more</span>
+          </button>
+          <select class="ux4g-al-select-native" id="dOfficer" disabled>
             <option value="" disabled selected>Select a Level first</option>
           </select>
           <span class="field-hint"><span class="material-icons">info</span>This officer reports to the officer holding this designation</span>
@@ -313,11 +331,19 @@
 
         <div class="field" id="reportsOfficeField" hidden>
           <label class="field-label" for="dOfficeLevel">Level of Office <span class="field-req">*</span></label>
-          <select class="field-control" id="dOfficeLevel">
+          <button type="button" class="ux4g-al-select" id="dOfficeLevelTrigger">
+            <span class="ux4g-al-select-label is-placeholder" id="dOfficeLevelTriggerLabel">Select a Level</span>
+            <span class="material-icons">expand_more</span>
+          </button>
+          <select class="ux4g-al-select-native" id="dOfficeLevel">
             <option value="" disabled selected>Select a Level</option>
           </select>
           <label class="field-label" for="dOffice" style="margin-top:12px">Reports to Office <span class="field-req">*</span></label>
-          <select class="field-control" id="dOffice" disabled>
+          <button type="button" class="ux4g-al-select" id="dOfficeTrigger" disabled>
+            <span class="ux4g-al-select-label is-placeholder" id="dOfficeTriggerLabel">Select a Level first</span>
+            <span class="material-icons">expand_more</span>
+          </button>
+          <select class="ux4g-al-select-native" id="dOffice" disabled>
             <option value="" disabled selected>Select a Level first</option>
           </select>
           <span class="field-hint"><span class="material-icons">info</span>This officer reports directly to the office (Not a specific person)</span>
@@ -328,19 +354,57 @@
           <input class="field-control" id="dDesc" type="text" placeholder="Role Responsibilities or notes" />
         </div>
       </form>
+      </div>
+
+      <div id="desigBulkPanel" hidden>
+        <div class="bulk-upload-intro">
+          <div class="bulk-columns-note">
+            <span class="material-icons">info</span>
+            <span>Columns required: <strong>Level, Designation Title, Short Code, Reports To Type, Reports To Name, Description</strong>. Level must match one of this department's real levels. Reports To Type is <strong>none</strong>, <strong>officer</strong>, or <strong>office</strong> — leave Reports To Name blank for "none", otherwise it must match an existing designation (for officer) or office (for office) name.</span>
+          </div>
+          <div class="bulk-upload-actions">
+            <button class="btn btn-outline btn-officer" id="desigBulkDownloadTemplate" type="button"><span class="material-icons">download</span>Download CSV Template</button>
+            <label class="btn btn-outline btn-officer bulk-file-label" for="desigBulkFileInput"><span class="material-icons">upload_file</span>Choose CSV File<input type="file" id="desigBulkFileInput" accept=".csv" hidden /></label>
+            <span id="desigBulkFileName" class="bulk-file-name"></span>
+          </div>
+        </div>
+        <div id="desigBulkPreviewWrap" hidden>
+          <div class="bulk-preview-summary" id="desigBulkPreviewSummary"></div>
+          <div class="bulk-preview-table-wrap">
+            <table class="bulk-preview-table">
+              <thead>
+                <tr><th>#</th><th>Level</th><th>Title</th><th>Reports To</th><th>Status</th></tr>
+              </thead>
+              <tbody id="desigBulkPreviewBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="desigBulkResultsWrap" hidden>
+          <div class="bulk-results-banner" id="desigBulkResultsBanner"></div>
+          <div class="bulk-preview-table-wrap">
+            <table class="bulk-preview-table">
+              <thead><tr><th>#</th><th>Title</th><th>Reason</th></tr></thead>
+              <tbody id="desigBulkFailuresBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
       <div class="modal-footer">
         <button class="btn-cancel" data-close>Cancel</button>
         <button class="btn-modal-primary" id="addDesignationBtn">Add Designation</button>
+        <button class="btn-modal-primary" id="desigBulkCreateBtn" hidden disabled>Add Designations</button>
       </div>
     </div>
   </div>
 
-  <script src="store.js?v=20260940"></script>
-  <script src="officer-modals.js?v=20260944"></script>
+  <script src="store.js?v=20261042"></script>
+  <script src="session.js?v=20261060"></script>
+  <script src="officer-modals.js?v=20261040"></script>
+  <script src="app-modals.js?v=20261040"></script>
   <script src="dropdown.js?v=20260901"></script>
   <script src="accessibility.js?v=20260960"></script>
-  <script src="designation-agency.js?v=20260920"></script>
+  <script src="designation-agency.js?v=20261090"></script>
 
   <!-- UX4G runtime (accessibility bar behavior, theme toggle, etc.) -->
   <script src="https://cdn.ux4g.gov.in/UX4G@3.0.18/ux4g.js"></script>

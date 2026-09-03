@@ -5,15 +5,29 @@
 // localStorage.
 // ============================================================
 const params = new URLSearchParams(window.location.search);
-const deptName = Store.deptBySlug(params.get("dept")) || Store.allDepartments()[0];
+const deptName = Store.resolveScopedDept(Store.deptBySlug(params.get("dept")));
 const resolvedSub = Store.subDeptBySlug(deptName, params.get("sub"));
-const subDeptName = resolvedSub !== null ? resolvedSub : Store.allSubDepartments(deptName)[0];
+const subDeptName = Store.resolveScopedSubDept(deptName, resolvedSub);
 
 const state = {
   levels: Store.deptLevels(deptName, subDeptName),
-  offices: Store.deptOffices(deptName, subDeptName),
-  designations: Store.deptDesignations(deptName, subDeptName),
+  offices: Store.visibleOffices(deptName, subDeptName),
+  designations: Store.visibleDeptDesignations(deptName, subDeptName),
 };
+
+// The lowest level a jurisdiction-office admin can add a designation at —
+// their own office's level and below (unlike offices, a designation AT
+// their own level is normal — it's plausibly their own job title), so this
+// is inclusive where scopeMinAddLevelIndex in agency.js is exclusive.
+// Everyone else has no such floor.
+function scopeMinDesignationLevelIndex() {
+  const scope = Store.myScope();
+  if (scope.role === "dept-admin" && scope.office && deptName === scope.dept && subDeptName === scope.subDept) {
+    const own = Store.deptOffices(deptName, subDeptName).find((o) => o.name === scope.office);
+    if (own) return own.levelIndex;
+  }
+  return 0;
+}
 
 function el(tag, className, html) {
   const node = document.createElement(tag);
@@ -53,6 +67,27 @@ if (subDeptName === Store.generalSubDept()) {
   document.getElementById("deptCrumbLink").textContent = deptName;
   document.getElementById("deptCrumbLink").href = `designation-subdept.html?dept=${Store.deptSlug(deptName)}`;
 }
+// A jurisdiction-office admin's real scope is their own office, not the
+// whole sub-department — the heading and breadcrumb name that office (and
+// its level) instead, with the sub-department demoted to a mid-crumb.
+{
+  const officeScope = Store.myScope();
+  const scopedOffice =
+    officeScope.role === "dept-admin" && officeScope.office && deptName === officeScope.dept && subDeptName === officeScope.subDept
+      ? Store.deptOffices(deptName, subDeptName).find((o) => o.name === officeScope.office)
+      : null;
+  if (scopedOffice) {
+    const levelLabel = state.levels[scopedOffice.levelIndex] || "";
+    const officeLabel = levelLabel ? `${scopedOffice.name} (${levelLabel})` : scopedOffice.name;
+    document.getElementById("deptTitle").textContent = officeLabel;
+    document.title = `${officeLabel} — Designations — TN SSO`;
+    document.getElementById("subDeptCrumb").classList.remove("crumb-current");
+    document.getElementById("officeCrumbSep").hidden = false;
+    const officeCrumbEl = document.getElementById("officeCrumb");
+    officeCrumbEl.hidden = false;
+    officeCrumbEl.textContent = officeLabel;
+  }
+}
 
 // ============================================================
 // Overview stat tiles (this department only)
@@ -60,21 +95,27 @@ if (subDeptName === Store.generalSubDept()) {
 const statGrid = document.getElementById("statGrid");
 function renderStats() {
   statGrid.innerHTML = "";
-  const nonZero = Store.deptDesignationLevelCounts(deptName, subDeptName).filter((c) => c.value > 0);
-  if (!nonZero.length) {
-    statGrid.innerHTML = `<div class="empty-list">No designations added yet.</div>`;
-    return;
-  }
-  nonZero.forEach((c) => {
+  // Always show real stat tiles — a Total Designations tile even at zero —
+  // same as every other Overview on the site, instead of swapping the
+  // whole grid out for a text-only empty state.
+  const tiles = [{ icon: "badge", value: state.designations.length, label: "Total Designations" }];
+  // Computed from state.designations (already scoped to this admin's own
+  // level and below), not Store.deptDesignationLevelCounts — that reads
+  // every designation in the sub-department regardless of who's signed in.
+  state.levels.forEach((label, levelIndex) => {
+    const value = state.designations.filter((d) => d.levelIndex === levelIndex).length;
+    if (value > 0) tiles.push({ icon: "badge", value, label });
+  });
+  tiles.forEach((t) => {
     statGrid.appendChild(
       el(
         "article",
         "ux4g-card ux4g-card-outline ux4g-al-stat-card",
         `<div class="ux4g-card-body">
-           <span class="ux4g-al-icon-tile"><span class="ux4g-icon-outlined" style="font-size:20px">badge</span></span>
+           <span class="ux4g-al-icon-tile"><span class="ux4g-icon-outlined" style="font-size:20px">${t.icon}</span></span>
            <div>
-             <div class="ux4g-al-stat-number">${c.value}</div>
-             <div class="ux4g-al-stat-label">${escapeHtml(c.label)}</div>
+             <div class="ux4g-al-stat-number">${t.value}</div>
+             <div class="ux4g-al-stat-label">${escapeHtml(t.label)}</div>
            </div>
          </div>`
       )
@@ -128,6 +169,70 @@ const addDesignationBtn = document.getElementById("addDesignationBtn");
 let reportType = "none";
 let editingDesigId = null;
 
+// ---- shared custom-dropdown popup for this modal's selects (same
+// component the rest of the app uses instead of a native <select> list) ----
+function closeFieldMenus() {
+  document.querySelectorAll(".filter-menu").forEach((m) => m.remove());
+}
+function openFieldMenu(anchor, options, activeValue, onPick) {
+  closeFieldMenus();
+  const menu = document.createElement("div");
+  menu.className = "filter-menu";
+  options.forEach((opt) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = opt.label;
+    if (opt.value === activeValue) b.classList.add("is-active");
+    b.addEventListener("click", () => { onPick(opt.value, opt.label); closeFieldMenus(); });
+    menu.appendChild(b);
+  });
+  document.body.appendChild(menu);
+  const r = anchor.getBoundingClientRect();
+  menu.style.top = `${r.bottom + 4}px`;
+  menu.style.left = `${r.left}px`;
+  menu.style.minWidth = `${r.width}px`;
+}
+function bindFieldSelectTrigger(id, placeholder) {
+  const select = document.getElementById(id);
+  const trigger = document.getElementById(id + "Trigger");
+  const label = document.getElementById(id + "TriggerLabel");
+  function sync() {
+    const opt = select.options[select.selectedIndex];
+    const hasValue = opt && opt.value !== "";
+    label.textContent = opt ? opt.textContent : placeholder;
+    label.classList.toggle("is-placeholder", !hasValue);
+  }
+  trigger.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (trigger.disabled) return;
+    if (document.querySelector(".filter-menu")) { closeFieldMenus(); return; }
+    const options = [...select.options].filter((o) => !o.disabled).map((o) => ({ value: o.value, label: o.textContent }));
+    openFieldMenu(trigger, options, select.value, (value, lbl) => {
+      select.value = value;
+      label.textContent = lbl;
+      label.classList.remove("is-placeholder");
+      select.dispatchEvent(new Event("change"));
+    });
+  });
+  sync();
+  return sync;
+}
+const syncDLevelTrigger = bindFieldSelectTrigger("dLevel", "Select a Level");
+const syncDOfficerLevelTrigger = bindFieldSelectTrigger("dOfficerLevel", "Select a Level");
+const syncDOfficerTrigger = bindFieldSelectTrigger("dOfficer", "Select a Level first");
+const syncDOfficeLevelTrigger = bindFieldSelectTrigger("dOfficeLevel", "Select a Level");
+const syncDOfficeTrigger = bindFieldSelectTrigger("dOffice", "Select a Level first");
+document.addEventListener("click", (e) => {
+  if (
+    !e.target.closest(".filter-menu") &&
+    !e.target.closest("#dLevelTrigger") &&
+    !e.target.closest("#dOfficerLevelTrigger") &&
+    !e.target.closest("#dOfficerTrigger") &&
+    !e.target.closest("#dOfficeLevelTrigger") &&
+    !e.target.closest("#dOfficeTrigger")
+  ) closeFieldMenus();
+});
+
 // ---- Level -> item cascade, so the second dropdown only ever shows
 // the handful of designations/offices at one level, not the whole list.
 function populateOfficerList(levelIndex, selectedId) {
@@ -135,6 +240,8 @@ function populateOfficerList(levelIndex, selectedId) {
   if (levelIndex === "" || levelIndex == null) {
     dOfficer.appendChild(makeOption("", "Select a Level first", true, true));
     dOfficer.disabled = true;
+    document.getElementById("dOfficerTrigger").disabled = true;
+    syncDOfficerTrigger();
     return;
   }
   const atLevel = state.designations.filter(
@@ -143,31 +250,41 @@ function populateOfficerList(levelIndex, selectedId) {
   if (!atLevel.length) {
     dOfficer.appendChild(makeOption("", `No designations at ${state.levels[levelIndex]} yet`, true, true));
     dOfficer.disabled = true;
+    document.getElementById("dOfficerTrigger").disabled = true;
+    syncDOfficerTrigger();
     return;
   }
   dOfficer.disabled = false;
   dOfficer.appendChild(makeOption("", "Select Designation", true, !selectedId));
   atLevel.forEach((d) => dOfficer.appendChild(makeOption(String(d.id), d.name, false, d.id === selectedId)));
+  document.getElementById("dOfficerTrigger").disabled = false;
+  syncDOfficerTrigger();
 }
 function populateOfficeList(levelIndex, selectedName) {
   dOffice.innerHTML = "";
   if (levelIndex === "" || levelIndex == null) {
     dOffice.appendChild(makeOption("", "Select a Level first", true, true));
     dOffice.disabled = true;
+    document.getElementById("dOfficeTrigger").disabled = true;
+    syncDOfficeTrigger();
     return;
   }
   const atLevel = state.offices.filter((o) => o.levelIndex === Number(levelIndex));
   if (!atLevel.length) {
     dOffice.appendChild(makeOption("", `No offices at ${state.levels[levelIndex]} yet`, true, true));
     dOffice.disabled = true;
+    document.getElementById("dOfficeTrigger").disabled = true;
+    syncDOfficeTrigger();
     return;
   }
   dOffice.disabled = false;
   dOffice.appendChild(makeOption("", "Select Office", true, !selectedName));
   atLevel.forEach((o) => dOffice.appendChild(makeOption(o.name, o.name, false, o.name === selectedName)));
+  document.getElementById("dOfficeTrigger").disabled = false;
+  syncDOfficeTrigger();
 }
-dOfficerLevel.addEventListener("change", () => populateOfficerList(dOfficerLevel.value, null));
-dOfficeLevel.addEventListener("change", () => populateOfficeList(dOfficeLevel.value, null));
+dOfficerLevel.addEventListener("change", () => { populateOfficerList(dOfficerLevel.value, null); syncDOfficerLevelTrigger(); });
+dOfficeLevel.addEventListener("change", () => { populateOfficeList(dOfficeLevel.value, null); syncDOfficeLevelTrigger(); });
 
 function setReportType(type) {
   reportType = type;
@@ -181,10 +298,12 @@ function setReportType(type) {
   const aboveLevel = dLevel.value !== "" ? Math.max(Number(dLevel.value) - 1, 0) : "";
   if (type === "officer" && dOfficerLevel.value === "") {
     dOfficerLevel.value = aboveLevel;
+    syncDOfficerLevelTrigger();
     populateOfficerList(aboveLevel, null);
   }
   if (type === "office" && dOfficeLevel.value === "") {
     dOfficeLevel.value = aboveLevel;
+    syncDOfficeLevelTrigger();
     populateOfficeList(aboveLevel, null);
   }
 }
@@ -192,28 +311,64 @@ reportingSeg.querySelectorAll(".seg-btn").forEach((b) =>
   b.addEventListener("click", () => setReportType(b.dataset.report))
 );
 
+const desigModeToggle = document.getElementById("desigModeToggle");
+const desigSinglePanel = document.getElementById("desigSinglePanel");
+const desigBulkPanel = document.getElementById("desigBulkPanel");
+const desigBulkCreateBtn = document.getElementById("desigBulkCreateBtn");
+let desigMode = "single";
+
+function applyDesigMode() {
+  const isBulk = desigMode === "bulk";
+  desigModeToggle.querySelectorAll(".mode-toggle-btn").forEach((b) => b.classList.toggle("is-active", b.dataset.mode === desigMode));
+  desigSinglePanel.hidden = isBulk;
+  desigBulkPanel.hidden = !isBulk;
+  addDesignationBtn.hidden = isBulk;
+  desigBulkCreateBtn.hidden = !isBulk;
+}
+desigModeToggle.querySelectorAll(".mode-toggle-btn").forEach((btn) => {
+  btn.addEventListener("click", () => { desigMode = btn.dataset.mode; applyDesigMode(); });
+});
+
 function openDesignation(record) {
   editingDesigId = record ? record.id : null;
+  desigMode = "single";
+  applyDesigMode();
+  // Bulk upload only makes sense for adding new designations, not editing one.
+  desigModeToggle.hidden = !!record;
+  resetDesigBulkPanel();
 
   dLevel.innerHTML = "";
   dLevel.appendChild(makeOption("", "Select a Level", true, true));
-  state.levels.forEach((lvl, i) => dLevel.appendChild(makeOption(String(i), lvl)));
+  const minDesigLevel = scopeMinDesignationLevelIndex();
+  const editingLevelIndex = record ? record.levelIndex : undefined;
+  state.levels.forEach((lvl, i) => {
+    if (i < minDesigLevel && i !== editingLevelIndex) return;
+    dLevel.appendChild(makeOption(String(i), lvl));
+  });
 
+  syncDLevelTrigger();
+
+  // "Reports to" targets are scoped the same as the designation's own
+  // level — a jurisdiction-office admin's new designations can only report
+  // to something else within their own visible reach, never a level above.
   dOfficerLevel.innerHTML = "";
   dOfficerLevel.appendChild(makeOption("", "Select a Level", true, true));
-  state.levels.forEach((lvl, i) => dOfficerLevel.appendChild(makeOption(String(i), lvl)));
+  state.levels.forEach((lvl, i) => { if (i >= minDesigLevel) dOfficerLevel.appendChild(makeOption(String(i), lvl)); });
   populateOfficerList("", null);
+  syncDOfficerLevelTrigger();
 
   dOfficeLevel.innerHTML = "";
   dOfficeLevel.appendChild(makeOption("", "Select a Level", true, true));
-  state.levels.forEach((lvl, i) => dOfficeLevel.appendChild(makeOption(String(i), lvl)));
+  state.levels.forEach((lvl, i) => { if (i >= minDesigLevel) dOfficeLevel.appendChild(makeOption(String(i), lvl)); });
   populateOfficeList("", null);
+  syncDOfficeLevelTrigger();
 
   if (record) {
     desigTitleEl.textContent = "Edit Designation";
     addDesignationBtn.textContent = "Save Changes";
     dTitle.value = record.name;
     dLevel.value = String(record.levelIndex);
+    syncDLevelTrigger();
     dCode.value = record.code === "—" ? "" : record.code;
     dDesc.value = record.description || "";
     setReportType(record.reportsToType || "none");
@@ -221,6 +376,7 @@ function openDesignation(record) {
       const target = state.designations.find((d) => d.id === record.reportsToId);
       if (target) {
         dOfficerLevel.value = String(target.levelIndex);
+        syncDOfficerLevelTrigger();
         populateOfficerList(target.levelIndex, target.id);
       }
     }
@@ -228,6 +384,7 @@ function openDesignation(record) {
       const target = state.offices.find((o) => o.name === record.reportsToId);
       if (target) {
         dOfficeLevel.value = String(target.levelIndex);
+        syncDOfficeLevelTrigger();
         populateOfficeList(target.levelIndex, target.name);
       }
     }
@@ -293,10 +450,181 @@ addDesignationBtn.addEventListener("click", () => {
   } else {
     Store.addDeptDesignation(deptName, payload, subDeptName);
   }
-  state.designations = Store.deptDesignations(deptName, subDeptName);
+  state.designations = Store.visibleDeptDesignations(deptName, subDeptName);
   renderStats();
   renderDesigTable();
   closeModal(designationModal);
+});
+
+// ============================================================
+// Bulk Upload — Designations
+// ============================================================
+const DESIG_BULK_HEADERS = ["Level", "Designation Title", "Short Code", "Reports To Type", "Reports To Name", "Description"];
+let desigBulkRows = [];
+
+function parseCsv(text) {
+  const rows = [];
+  let row = [], field = "", inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else inQuotes = false; }
+      else field += c;
+    } else if (c === '"') inQuotes = true;
+    else if (c === ",") { row.push(field); field = ""; }
+    else if (c === "\n" || c === "\r") {
+      if (c === "\r" && text[i + 1] === "\n") i++;
+      row.push(field); field = "";
+      if (row.length > 1 || row[0] !== "") rows.push(row);
+      row = [];
+    } else field += c;
+  }
+  if (field !== "" || row.length) { row.push(field); rows.push(row); }
+  return rows;
+}
+function csvEscape(v) {
+  const s = String(v == null ? "" : v);
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+document.getElementById("desigBulkDownloadTemplate").addEventListener("click", () => {
+  const csv = DESIG_BULK_HEADERS.map(csvEscape).join(",");
+  downloadBlob(new Blob([csv], { type: "text/csv;charset=utf-8;" }), "bulk-designation-template.csv");
+});
+
+function resetDesigBulkPanel() {
+  desigBulkRows = [];
+  document.getElementById("desigBulkFileInput").value = "";
+  document.getElementById("desigBulkFileName").textContent = "";
+  document.getElementById("desigBulkPreviewWrap").hidden = true;
+  document.getElementById("desigBulkResultsWrap").hidden = true;
+  desigBulkCreateBtn.disabled = true;
+  desigBulkCreateBtn.textContent = "Add Designations";
+}
+
+// Reports To Name must already exist (a real designation for "officer", a
+// real office for "office") — never another row in the same file, kept
+// simple and predictable rather than resolving cross-row references.
+function validateDesigBulkRow(cells, seen) {
+  const [levelRaw, title, code, reportTypeRaw, reportsToRaw, description] = [0, 1, 2, 3, 4, 5].map((i) => (cells[i] || "").trim());
+  const errors = [];
+  const minDesigLevel = scopeMinDesignationLevelIndex();
+  const levelIndex = state.levels.findIndex((l) => l.toLowerCase() === levelRaw.toLowerCase());
+  if (!levelRaw) errors.push("Level is required");
+  else if (levelIndex === -1) errors.push(`Level "${levelRaw}" doesn't match this department's real levels`);
+  else if (levelIndex < minDesigLevel) errors.push(`Level "${levelRaw}" is above what you're allowed to add`);
+  if (!title) errors.push("Designation Title is required");
+
+  const reportType = (reportTypeRaw || "none").toLowerCase();
+  let reportsToId = null;
+  let reportsTo = "Top Level";
+  if (reportType !== "none" && reportType !== "officer" && reportType !== "office") {
+    errors.push(`Reports To Type must be none, officer, or office — got "${reportTypeRaw}"`);
+  } else if (reportType === "officer") {
+    if (!reportsToRaw) errors.push("Reports To Name is required when Reports To Type is officer");
+    else {
+      const target = state.designations.find((d) => d.name.toLowerCase() === reportsToRaw.toLowerCase());
+      if (!target) errors.push(`Designation "${reportsToRaw}" not found to report to`);
+      else { reportsToId = target.id; reportsTo = target.name; }
+    }
+  } else if (reportType === "office") {
+    if (!reportsToRaw) errors.push("Reports To Name is required when Reports To Type is office");
+    else {
+      const target = state.offices.find((o) => o.name.toLowerCase() === reportsToRaw.toLowerCase());
+      if (!target) errors.push(`Office "${reportsToRaw}" not found to report to`);
+      else { reportsToId = target.name; reportsTo = target.name; }
+    }
+  }
+
+  // duplicate within this same file — same (level, title) pair twice
+  const dupeKey = levelIndex >= 0 ? `${levelIndex}::${title.toLowerCase()}` : null;
+  if (dupeKey && title) {
+    if (seen.has(dupeKey)) errors.push("Duplicated in another row in this file");
+    seen.add(dupeKey);
+  }
+
+  return { level: levelRaw, levelIndex, title, code, reportType, reportsToId, reportsTo, description, errors };
+}
+
+function renderDesigBulkPreview() {
+  const body = document.getElementById("desigBulkPreviewBody");
+  body.innerHTML = "";
+  const validCount = desigBulkRows.filter((r) => !r.errors.length).length;
+  desigBulkRows.forEach((r, i) => {
+    const ok = !r.errors.length;
+    const tr = document.createElement("tr");
+    tr.className = ok ? "is-ok" : "is-error";
+    tr.innerHTML = `<td>${i + 1}</td><td>${escapeHtml(r.level)}</td><td>${escapeHtml(r.title)}</td><td>${escapeHtml(r.reportType === "none" ? "—" : r.reportsTo)}</td>
+      <td>${ok ? '<span class="bulk-status is-ok"><span class="material-icons">check_circle</span>Ready</span>' : `<span class="bulk-status is-error"><span class="material-icons">error</span>${escapeHtml(r.errors.join("; "))}</span>`}</td>`;
+    body.appendChild(tr);
+  });
+  document.getElementById("desigBulkPreviewSummary").innerHTML =
+    `<span class="material-icons">description</span>${desigBulkRows.length} row${desigBulkRows.length === 1 ? "" : "s"} found — <strong>${validCount} ready</strong>, ${desigBulkRows.length - validCount} with errors`;
+  document.getElementById("desigBulkPreviewWrap").hidden = false;
+  document.getElementById("desigBulkResultsWrap").hidden = true;
+  desigBulkCreateBtn.disabled = validCount === 0;
+  desigBulkCreateBtn.textContent = `Add ${validCount} Designation${validCount === 1 ? "" : "s"}`;
+}
+
+document.getElementById("desigBulkFileInput").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  document.getElementById("desigBulkFileName").textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const allRows = parseCsv(String(reader.result));
+    if (!allRows.length) { desigBulkRows = []; renderDesigBulkPreview(); return; }
+    const dataRows = allRows.slice(1);
+    const seen = new Set();
+    desigBulkRows = dataRows
+      .filter((r) => r.some((cell) => (cell || "").trim()))
+      .map((r) => validateDesigBulkRow(r, seen));
+    renderDesigBulkPreview();
+  };
+  reader.readAsText(file);
+});
+
+desigBulkCreateBtn.addEventListener("click", () => {
+  const valid = desigBulkRows.filter((r) => !r.errors.length);
+  const failed = desigBulkRows.filter((r) => r.errors.length);
+  valid.forEach((r) => {
+    Store.addDeptDesignation(deptName, {
+      name: r.title,
+      code: r.code || "—",
+      levelIndex: r.levelIndex,
+      reportsToType: r.reportType,
+      reportsToId: r.reportsToId,
+      reportsTo: r.reportsTo,
+      description: r.description,
+    }, subDeptName);
+  });
+  state.designations = Store.visibleDeptDesignations(deptName, subDeptName);
+  renderStats();
+  renderDesigTable();
+
+  document.getElementById("desigBulkResultsBanner").innerHTML =
+    `<span class="material-icons">${failed.length ? "info" : "check_circle"}</span>` +
+    `<strong>${valid.length} of ${desigBulkRows.length}</strong> designations added. ` +
+    (failed.length ? `${failed.length} row${failed.length === 1 ? "" : "s"} need fixing and re-uploading.` : "All rows added successfully.");
+  const failuresBody = document.getElementById("desigBulkFailuresBody");
+  failuresBody.innerHTML = "";
+  failed.forEach((r) => {
+    const originalIndex = desigBulkRows.indexOf(r) + 1;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${originalIndex}</td><td>${escapeHtml(r.title || "—")}</td><td>${escapeHtml(r.errors.join("; "))}</td>`;
+    failuresBody.appendChild(tr);
+  });
+  document.getElementById("desigBulkPreviewWrap").hidden = true;
+  document.getElementById("desigBulkResultsWrap").hidden = false;
+  document.getElementById("desigBulkResultsWrap").querySelector(".bulk-preview-table-wrap").hidden = failed.length === 0;
+  desigBulkCreateBtn.disabled = true;
+  desigBulkCreateBtn.textContent = "Designations Added";
 });
 
 // ============================================================
@@ -472,7 +800,7 @@ desigBody.addEventListener("click", (e) => {
       );
       return;
     }
-    state.designations = Store.deptDesignations(deptName, subDeptName);
+    state.designations = Store.visibleDeptDesignations(deptName, subDeptName);
     renderStats();
     renderDesigTable();
     return;

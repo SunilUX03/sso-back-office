@@ -19,18 +19,41 @@ function escapeHtml(s) {
   }[c]));
 }
 
+// App Management doesn't exist below Sub-Department — applications aren't
+// tied to a specific jurisdiction office in the data model — so a
+// jurisdiction-office admin who reaches this URL directly is bounced away.
+if (Store.myScope().role === "dept-admin" && Store.myScope().office) {
+  window.location.replace("index.html");
+}
+
 // ---- resolve ?dept=&sub= against the real directory ----
 const params = new URLSearchParams(location.search);
-const deptName = Store.deptBySlug(params.get("dept") || "");
-const subSlugParam = params.get("sub");
-const subDeptName = deptName && subSlugParam != null ? Store.subDeptBySlug(deptName, subSlugParam) : null;
+const rawDeptName = Store.deptBySlug(params.get("dept") || "");
 
-if (!deptName) {
+if (!rawDeptName) {
   document.getElementById("deptTitle").textContent = "Department not found";
   document.querySelector(".page").innerHTML =
     '<div class="page-head"><div class="page-title-block"><h1 class="page-title">Department not found</h1></div></div>' +
     '<div class="empty-list">This department link is invalid or the department no longer exists. <a href="app-management.html">Go back to All Applications</a>.</div>';
   throw new Error("app-agency: unknown department slug");
+}
+// A Department (or Sub-Department) Admin who requests — or, by editing
+// the URL, tries to reach — another department is bounced to their own,
+// same as every other detail page.
+const deptName = Store.resolveScopedDept(rawDeptName);
+const subSlugParam = params.get("sub");
+let subDeptName = deptName && subSlugParam != null ? Store.subDeptBySlug(deptName, subSlugParam) : null;
+// A Sub-Department Admin is locked to their own sub-department here too —
+// "All Sub-Departments" or another sub-department isn't theirs to browse.
+{
+  const scope = Store.myScope();
+  if (scope.role === "dept-admin" && scope.subDept && deptName === scope.dept && subDeptName !== scope.subDept) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("dept", Store.deptSlug(deptName));
+    url.searchParams.set("sub", Store.subDeptSlug(scope.subDept));
+    window.location.replace(url.toString());
+    subDeptName = scope.subDept;
+  }
 }
 
 // ---- page head: dynamic title + breadcrumb ----
@@ -175,11 +198,12 @@ document.getElementById("appSearch").addEventListener("input", (e) => {
 // ---- Application cards ----
 const appGrid = document.getElementById("appGrid");
 const countBadge = document.getElementById("countBadge");
+// One badge per card, never two — "Web & Mobile" gets its own icon meaning
+// "both", rather than showing the mobile and desktop icons side by side.
 function accessIcons(a) {
-  let h = "";
-  if (a.type === "Mobile Application" || a.type === "Web & Mobile") h += `<span class="app-access-icon" title="Mobile app"><span class="material-icons">phone_iphone</span></span>`;
-  if (a.type === "Web Application" || a.type === "Web & Mobile") h += `<span class="app-access-icon" title="Browser"><span class="material-icons">desktop_windows</span></span>`;
-  return h;
+  if (a.type === "Mobile Application") return `<span class="app-access-icon" title="Mobile app"><span class="material-icons">phone_iphone</span></span>`;
+  if (a.type === "Web & Mobile") return `<span class="app-access-icon" title="Web &amp; Mobile"><span class="material-icons">devices</span></span>`;
+  return `<span class="app-access-icon" title="Browser"><span class="material-icons">desktop_windows</span></span>`;
 }
 function statusBtn(a) {
   return a.status === "active"

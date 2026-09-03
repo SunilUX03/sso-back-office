@@ -5,7 +5,18 @@
 // each card drills into agency.html for that dept + sub-dept.
 // ============================================================
 const params = new URLSearchParams(window.location.search);
-const deptName = Store.deptBySlug(params.get("dept")) || Store.allDepartments()[0];
+const deptName = Store.resolveScopedDept(Store.deptBySlug(params.get("dept")));
+
+// A Sub-Department Admin only has one sub-department — this "which one?"
+// picker doesn't apply to them, so send them straight to it, the same way
+// jurisdiction.html sends them straight here instead of the full
+// department picker.
+{
+  const scope = Store.myScope();
+  if (scope.role === "dept-admin" && scope.subDept) {
+    window.location.replace(`agency.html?dept=${Store.deptSlug(deptName)}&sub=${Store.subDeptSlug(scope.subDept)}`);
+  }
+}
 
 document.getElementById("deptTitle").textContent = deptName;
 document.getElementById("deptCrumb").textContent = deptName;
@@ -38,12 +49,46 @@ document.querySelectorAll("#configFilter .ux4g-jm-config-btn").forEach((b) => {
   b.classList.toggle("is-active", b.dataset.filter === configFilterValue);
 });
 
-subDeptCountBadge.textContent = Store.allSubDepartments(deptName).length;
+subDeptCountBadge.textContent = Store.visibleSubDepartments(deptName).length;
 
 function passesConfigFilter(configured) {
   if (configFilterValue === "configured") return configured;
   if (configFilterValue === "not-configured") return !configured;
   return true;
+}
+
+// ============================================================
+// Overview stat tiles (this department only)
+// ============================================================
+const overviewTiles = document.getElementById("overviewTiles");
+function renderOverview() {
+  const subs = Store.visibleSubDepartments(deptName);
+  let total = 0;
+  let subsConfigured = 0;
+  subs.forEach((sub) => {
+    const n = Store.deptOffices(deptName, sub).length;
+    total += n;
+    if (n > 0) subsConfigured++;
+  });
+  total += Store.deptOffices(deptName, Store.generalSubDept()).length;
+  const tiles = [
+    { icon: "account_tree", value: total, label: "Total Jurisdiction Records" },
+    { icon: "apartment", value: `${subsConfigured} of ${subs.length}`, label: "Sub-Departments Configured" },
+  ];
+  overviewTiles.innerHTML = tiles
+    .map(
+      (t) => `
+      <article class="ux4g-card ux4g-card-outline ux4g-al-stat-card">
+        <div class="ux4g-card-body">
+          <span class="ux4g-al-icon-tile"><span class="ux4g-icon-outlined" style="font-size:20px">${t.icon}</span></span>
+          <div>
+            <div class="ux4g-al-stat-number">${t.value}</div>
+            <div class="ux4g-al-stat-label">${t.label}</div>
+          </div>
+        </div>
+      </article>`
+    )
+    .join("");
 }
 
 function renderGeneral() {
@@ -77,7 +122,7 @@ function renderGeneral() {
 
 function renderSubDepts() {
   subDeptList.innerHTML = "";
-  Store.allSubDepartments(deptName)
+  Store.visibleSubDepartments(deptName)
     .filter((name) => name.toLowerCase().includes(subFilter.toLowerCase()))
     .forEach((name) => {
       const counts = Store.deptLevelCounts(deptName, name);
@@ -115,6 +160,7 @@ function renderSubDepts() {
   }
 }
 function renderAll() {
+  renderOverview();
   renderGeneral();
   renderSubDepts();
 }

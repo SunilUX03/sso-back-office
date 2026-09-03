@@ -34,17 +34,26 @@
     toggleBtn.setAttribute("aria-label", show ? "Hide password" : "Show password");
   });
 
-  // ---- Credential matching: any of Name / Email / Mobile / SSO Username ----
+  // ---- Credential matching: any of Name / Email / Mobile / SSO Username,
+  // against either the one Super Admin or an active Department Admin —
+  // whichever this Login ID belongs to decides what the resulting session
+  // can see. ----
   function normalizeMobile(v) { return String(v || "").replace(/\D/g, "").slice(-10); }
-  function matchesLoginId(value) {
-    const p = Store.superAdmin();
+  function idMatchesRecord(record, value) {
     const v = value.trim().toLowerCase();
     if (!v) return false;
-    if (p.name.toLowerCase() === v) return true;
-    if (p.email.toLowerCase() === v) return true;
-    if (p.ssoUsername.toLowerCase() === v) return true;
+    if ((record.name || "").toLowerCase() === v) return true;
+    if ((record.email || "").toLowerCase() === v) return true;
+    const ssoField = record.ssoUsername || record.sso || "";
+    if (ssoField.toLowerCase() === v) return true;
     const digits = value.replace(/\D/g, "");
-    return digits.length > 0 && normalizeMobile(p.mobile) === digits.slice(-10);
+    return digits.length > 0 && normalizeMobile(record.mobile) === digits.slice(-10);
+  }
+  function findLoginRecord(value) {
+    if (idMatchesRecord(Store.superAdmin(), value)) return { kind: "super-admin", record: Store.superAdmin() };
+    const admin = Store.departmentAdmins().find((a) => a.status === "active" && idMatchesRecord(a, value));
+    if (admin) return { kind: "dept-admin", record: admin };
+    return null;
   }
 
   const credError = document.getElementById("credError");
@@ -55,6 +64,7 @@
   }
   function hideCredError() { credError.hidden = true; }
 
+  let pendingLogin = null;
   document.getElementById("continueBtn").addEventListener("click", () => {
     hideCredError();
     const idValue = document.getElementById("loginId").value;
@@ -70,14 +80,16 @@
       newCaptcha();
       return;
     }
-    if (!matchesLoginId(idValue)) {
+    const found = findLoginRecord(idValue);
+    if (!found) {
       showCredError("We couldn't find an account matching that ID.");
       return;
     }
-    if (password !== Store.superAdmin().password) {
+    if (password !== found.record.password) {
       showCredError("Incorrect password.");
       return;
     }
+    pendingLogin = found;
     goToOtpStep();
   });
 
@@ -111,12 +123,11 @@
     }
     stepOtp.hidden = true;
     stepSuccess.hidden = false;
-    document.getElementById("successName").textContent = Store.superAdmin().name.split(" ")[0];
-    try {
-      localStorage.setItem("tnsso.session", "1");
-    } catch (e) {
-      // Private browsing / storage disabled — login still proceeds for
-      // this page view, it just won't be remembered as "signed in".
+    document.getElementById("successName").textContent = pendingLogin.record.name.split(" ")[0];
+    if (pendingLogin.kind === "dept-admin") {
+      Store.setSession({ role: "dept-admin", dept: pendingLogin.record.dept, subDept: pendingLogin.record.subDept || "", office: pendingLogin.record.office || "", name: pendingLogin.record.name });
+    } else {
+      Store.setSession({ role: "super-admin", name: pendingLogin.record.name });
     }
     setTimeout(() => {
       window.location.href = "index.html";

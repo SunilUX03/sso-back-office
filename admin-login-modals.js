@@ -72,6 +72,27 @@
                   <option value="">Select a department first</option>
                 </select>
               </div>
+              <div class="ux4g-al-field">
+                <label class="ux4g-label-m-default">Level</label>
+                <button type="button" class="ux4g-al-select" id="dwLevelTrigger" disabled>
+                  <span class="ux4g-al-select-label is-placeholder" id="dwLevelTriggerLabel">Whole department / sub-department</span>
+                  <span class="ux4g-icon-outlined">expand_more</span>
+                </button>
+                <select class="ux4g-al-select-native" id="dwLevel" disabled>
+                  <option value="">Whole department / sub-department</option>
+                </select>
+              </div>
+              <div class="ux4g-al-field" id="dwOfficeField" hidden>
+                <label class="ux4g-label-m-default">Jurisdiction Office <span class="ux4g-al-req">*</span></label>
+                <button type="button" class="ux4g-al-select" id="dwOfficeTrigger" disabled>
+                  <span class="ux4g-al-select-label is-placeholder" id="dwOfficeTriggerLabel">Select a level first</span>
+                  <span class="ux4g-icon-outlined">expand_more</span>
+                </button>
+                <select class="ux4g-al-select-native" id="dwOffice" disabled>
+                  <option value="">Select a level first</option>
+                </select>
+                <span class="ux4g-al-field-hint">This admin will manage this office and every office beneath it.</span>
+              </div>
             </form>
           </div>
 
@@ -185,6 +206,8 @@
   const submitBtn = document.getElementById("dwSubmitBtn");
   const deptSelect = document.getElementById("dwDept");
   const subDeptSelect = document.getElementById("dwSubDept");
+  const levelSelect = document.getElementById("dwLevel");
+  const officeSelect = document.getElementById("dwOffice");
   const currentAdminCard = document.getElementById("dwCurrentAdminCard");
   const newAdminChoices = document.getElementById("dwNewAdminChoices");
   const existingBanner = document.getElementById("dwExistingBanner");
@@ -220,10 +243,21 @@
   const deptTriggerLabel = document.getElementById("dwDeptTriggerLabel");
   const subDeptTrigger = document.getElementById("dwSubDeptTrigger");
   const subDeptTriggerLabel = document.getElementById("dwSubDeptTriggerLabel");
+  const levelTrigger = document.getElementById("dwLevelTrigger");
+  const levelTriggerLabel = document.getElementById("dwLevelTriggerLabel");
+  const officeField = document.getElementById("dwOfficeField");
+  const officeTrigger = document.getElementById("dwOfficeTrigger");
+  const officeTriggerLabel = document.getElementById("dwOfficeTriggerLabel");
 
   function populateDeptSelect(selected) {
+    // A Department Admin can only grant logins within their own
+    // department — Store.visibleDepartments() is already narrowed to just
+    // that one, so the picker naturally has a single, locked option.
+    const scope = Store.myScope();
+    const isLocked = scope.role === "dept-admin";
+    if (isLocked) selected = scope.dept;
     deptSelect.innerHTML = '<option value="" disabled' + (selected ? "" : " selected") + '>Select a department</option>';
-    Store.allDepartments().forEach((name) => {
+    Store.visibleDepartments().forEach((name) => {
       const opt = document.createElement("option");
       opt.value = name;
       opt.textContent = name;
@@ -232,6 +266,8 @@
     });
     deptTriggerLabel.textContent = selected || "Select a department";
     deptTriggerLabel.classList.toggle("is-placeholder", !selected);
+    deptTrigger.disabled = isLocked;
+    deptTrigger.classList.toggle("is-disabled", isLocked);
   }
   function populateSubDeptSelect(deptName, selected) {
     if (!deptName) {
@@ -242,10 +278,15 @@
       subDeptTriggerLabel.classList.add("is-placeholder");
       return;
     }
-    subDeptSelect.disabled = false;
-    subDeptTrigger.disabled = false;
+    // A Sub-Department Admin is locked one level further, to their own
+    // sub-department too — they can't grant a login for a different one.
+    const scope = Store.myScope();
+    const subLocked = scope.role === "dept-admin" && !!scope.subDept && deptName === scope.dept;
+    if (subLocked) selected = scope.subDept;
+    subDeptSelect.disabled = subLocked;
+    subDeptTrigger.disabled = subLocked;
     const options = [{ label: "General / Department-Level (this department itself)", value: "" }].concat(
-      Store.allSubDepartments(deptName).map((s) => ({ label: s, value: s }))
+      Store.visibleSubDepartments(deptName).map((s) => ({ label: s, value: s }))
     );
     subDeptSelect.innerHTML = options
       .map((o) => `<option value="${esc(o.value)}"${o.value === selected ? " selected" : ""}>${esc(o.label)}</option>`)
@@ -254,8 +295,71 @@
     subDeptTriggerLabel.textContent = activeOpt.label;
     subDeptTriggerLabel.classList.remove("is-placeholder");
   }
+  // Level + Jurisdiction Office — the same real hierarchy Jurisdiction
+  // Management manages, one narrowing step past Sub-Department. Both
+  // options lists come from Store.visibleOffices(), which is already
+  // scoped to the signed-in admin's own subtree — a Super Admin sees every
+  // office, a Sub-Department Admin sees all of theirs, and a
+  // jurisdiction-office Admin sees only their own office and its
+  // descendants, so this same picker naturally supports granting a login
+  // at any depth without a separate "locked" branch to maintain.
+  function populateLevelSelect(deptName, subDeptName, selected) {
+    if (!deptName) {
+      levelSelect.innerHTML = '<option value="">Select a department first</option>';
+      levelSelect.disabled = true;
+      levelTrigger.disabled = true;
+      levelTriggerLabel.textContent = "Select a department first";
+      levelTriggerLabel.classList.add("is-placeholder");
+      populateOfficeSelect(deptName, subDeptName, "", "");
+      return;
+    }
+    const scope = Store.myScope();
+    const officeLocked = scope.role === "dept-admin" && !!scope.office && deptName === scope.dept && subDeptName === scope.subDept;
+    levelSelect.disabled = false;
+    levelTrigger.disabled = false;
+    const levelNames = Store.deptLevels(deptName, subDeptName);
+    const presentIndexes = [...new Set(Store.visibleOffices(deptName, subDeptName).map((o) => o.levelIndex))]
+      .filter((i) => i > 0)
+      .sort((a, b) => a - b);
+    const options = (officeLocked ? [] : [{ label: "Whole department / sub-department", value: "" }]).concat(
+      presentIndexes.map((idx) => ({ label: levelNames[idx] || `Level ${idx}`, value: String(idx) }))
+    );
+    levelSelect.innerHTML = options
+      .map((o) => `<option value="${esc(o.value)}"${o.value === selected ? " selected" : ""}>${esc(o.label)}</option>`)
+      .join("");
+    const activeOpt = options.find((o) => o.value === selected) || options[0];
+    levelSelect.value = activeOpt ? activeOpt.value : "";
+    levelTriggerLabel.textContent = activeOpt ? activeOpt.label : "Select a level";
+    levelTriggerLabel.classList.toggle("is-placeholder", !(activeOpt && activeOpt.value));
+    populateOfficeSelect(deptName, subDeptName, levelSelect.value, "");
+  }
+  function populateOfficeSelect(deptName, subDeptName, levelValue, selected) {
+    if (!deptName || !levelValue) {
+      officeField.hidden = true;
+      officeSelect.innerHTML = '<option value="">Select a level first</option>';
+      officeSelect.disabled = true;
+      officeTrigger.disabled = true;
+      officeTriggerLabel.textContent = "Select a level first";
+      officeTriggerLabel.classList.add("is-placeholder");
+      return;
+    }
+    officeField.hidden = false;
+    officeSelect.disabled = false;
+    officeTrigger.disabled = false;
+    const levelIndex = Number(levelValue);
+    const offices = Store.visibleOffices(deptName, subDeptName).filter((o) => o.levelIndex === levelIndex);
+    officeSelect.innerHTML =
+      '<option value="" disabled' + (selected ? "" : " selected") + '>Select a jurisdiction office</option>' +
+      offices.map((o) => `<option value="${esc(o.name)}"${o.name === selected ? " selected" : ""}>${esc(o.name)}</option>`).join("");
+    const activeOpt = offices.find((o) => o.name === selected);
+    officeTriggerLabel.textContent = activeOpt ? activeOpt.name : "Select a jurisdiction office";
+    officeTriggerLabel.classList.toggle("is-placeholder", !activeOpt);
+  }
+  levelSelect.addEventListener("change", () => populateOfficeSelect(deptSelect.value, subDeptSelect.value, levelSelect.value, ""));
+  officeSelect.addEventListener("change", updateNextEnabled);
   deptSelect.addEventListener("change", () => {
     populateSubDeptSelect(deptSelect.value, "");
+    populateLevelSelect(deptSelect.value, subDeptSelect.value, "");
     updateNextEnabled();
   });
 
@@ -285,8 +389,9 @@
   }
   deptTrigger.addEventListener("click", (e) => {
     e.stopPropagation();
+    if (deptTrigger.disabled) return;
     if (document.querySelector(".filter-menu")) { closeDwMenus(); return; }
-    const options = Store.allDepartments().map((d) => ({ label: d, value: d }));
+    const options = Store.visibleDepartments().map((d) => ({ label: d, value: d }));
     openDwMenu(deptTrigger, options, deptSelect.value, (value, label) => {
       deptSelect.value = value;
       deptTriggerLabel.textContent = label;
@@ -303,10 +408,43 @@
       subDeptSelect.value = value;
       subDeptTriggerLabel.textContent = label;
       subDeptTriggerLabel.classList.remove("is-placeholder");
+      populateLevelSelect(deptSelect.value, subDeptSelect.value, "");
+      updateNextEnabled();
+    });
+  });
+  levelTrigger.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (levelTrigger.disabled) return;
+    if (document.querySelector(".filter-menu")) { closeDwMenus(); return; }
+    const options = [...levelSelect.options].map((o) => ({ label: o.textContent, value: o.value }));
+    openDwMenu(levelTrigger, options, levelSelect.value, (value, label) => {
+      levelSelect.value = value;
+      levelTriggerLabel.textContent = label;
+      levelTriggerLabel.classList.toggle("is-placeholder", !value);
+      populateOfficeSelect(deptSelect.value, subDeptSelect.value, levelSelect.value, "");
+      updateNextEnabled();
+    });
+  });
+  officeTrigger.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (officeTrigger.disabled) return;
+    if (document.querySelector(".filter-menu")) { closeDwMenus(); return; }
+    const options = [...officeSelect.options].filter((o) => !o.disabled).map((o) => ({ label: o.textContent, value: o.value }));
+    openDwMenu(officeTrigger, options, officeSelect.value, (value, label) => {
+      officeSelect.value = value;
+      officeTriggerLabel.textContent = label;
+      officeTriggerLabel.classList.remove("is-placeholder");
+      updateNextEnabled();
     });
   });
   document.addEventListener("click", (e) => {
-    if (!e.target.closest(".filter-menu") && !e.target.closest("#dwDeptTrigger") && !e.target.closest("#dwSubDeptTrigger")) closeDwMenus();
+    if (
+      !e.target.closest(".filter-menu") &&
+      !e.target.closest("#dwDeptTrigger") &&
+      !e.target.closest("#dwSubDeptTrigger") &&
+      !e.target.closest("#dwLevelTrigger") &&
+      !e.target.closest("#dwOfficeTrigger")
+    ) closeDwMenus();
   });
 
   // ---- Make an existing user an admin (search Store.officers()) ----
@@ -387,7 +525,7 @@
   // in edit mode that's always true (the current holder, shown read-only);
   // in create mode it's true only once a search result has been selected.
   function updateNextEnabled() {
-    if (current === 1) nextBtn.disabled = !deptSelect.value;
+    if (current === 1) nextBtn.disabled = !deptSelect.value || (!!levelSelect.value && !officeSelect.value);
     else if (current === 2) nextBtn.disabled = editingId ? false : !selectedExistingOfficer;
     else nextBtn.disabled = false;
   }
@@ -426,7 +564,10 @@
   }
   function renderReview() {
     const subDeptRow = subDeptSelect.value
-      ? reviewRow("Sub-Department (context)", subDeptSelect.value)
+      ? reviewRow("Sub-Department", subDeptSelect.value)
+      : "";
+    const officeRow = officeSelect.value
+      ? reviewRow("Jurisdiction Office", `${officeSelect.value} (and everything beneath it)`)
       : "";
     const admin = selectedExistingOfficer;
     document.getElementById("dwReview").innerHTML = `
@@ -434,6 +575,7 @@
         <div class="ux4g-al-review-card-title">Department</div>
         ${reviewRow("Department", deptSelect.value || "—")}
         ${subDeptRow}
+        ${officeRow}
       </div>
       <div class="ux4g-al-review-card">
         <div class="ux4g-al-review-card-title">User Details</div>
@@ -456,21 +598,29 @@
     if (!selectedExistingOfficer) return;
     const name = deptSelect.value;
     const subDept = subDeptSelect.value;
+    const office = officeSelect.value;
     const admin = selectedExistingOfficer;
     if (editingId) {
-      Store.updateDepartment(editingId, { name, code: "", admin, subDept });
+      Store.updateDepartment(editingId, { name, code: "", admin, subDept, office });
       document.getElementById("dsTitle").textContent = "Admin Login Updated Successfully!";
       document.getElementById("dsSubtext").textContent = "The login's details have been updated.";
       document.getElementById("dsAddAnother").hidden = true;
     } else {
-      const existingAdminRecord = Store.departmentAdmins().find((a) => a.dept === name);
+      // Two admins can share a department now (a Department Admin and,
+      // separately, a Sub-Department or jurisdiction-office Admin under
+      // it) — only treat this as "editing an existing login" when the
+      // FULL scope (department + sub-department + office) already has one,
+      // not just the department.
+      const existingAdminRecord = Store.departmentAdmins().find(
+        (a) => a.dept === name && (a.subDept || "") === subDept && (a.office || "") === office
+      );
       if (existingAdminRecord) {
-        Store.updateDepartment(existingAdminRecord.id, { name, code: existingAdminRecord.code, admin, subDept });
+        Store.updateDepartment(existingAdminRecord.id, { name, code: existingAdminRecord.code, admin, subDept, office });
       } else {
-        Store.addDepartment({ name, code: "", admin, subDept });
+        Store.addDepartment({ name, code: "", admin, subDept, office });
       }
       document.getElementById("dsTitle").textContent = "Admin Assigned Successfully!";
-      document.getElementById("dsSubtext").textContent = `${admin.name} has been made the admin for ${name}.`;
+      document.getElementById("dsSubtext").textContent = `${admin.name} has been made the admin for ${office || subDept || name}.`;
       document.getElementById("dsAddAnother").hidden = false;
     }
     document.getElementById("dsName").textContent = subDept ? `${name} — ${subDept}` : name;
@@ -494,6 +644,11 @@
       submitBtn.textContent = "Save Changes";
       populateDeptSelect(editRecord.dept);
       populateSubDeptSelect(editRecord.dept, editRecord.subDept || "");
+      const editOffice = editRecord.office
+        ? Store.deptOffices(editRecord.dept, editRecord.subDept || "").find((o) => o.name === editRecord.office)
+        : null;
+      populateLevelSelect(editRecord.dept, editRecord.subDept || "", editOffice ? String(editOffice.levelIndex) : "");
+      populateOfficeSelect(editRecord.dept, editRecord.subDept || "", levelSelect.value, editRecord.office || "");
       document.getElementById("dwCurrentAdminName").textContent = editRecord.name || "—";
       document.getElementById("dwCurrentAdminEmail").textContent = editRecord.email || "—";
       document.getElementById("dwCurrentAdminMobile").textContent = editRecord.mobile || "—";
@@ -504,10 +659,12 @@
       titleEl.textContent = "Create Admin Login";
       submitBtn.textContent = "Create Login";
       populateDeptSelect("");
-      populateSubDeptSelect("", "");
+      populateSubDeptSelect(deptSelect.value, "");
+      populateLevelSelect(deptSelect.value, subDeptSelect.value, "");
       currentAdminCard.hidden = true;
       newAdminChoices.hidden = false;
     }
+    updateNextEnabled();
     showStep(1);
     open(wizard);
   }

@@ -94,7 +94,7 @@ const collapsed = new Set();
 // sub-departments or jurisdiction/designation detail.
 function collapseToDepartmentsOnly() {
   collapsed.clear();
-  Store.allDepartments().forEach((d) => collapsed.add("dept-" + Store.deptSlug(d)));
+  Store.visibleDepartments().forEach((d) => collapsed.add("dept-" + Store.deptSlug(d)));
 }
 collapseToDepartmentsOnly();
 
@@ -115,7 +115,7 @@ function subDeptHasAnyData(deptName, subDeptName, isGeneral) {
 }
 function departmentHasAnyData(deptName) {
   if (subDeptHasAnyData(deptName, Store.generalSubDept(), true)) return true;
-  return Store.allSubDepartments(deptName).some((s) => subDeptHasAnyData(deptName, s, false));
+  return Store.visibleSubDepartments(deptName).some((s) => subDeptHasAnyData(deptName, s, false));
 }
 
 // ---- Build the whole-government tree ----
@@ -161,7 +161,7 @@ function buildSubDeptNode(deptName, subDeptName, isGeneral) {
   };
 }
 function buildDepartmentNode(deptName) {
-  let realSubs = Store.allSubDepartments(deptName);
+  let realSubs = Store.visibleSubDepartments(deptName);
   if (subDeptFilter) realSubs = realSubs.filter((s) => s === subDeptFilter);
   if (configuredOnly) realSubs = realSubs.filter((s) => subDeptHasAnyData(deptName, s, false));
 
@@ -175,12 +175,12 @@ function buildDepartmentNode(deptName) {
     id: "dept-" + Store.deptSlug(deptName),
     kind: "outline",
     title: deptName,
-    sub: `${Store.allSubDepartments(deptName).length} sub-department${Store.allSubDepartments(deptName).length === 1 ? "" : "s"}`,
+    sub: `${Store.visibleSubDepartments(deptName).length} sub-department${Store.visibleSubDepartments(deptName).length === 1 ? "" : "s"}`,
     children,
   };
 }
 function buildFullTree() {
-  let depts = Store.allDepartments();
+  let depts = Store.visibleDepartments();
   if (deptFilter) depts = depts.filter((d) => d === deptFilter);
   if (configuredOnly) depts = depts.filter((d) => departmentHasAnyData(d));
 
@@ -326,7 +326,7 @@ selectDept.addEventListener("click", (e) => {
   e.stopPropagation();
   if (document.querySelector(".filter-menu")) { closeFilterMenus(); return; }
   const options = [{ label: "All Departments", value: "" }].concat(
-    Store.allDepartments().map((d) => ({ label: d, value: d }))
+    Store.visibleDepartments().map((d) => ({ label: d, value: d }))
   );
   openMenu(selectDept, options, deptFilter, (value, label) => {
     deptFilter = value;
@@ -343,7 +343,7 @@ selectSubDept.addEventListener("click", (e) => {
   if (!deptFilter || selectSubDept.disabled) return;
   if (document.querySelector(".filter-menu")) { closeFilterMenus(); return; }
   const options = [{ label: "All Sub-Departments", value: "" }].concat(
-    Store.allSubDepartments(deptFilter).map((s) => ({ label: s, value: s }))
+    Store.visibleSubDepartments(deptFilter).map((s) => ({ label: s, value: s }))
   );
   openMenu(selectSubDept, options, subDeptFilter, (value, label) => {
     subDeptFilter = value;

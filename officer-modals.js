@@ -10,6 +10,71 @@
     }[c]));
   }
 
+  // ---- shared custom-dropdown popup (same component Create Admin Login
+  // and Register Application use) — replaces the browser's native <select>
+  // list with the app's own trigger button + popup ----
+  function closeMenus() { document.querySelectorAll(".filter-menu").forEach((m) => m.remove()); }
+  function openMenu(anchor, options, activeValue, onPick) {
+    closeMenus();
+    const menu = document.createElement("div");
+    menu.className = "filter-menu";
+    options.forEach((opt) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = opt.label;
+      if (opt.value === activeValue) b.classList.add("is-active");
+      b.addEventListener("click", () => { onPick(opt.value, opt.label); closeMenus(); });
+      menu.appendChild(b);
+    });
+    document.body.appendChild(menu);
+    const r = anchor.getBoundingClientRect();
+    menu.style.top = `${r.bottom + 4}px`;
+    menu.style.left = `${r.left}px`;
+    menu.style.minWidth = `${r.width}px`;
+  }
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".filter-menu") && !e.target.closest(".ux4g-al-select")) closeMenus();
+  });
+  // Markup for one trigger+hidden-select pair. The real <select> stays in
+  // the DOM (display:none) purely as the value-holder every other function
+  // in this file reads/writes via .value, unchanged.
+  function selectTrigger(id, placeholder) {
+    return `<button type="button" class="ux4g-al-select" id="${id}Trigger">
+        <span class="ux4g-al-select-label is-placeholder" id="${id}TriggerLabel">${esc(placeholder)}</span>
+        <span class="material-icons">expand_more</span>
+      </button>
+      <select class="ux4g-al-select-native" id="${id}"></select>`;
+  }
+  // Wires a trigger button to its hidden <select>: opens the popup built
+  // from the select's own <option>s, and keeps the trigger's label in
+  // sync whenever the select's options or value change programmatically
+  // (call the returned function again after repopulating).
+  function bindSelectTrigger(id, placeholder) {
+    const select = document.getElementById(id);
+    const trigger = document.getElementById(id + "Trigger");
+    const label = document.getElementById(id + "TriggerLabel");
+    function sync() {
+      const opt = select.options[select.selectedIndex];
+      const hasValue = opt && opt.value !== "";
+      label.textContent = opt ? opt.textContent : placeholder;
+      label.classList.toggle("is-placeholder", !hasValue);
+    }
+    trigger.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (trigger.disabled) return;
+      if (document.querySelector(".filter-menu")) { closeMenus(); return; }
+      const options = [...select.options].filter((o) => !o.disabled).map((o) => ({ value: o.value, label: o.textContent }));
+      openMenu(trigger, options, select.value, (value, lbl) => {
+        select.value = value;
+        label.textContent = lbl;
+        label.classList.remove("is-placeholder");
+        select.dispatchEvent(new Event("change"));
+      });
+    });
+    sync();
+    return sync;
+  }
+
   // ---- Shared officer-card markup (used by list + transfer modal) ----
   function officerCard(rightHTML, opts) {
     opts = opts || {};
@@ -71,37 +136,20 @@
         <form class="form-fields" onsubmit="return false">
           <div class="field">
             <label class="field-label" for="wDept">Select Department</label>
-            <select class="field-control" id="wDept">
-              <option>TN Information Technology and Digital Services (IT&amp;DS)</option>
-              <option>Revenue and Disaster Management</option>
-              <option>Rural Development and Panchayat Raj Department</option>
-            </select>
+            ${selectTrigger("wDept", "Select Department")}
           </div>
           <div class="field" id="wSubDeptField">
             <label class="field-label" for="wSubDept">Select Sub Department</label>
-            <select class="field-control" id="wSubDept">
-              <option>Tamil Nadu e-Governance Agency (TNeGA)</option>
-              <option>ELCOT</option>
-            </select>
+            ${selectTrigger("wSubDept", "Select Sub Department")}
           </div>
           <div class="field" id="wJurisField">
             <label class="field-label" for="wJuris">Select Jurisdiction</label>
-            <select class="field-control" id="wJuris">
-              <option value="" disabled selected>Select Jurisdiction</option>
-              <option>Chennai</option>
-              <option>Coimbatore</option>
-              <option>Madurai</option>
-            </select>
+            ${selectTrigger("wJuris", "Select Jurisdiction")}
             <span class="field-hint"><span class="material-icons">info</span>Can't find the jurisdiction? Add it in <a href="agency.html">Jurisdiction Management</a></span>
           </div>
           <div class="field" id="wDesigField">
             <label class="field-label" for="wDesig">Select Designation</label>
-            <select class="field-control" id="wDesig">
-              <option value="" disabled selected>Type or search Designation</option>
-              <option>Backend Developer</option>
-              <option>District Collector</option>
-              <option>Tahsildar</option>
-            </select>
+            ${selectTrigger("wDesig", "Select Designation")}
             <span class="field-hint"><span class="material-icons">info</span>Can't find the designation? Add it in <a href="agency-designation.html">Designation Management</a></span>
           </div>
           <div class="field" id="wReportsToField" hidden>
@@ -250,6 +298,12 @@
   </div>`;
   document.body.appendChild(wrap);
 
+  // ---- Custom dropdown triggers for the 4 step-1 selects ----
+  const syncDeptTrigger = bindSelectTrigger("wDept", "Select Department");
+  const syncSubDeptTrigger = bindSelectTrigger("wSubDept", "Select Sub Department");
+  const syncJurisTrigger = bindSelectTrigger("wJuris", "Select Jurisdiction");
+  const syncDesigTrigger = bindSelectTrigger("wDesig", "Select Designation");
+
   // ---- Element refs ----
   const wizard = document.getElementById("officerWizard");
   const successModal = document.getElementById("successModal");
@@ -308,13 +362,33 @@
     const sub = document.getElementById("wSubDept");
     const juris = document.getElementById("wJuris");
     const desig = document.getElementById("wDesig");
-    fillSelect(dept, Store.departments());
+    fillSelect(dept, Store.visibleDepartments());
     if (defaultDept) dept.value = defaultDept;
+    syncDeptTrigger();
+    // A Department Admin can only create users within their own
+    // department — the field is locked to it, not just pre-selected.
+    const scope = Store.myScope();
+    const deptTrigger = document.getElementById("wDeptTrigger");
+    if (scope.role === "dept-admin") {
+      dept.value = scope.dept;
+      deptTrigger.disabled = true;
+    } else {
+      deptTrigger.disabled = false;
+    }
+    syncDeptTrigger();
+    // A Sub-Department Admin is locked one level further, to their own
+    // sub-department too.
+    const subDeptTrigger = document.getElementById("wSubDeptTrigger");
+    subDeptTrigger.disabled = scope.role === "dept-admin" && !!scope.subDept;
     const syncDeptScoped = (preferredSubDept) => {
-      fillSelect(sub, Store.subDepartments(dept.value));
-      if (preferredSubDept && [...sub.options].some((o) => o.value === preferredSubDept)) sub.value = preferredSubDept;
-      fillSelect(juris, Store.deptOffices(dept.value, sub.value).map((o) => o.name), "Select Jurisdiction");
-      fillSelect(desig, Store.deptDesignations(dept.value, sub.value).map((d) => d.name), "Select Designation");
+      fillSelect(sub, Store.visibleSubDepartments(dept.value));
+      const forcedSubDept = scope.role === "dept-admin" && scope.subDept ? scope.subDept : preferredSubDept;
+      if (forcedSubDept && [...sub.options].some((o) => o.value === forcedSubDept)) sub.value = forcedSubDept;
+      syncSubDeptTrigger();
+      fillSelect(juris, Store.visibleOffices(dept.value, sub.value).map((o) => o.name), "Select Jurisdiction");
+      fillSelect(desig, Store.visibleDeptDesignations(dept.value, sub.value).map((d) => d.name), "Select Designation");
+      syncJurisTrigger();
+      syncDesigTrigger();
     };
     syncDeptScoped(defaultSubDept);
     if (dept._syncDeptScoped) dept.removeEventListener("change", dept._syncDeptScoped);
@@ -322,8 +396,10 @@
     dept.addEventListener("change", dept._syncDeptScoped);
     if (sub._syncSubScoped) sub.removeEventListener("change", sub._syncSubScoped);
     sub._syncSubScoped = () => {
-      fillSelect(juris, Store.deptOffices(dept.value, sub.value).map((o) => o.name), "Select Jurisdiction");
-      fillSelect(desig, Store.deptDesignations(dept.value, sub.value).map((d) => d.name), "Select Designation");
+      fillSelect(juris, Store.visibleOffices(dept.value, sub.value).map((o) => o.name), "Select Jurisdiction");
+      fillSelect(desig, Store.visibleDeptDesignations(dept.value, sub.value).map((d) => d.name), "Select Designation");
+      syncJurisTrigger();
+      syncDesigTrigger();
     };
     sub.addEventListener("change", sub._syncSubScoped);
   }
@@ -388,6 +464,8 @@
       titleEl.textContent = "Edit User";
       document.getElementById("wJuris").value = editRecord.jurisdiction || "";
       document.getElementById("wDesig").value = editRecord.designation || "";
+      syncJurisTrigger();
+      syncDesigTrigger();
       document.getElementById("wName").value = editRecord.name || "";
       document.getElementById("wSso").value = editRecord.sso || "";
       document.getElementById("wMobile").value = editRecord.mobile || "";

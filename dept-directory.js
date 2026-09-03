@@ -19,6 +19,12 @@ function escapeHtml(s) {
   }[c]));
 }
 
+// Super Admin only — renaming/creating real departments and sub-departments
+// isn't something a Department Admin is scoped to do.
+if (Store.myScope().role !== "super-admin") {
+  window.location.replace("index.html");
+}
+
 let deptFilter = "";
 let statusFilterValue = "all";
 const expandedDepts = new Set();

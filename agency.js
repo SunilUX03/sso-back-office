@@ -5,14 +5,28 @@
 // Store.deptOffices), persisted to localStorage.
 // ============================================================
 const params = new URLSearchParams(window.location.search);
-const deptName = Store.deptBySlug(params.get("dept")) || Store.allDepartments()[0];
+const deptName = Store.resolveScopedDept(Store.deptBySlug(params.get("dept")));
 const resolvedSub = Store.subDeptBySlug(deptName, params.get("sub"));
-const subDeptName = resolvedSub !== null ? resolvedSub : Store.allSubDepartments(deptName)[0];
+const subDeptName = Store.resolveScopedSubDept(deptName, resolvedSub);
 
 const state = {
   levels: Store.deptLevels(deptName, subDeptName),
-  offices: Store.deptOffices(deptName, subDeptName),
+  offices: Store.visibleOffices(deptName, subDeptName),
 };
+
+// The lowest new level a jurisdiction-office admin can add an office at —
+// strictly below their own office's level, since a level at or above that
+// would be a peer or ancestor office outside their own authority, not a
+// descendant. Everyone else (Super Admin, a Department/Sub-Department
+// Admin with no office of their own) has no such floor.
+function scopeMinAddLevelIndex() {
+  const scope = Store.myScope();
+  if (scope.role === "dept-admin" && scope.office && deptName === scope.dept && subDeptName === scope.subDept) {
+    const own = Store.deptOffices(deptName, subDeptName).find((o) => o.name === scope.office);
+    if (own) return own.levelIndex + 1;
+  }
+  return 0;
+}
 
 function el(tag, className, html) {
   const node = document.createElement(tag);
@@ -46,6 +60,27 @@ if (subDeptName === Store.generalSubDept()) {
   document.getElementById("deptCrumbLink").textContent = deptName;
   document.getElementById("deptCrumbLink").href = `jurisdiction-subdept.html?dept=${Store.deptSlug(deptName)}`;
 }
+// A jurisdiction-office admin's real scope is their own office, not the
+// whole sub-department — the heading and breadcrumb name that office (and
+// its level) instead, with the sub-department demoted to a mid-crumb.
+{
+  const officeScope = Store.myScope();
+  const scopedOffice =
+    officeScope.role === "dept-admin" && officeScope.office && deptName === officeScope.dept && subDeptName === officeScope.subDept
+      ? Store.deptOffices(deptName, subDeptName).find((o) => o.name === officeScope.office)
+      : null;
+  if (scopedOffice) {
+    const levelLabel = state.levels[scopedOffice.levelIndex] || "";
+    const officeLabel = levelLabel ? `${scopedOffice.name} (${levelLabel})` : scopedOffice.name;
+    document.getElementById("deptTitle").textContent = officeLabel;
+    document.title = `${officeLabel} — Jurisdiction — TN SSO`;
+    document.getElementById("subDeptCrumb").classList.remove("crumb-current");
+    document.getElementById("officeCrumbSep").hidden = false;
+    const officeCrumbEl = document.getElementById("officeCrumb");
+    officeCrumbEl.hidden = false;
+    officeCrumbEl.textContent = officeLabel;
+  }
+}
 
 // ============================================================
 // Overview stat tiles (this department only)
@@ -53,21 +88,28 @@ if (subDeptName === Store.generalSubDept()) {
 const statGrid = document.getElementById("statGrid");
 function renderStats() {
   statGrid.innerHTML = "";
-  const nonZero = Store.deptLevelCounts(deptName, subDeptName).filter((c) => c.value > 0);
-  if (!nonZero.length) {
-    statGrid.innerHTML = `<div class="empty-list">No jurisdiction offices added yet.</div>`;
-    return;
-  }
-  nonZero.forEach((c) => {
+  // Always show real stat tiles — a Total Records tile even at zero — same
+  // as every other Overview on the site, instead of swapping the whole
+  // grid out for a text-only empty state.
+  const tiles = [{ icon: "account_tree", value: state.offices.length, label: "Total Jurisdiction Records" }];
+  // Computed from state.offices (already scoped to this admin's own
+  // subtree), not Store.deptLevelCounts — that reads every office in the
+  // sub-department regardless of who's signed in.
+  state.levels.slice(1).forEach((label, i) => {
+    const levelIndex = i + 1;
+    const value = state.offices.filter((o) => o.levelIndex === levelIndex).length;
+    if (value > 0) tiles.push({ icon: "domain", value, label });
+  });
+  tiles.forEach((t) => {
     statGrid.appendChild(
       el(
         "article",
         "ux4g-card ux4g-card-outline ux4g-al-stat-card",
         `<div class="ux4g-card-body">
-           <span class="ux4g-al-icon-tile"><span class="ux4g-icon-outlined" style="font-size:20px">domain</span></span>
+           <span class="ux4g-al-icon-tile"><span class="ux4g-icon-outlined" style="font-size:20px">${t.icon}</span></span>
            <div>
-             <div class="ux4g-al-stat-number">${c.value}</div>
-             <div class="ux4g-al-stat-label">${escapeHtml(c.label)}</div>
+             <div class="ux4g-al-stat-number">${t.value}</div>
+             <div class="ux4g-al-stat-label">${escapeHtml(t.label)}</div>
            </div>
          </div>`
       )
@@ -202,7 +244,17 @@ document.getElementById("saveHierarchyBtn").addEventListener("click", () => {
 // ============================================================
 const hierarchyCard = document.getElementById("hierarchyCard");
 
+// The hierarchy structure (the level chain itself — State, Division,
+// District, ...) is a whole department/sub-department definition, not
+// something scoped to one office within it — a jurisdiction-office admin
+// (Tier 3+) can't redefine it, only view it.
+function isHierarchyFrozen() {
+  const scope = Store.myScope();
+  return scope.role === "dept-admin" && !!scope.office && deptName === scope.dept && subDeptName === scope.subDept;
+}
+
 function renderHierarchyCard() {
+  const frozen = isHierarchyFrozen();
   if (!state.levels.length) {
     hierarchyCard.classList.remove("is-defined");
     hierarchyCard.innerHTML = `
@@ -210,9 +262,9 @@ function renderHierarchyCard() {
       <div class="hierarchy-text">
         <h3 class="hierarchy-title">No Hierarchy Structure</h3>
         <p class="hierarchy-desc">Define the administrative hierarchy used by this department by specifying each jurisdiction level in order (e.g., State → Division → District → Mandal → Village).</p>
-        <button class="btn btn-primary btn-lg" data-open="hierarchy">
+        ${frozen ? "" : `<button class="btn btn-primary btn-lg" data-open="hierarchy">
           <img class="btn-plus" src="assets/imgPlus.svg" alt="" /> Define Hierarchy Structure
-        </button>
+        </button>`}
       </div>`;
     return;
   }
@@ -225,9 +277,9 @@ function renderHierarchyCard() {
     <div class="hier-main">
       <div class="hier-head">
         <h3 class="hier-card-title">Hierarchy Structure</h3>
-        <button class="btn-edit-hier" data-open="hierarchy">
+        ${frozen ? "" : `<button class="btn-edit-hier" data-open="hierarchy">
           <span class="material-icons">edit</span> Edit Hierarchy Structure
-        </button>
+        </button>`}
       </div>
       <div class="hier-chips">${chips}</div>
     </div>`;
@@ -246,14 +298,74 @@ const officeSubtitle = officeModal.querySelector(".modal-subtitle");
 const addOfficeBtn = document.getElementById("addOfficeBtn");
 let editingOfficeId = null;
 
-function populateFLevel() {
+// ---- shared custom-dropdown popup for this modal's two selects (same
+// component the rest of the app uses instead of a native <select> list) ----
+function closeFieldMenus() {
+  document.querySelectorAll(".filter-menu").forEach((m) => m.remove());
+}
+function openFieldMenu(anchor, options, activeValue, onPick) {
+  closeFieldMenus();
+  const menu = document.createElement("div");
+  menu.className = "filter-menu";
+  options.forEach((opt) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = opt.label;
+    if (opt.value === activeValue) b.classList.add("is-active");
+    b.addEventListener("click", () => { onPick(opt.value, opt.label); closeFieldMenus(); });
+    menu.appendChild(b);
+  });
+  document.body.appendChild(menu);
+  const r = anchor.getBoundingClientRect();
+  menu.style.top = `${r.bottom + 4}px`;
+  menu.style.left = `${r.left}px`;
+  menu.style.minWidth = `${r.width}px`;
+}
+function bindFieldSelectTrigger(id, placeholder) {
+  const select = document.getElementById(id);
+  const trigger = document.getElementById(id + "Trigger");
+  const label = document.getElementById(id + "TriggerLabel");
+  function sync() {
+    const opt = select.options[select.selectedIndex];
+    const hasValue = opt && opt.value !== "";
+    label.textContent = opt ? opt.textContent : placeholder;
+    label.classList.toggle("is-placeholder", !hasValue);
+  }
+  trigger.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (trigger.disabled) return;
+    if (document.querySelector(".filter-menu")) { closeFieldMenus(); return; }
+    const options = [...select.options].filter((o) => !o.disabled).map((o) => ({ value: o.value, label: o.textContent }));
+    openFieldMenu(trigger, options, select.value, (value, lbl) => {
+      select.value = value;
+      label.textContent = lbl;
+      label.classList.remove("is-placeholder");
+      select.dispatchEvent(new Event("change"));
+    });
+  });
+  sync();
+  return sync;
+}
+const syncFLevelTrigger = bindFieldSelectTrigger("fLevel", "Select a Level");
+const syncFParentTrigger = bindFieldSelectTrigger("fParent", "Select Parent office...");
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".filter-menu") && !e.target.closest("#fLevelTrigger") && !e.target.closest("#fParentTrigger")) closeFieldMenus();
+});
+
+// includeLevelIndex keeps one level selectable even below the usual floor
+// — the office being edited's own current level, so editing it doesn't
+// silently lose its level because that level is no longer addable as new.
+function populateFLevel(includeLevelIndex) {
   fLevel.innerHTML = '<option value="" disabled selected>Select a Level</option>';
+  const minLevel = scopeMinAddLevelIndex();
   state.levels.forEach((name, i) => {
+    if (i < minLevel && i !== includeLevelIndex) return;
     const opt = el("option");
     opt.value = String(i);
     opt.textContent = name;
     fLevel.appendChild(opt);
   });
+  syncFLevelTrigger();
 }
 
 function populateParentField(levelIndex, currentParentId) {
@@ -279,17 +391,43 @@ function populateParentField(levelIndex, currentParentId) {
     );
     fParent.disabled = true;
   }
+  document.getElementById("fParentTrigger").disabled = fParent.disabled;
+  syncFParentTrigger();
 }
+
+const officeModeToggle = document.getElementById("officeModeToggle");
+const officeSinglePanel = document.getElementById("officeSinglePanel");
+const officeBulkPanel = document.getElementById("officeBulkPanel");
+const officeBulkCreateBtn = document.getElementById("officeBulkCreateBtn");
+let officeMode = "single";
+
+function applyOfficeMode() {
+  const isBulk = officeMode === "bulk";
+  officeModeToggle.querySelectorAll(".mode-toggle-btn").forEach((b) => b.classList.toggle("is-active", b.dataset.mode === officeMode));
+  officeSinglePanel.hidden = isBulk;
+  officeBulkPanel.hidden = !isBulk;
+  addOfficeBtn.hidden = isBulk;
+  officeBulkCreateBtn.hidden = !isBulk;
+}
+officeModeToggle.querySelectorAll(".mode-toggle-btn").forEach((btn) => {
+  btn.addEventListener("click", () => { officeMode = btn.dataset.mode; applyOfficeMode(); });
+});
 
 function openOffice(office) {
   editingOfficeId = office ? office.id : null;
-  populateFLevel();
+  populateFLevel(office ? office.levelIndex : undefined);
+  officeMode = "single";
+  applyOfficeMode();
+  // Bulk upload only makes sense for adding new offices, not editing one.
+  officeModeToggle.hidden = !!office;
+  resetOfficeBulkPanel();
 
   if (office) {
     officeTitle.textContent = "Edit Jurisdiction Office";
     officeSubtitle.textContent = "Update this office's details";
     addOfficeBtn.textContent = "Save Changes";
     fLevel.value = String(office.levelIndex);
+    syncFLevelTrigger();
     fName.value = office.name;
     fDesc.value = office.description || "";
     populateParentField(office.levelIndex, office.parentId);
@@ -340,10 +478,173 @@ addOfficeBtn.addEventListener("click", () => {
   } else {
     Store.addDeptOffice(deptName, payload, subDeptName);
   }
-  state.offices = Store.deptOffices(deptName, subDeptName);
+  state.offices = Store.visibleOffices(deptName, subDeptName);
   renderStats();
   renderOfficeTable();
   closeModal(officeModal);
+});
+
+// ============================================================
+// Bulk Upload — Jurisdiction Offices
+// ============================================================
+const OFFICE_BULK_HEADERS = ["Level", "Office Name", "Parent Office", "Description"];
+let officeBulkRows = [];
+
+function parseCsv(text) {
+  const rows = [];
+  let row = [], field = "", inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else inQuotes = false; }
+      else field += c;
+    } else if (c === '"') inQuotes = true;
+    else if (c === ",") { row.push(field); field = ""; }
+    else if (c === "\n" || c === "\r") {
+      if (c === "\r" && text[i + 1] === "\n") i++;
+      row.push(field); field = "";
+      if (row.length > 1 || row[0] !== "") rows.push(row);
+      row = [];
+    } else field += c;
+  }
+  if (field !== "" || row.length) { row.push(field); rows.push(row); }
+  return rows;
+}
+function csvEscape(v) {
+  const s = String(v == null ? "" : v);
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+document.getElementById("officeBulkDownloadTemplate").addEventListener("click", () => {
+  const csv = OFFICE_BULK_HEADERS.map(csvEscape).join(",");
+  downloadBlob(new Blob([csv], { type: "text/csv;charset=utf-8;" }), "bulk-jurisdiction-template.csv");
+});
+
+function resetOfficeBulkPanel() {
+  officeBulkRows = [];
+  document.getElementById("officeBulkFileInput").value = "";
+  document.getElementById("officeBulkFileName").textContent = "";
+  document.getElementById("officeBulkPreviewWrap").hidden = true;
+  document.getElementById("officeBulkResultsWrap").hidden = true;
+  officeBulkCreateBtn.disabled = true;
+  officeBulkCreateBtn.textContent = "Add Offices";
+}
+
+// Every row's Parent Office must already exist (in the real, already-saved
+// hierarchy, or elsewhere earlier in the SAME file isn't supported — only
+// pre-existing offices count) — kept simple and predictable rather than
+// resolving cross-row references within one upload.
+function validateOfficeBulkRow(cells, seen) {
+  const [levelRaw, name, parentRaw, description] = [0, 1, 2, 3].map((i) => (cells[i] || "").trim());
+  const errors = [];
+  const minLevel = scopeMinAddLevelIndex();
+  let levelIndex = state.levels.findIndex((l) => l.toLowerCase() === levelRaw.toLowerCase());
+  if (!levelRaw) errors.push("Level is required");
+  else if (levelIndex === -1) errors.push(`Level "${levelRaw}" doesn't match this department's real levels`);
+  else if (levelIndex < minLevel) errors.push(`Level "${levelRaw}" is above what you're allowed to add`);
+  if (!name) errors.push("Office Name is required");
+
+  let parentId = null;
+  let parentName = "";
+  if (levelIndex > 0) {
+    if (!parentRaw) errors.push("Parent Office is required for this level");
+    else {
+      const parentIndex = levelIndex - 1;
+      const parent = state.offices.find((o) => o.levelIndex === parentIndex && o.name.toLowerCase() === parentRaw.toLowerCase());
+      if (!parent) errors.push(`Parent Office "${parentRaw}" not found at the level above`);
+      else { parentId = parent.id; parentName = parent.name; }
+    }
+  } else if (parentRaw) {
+    errors.push("Parent Office must be blank for the top level");
+  }
+
+  // duplicate within this same file — same (level, name) pair twice
+  const dupeKey = levelIndex >= 0 ? `${levelIndex}::${name.toLowerCase()}` : null;
+  if (dupeKey && name) {
+    if (seen.has(dupeKey)) errors.push("Duplicated in another row in this file");
+    seen.add(dupeKey);
+  }
+
+  return { level: levelRaw, levelIndex, name, parentId, parentName, description, errors };
+}
+
+function renderOfficeBulkPreview() {
+  const body = document.getElementById("officeBulkPreviewBody");
+  body.innerHTML = "";
+  const validCount = officeBulkRows.filter((r) => !r.errors.length).length;
+  officeBulkRows.forEach((r, i) => {
+    const ok = !r.errors.length;
+    const tr = document.createElement("tr");
+    tr.className = ok ? "is-ok" : "is-error";
+    tr.innerHTML = `<td>${i + 1}</td><td>${escapeHtml(r.level)}</td><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.parentName || "—")}</td>
+      <td>${ok ? '<span class="bulk-status is-ok"><span class="material-icons">check_circle</span>Ready</span>' : `<span class="bulk-status is-error"><span class="material-icons">error</span>${escapeHtml(r.errors.join("; "))}</span>`}</td>`;
+    body.appendChild(tr);
+  });
+  document.getElementById("officeBulkPreviewSummary").innerHTML =
+    `<span class="material-icons">description</span>${officeBulkRows.length} row${officeBulkRows.length === 1 ? "" : "s"} found — <strong>${validCount} ready</strong>, ${officeBulkRows.length - validCount} with errors`;
+  document.getElementById("officeBulkPreviewWrap").hidden = false;
+  document.getElementById("officeBulkResultsWrap").hidden = true;
+  officeBulkCreateBtn.disabled = validCount === 0;
+  officeBulkCreateBtn.textContent = `Add ${validCount} Office${validCount === 1 ? "" : "s"}`;
+}
+
+document.getElementById("officeBulkFileInput").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  document.getElementById("officeBulkFileName").textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const allRows = parseCsv(String(reader.result));
+    if (!allRows.length) { officeBulkRows = []; renderOfficeBulkPreview(); return; }
+    const dataRows = allRows.slice(1);
+    const seen = new Set();
+    officeBulkRows = dataRows
+      .filter((r) => r.some((cell) => (cell || "").trim()))
+      .map((r) => validateOfficeBulkRow(r, seen));
+    renderOfficeBulkPreview();
+  };
+  reader.readAsText(file);
+});
+
+officeBulkCreateBtn.addEventListener("click", () => {
+  const valid = officeBulkRows.filter((r) => !r.errors.length);
+  const failed = officeBulkRows.filter((r) => r.errors.length);
+  valid.forEach((r) => {
+    Store.addDeptOffice(deptName, {
+      name: r.name,
+      levelIndex: r.levelIndex,
+      parentId: r.parentId,
+      reportsTo: r.parentName || "Top Level",
+      description: r.description,
+    }, subDeptName);
+  });
+  state.offices = Store.visibleOffices(deptName, subDeptName);
+  renderStats();
+  renderOfficeTable();
+
+  document.getElementById("officeBulkResultsBanner").innerHTML =
+    `<span class="material-icons">${failed.length ? "info" : "check_circle"}</span>` +
+    `<strong>${valid.length} of ${officeBulkRows.length}</strong> offices added. ` +
+    (failed.length ? `${failed.length} row${failed.length === 1 ? "" : "s"} need fixing and re-uploading.` : "All rows added successfully.");
+  const failuresBody = document.getElementById("officeBulkFailuresBody");
+  failuresBody.innerHTML = "";
+  failed.forEach((r) => {
+    const originalIndex = officeBulkRows.indexOf(r) + 1;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${originalIndex}</td><td>${escapeHtml(r.name || "—")}</td><td>${escapeHtml(r.errors.join("; "))}</td>`;
+    failuresBody.appendChild(tr);
+  });
+  document.getElementById("officeBulkPreviewWrap").hidden = true;
+  document.getElementById("officeBulkResultsWrap").hidden = false;
+  document.getElementById("officeBulkResultsWrap").querySelector(".bulk-preview-table-wrap").hidden = failed.length === 0;
+  officeBulkCreateBtn.disabled = true;
+  officeBulkCreateBtn.textContent = "Offices Added";
 });
 
 // ============================================================
@@ -366,8 +667,9 @@ function openLevelFilterMenu() {
   closeFilterMenus();
   const menu = document.createElement("div");
   menu.className = "filter-menu";
+  const presentIndexes = [...new Set(state.offices.map((o) => o.levelIndex))].sort((a, b) => a - b);
   const options = [{ label: "All Levels", value: "" }].concat(
-    state.levels.map((name, i) => ({ label: name, value: String(i) }))
+    presentIndexes.map((i) => ({ label: state.levels[i] || `Level ${i}`, value: String(i) }))
   );
   options.forEach((opt) => {
     const b = document.createElement("button");
@@ -529,7 +831,7 @@ officeBody.addEventListener("click", (e) => {
       : "This can't be undone.";
     if (!confirm(`Delete "${office ? office.name : "this office"}"? ${warning}`)) return;
     Store.removeDeptOffice(deptName, id, subDeptName);
-    state.offices = Store.deptOffices(deptName, subDeptName);
+    state.offices = Store.visibleOffices(deptName, subDeptName);
     renderStats();
     renderOfficeTable();
     return;

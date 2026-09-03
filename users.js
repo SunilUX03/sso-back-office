@@ -8,6 +8,22 @@
 // picker (users-subdept.html), which drills into the actual officer
 // roster (users-officers.html) — same drill-down shape as jurisdiction.
 // ============================================================
+// A Department Admin only ever has one department in this list, so showing
+// it as a one-card picker is pure friction — skip straight to that
+// department's own sub-department breakdown instead. A Sub-Department
+// Admin only has one sub-department too, so they skip one level further,
+// straight to its own officer roster.
+{
+  const scope = Store.myScope();
+  if (scope.role === "dept-admin") {
+    if (scope.subDept) {
+      window.location.replace(`users-officers.html?dept=${Store.deptSlug(scope.dept)}&sub=${Store.subDeptSlug(scope.subDept)}`);
+    } else {
+      window.location.replace(`users-subdept.html?dept=${Store.deptSlug(scope.dept)}`);
+    }
+  }
+}
+
 function el(tag, className, html) {
   const node = document.createElement(tag);
   if (className) node.className = className;
@@ -47,17 +63,17 @@ function isConfigured(deptName) {
 // as Jurisdiction/Designation Management regardless of how many of the
 // 76 departments have officers. ----
 function renderOverview() {
-  const totalRealSubDepts = Store.allDepartments().reduce((sum, d) => sum + Store.allSubDepartments(d).length, 0);
+  const totalRealSubDepts = Store.visibleDepartments().reduce((sum, d) => sum + Store.allSubDepartments(d).length, 0);
   let deptsConfigured = 0;
   let subsConfigured = 0;
-  Store.allDepartments().forEach((dept) => {
+  Store.visibleDepartments().forEach((dept) => {
     if (isConfigured(dept)) deptsConfigured++;
     subsConfigured += subDeptsConfiguredCount(dept);
   });
 
   const tiles = [
     { icon: "group", value: Store.officerCount().toLocaleString("en-IN"), label: "Total Officers" },
-    { icon: "domain", value: `${deptsConfigured} of ${Store.allDepartments().length}`, label: "Departments with Officers" },
+    { icon: "domain", value: `${deptsConfigured} of ${Store.visibleDepartments().length}`, label: "Departments with Officers" },
     { icon: "apartment", value: `${subsConfigured} of ${totalRealSubDepts}`, label: "Sub-Departments with Officers" },
   ];
   document.getElementById("overviewTiles").innerHTML = tiles
@@ -86,7 +102,7 @@ let deptFilter = "";
 let configFilterValue = "all";
 let azFilter = null;
 
-deptCountBadge.textContent = Store.allDepartments().length;
+deptCountBadge.textContent = Store.visibleDepartments().length;
 
 function passesConfigFilter(configured) {
   if (configFilterValue === "configured") return configured;
@@ -95,7 +111,7 @@ function passesConfigFilter(configured) {
 }
 
 function departmentResults() {
-  let names = Store.allDepartments();
+  let names = Store.visibleDepartments();
   if (deptFilter) {
     const q = deptFilter.toLowerCase();
     names = names.filter((n) => n.toLowerCase().includes(q));
@@ -112,7 +128,7 @@ function subDeptHitResults() {
   if (!deptFilter) return [];
   const q = deptFilter.toLowerCase();
   const hits = [];
-  Store.allDepartments().forEach((dept) => {
+  Store.visibleDepartments().forEach((dept) => {
     if (dept.toLowerCase().includes(q)) return;
     Store.allSubDepartments(dept).forEach((sub) => {
       if (!sub.toLowerCase().includes(q)) return;
@@ -188,7 +204,7 @@ function renderDepartments() {
 }
 
 function renderAzStrip() {
-  const available = new Set(Store.allDepartments().map((n) => n.trim()[0].toUpperCase()));
+  const available = new Set(Store.visibleDepartments().map((n) => n.trim()[0].toUpperCase()));
   azStrip.innerHTML = "";
   "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach((letter) => {
     const btn = el("button", "ux4g-jm-az-btn" + (azFilter === letter ? " is-active" : ""), letter);

@@ -7,13 +7,13 @@
 // sub-departments have it. Shared shape for Jurisdiction, Designation,
 // and Officer coverage below, so each Overview card reads the same way:
 // "X of 75 departments, Y of N sub-departments." ----
-const TOTAL_DEPARTMENTS = Store.allDepartments().length;
-const TOTAL_SUBDEPARTMENTS = Store.allDepartments().reduce((sum, d) => sum + Store.allSubDepartments(d).length, 0);
+const TOTAL_DEPARTMENTS = Store.visibleDepartments().length;
+const TOTAL_SUBDEPARTMENTS = Store.visibleDepartments().reduce((sum, d) => sum + Store.visibleSubDepartments(d).length, 0);
 function coverageStats(hasFn) {
   let deptCount = 0;
   let subDeptCount = 0;
-  Store.allDepartments().forEach((dept) => {
-    const subs = Store.allSubDepartments(dept);
+  Store.visibleDepartments().forEach((dept) => {
+    const subs = Store.visibleSubDepartments(dept);
     let deptHasAny = hasFn(dept, "");
     subs.forEach((sub) => {
       if (hasFn(dept, sub)) {
@@ -28,8 +28,44 @@ function coverageStats(hasFn) {
 
 // ---- Overview: three "X of 75 departments / Y of N sub-departments"
 // coverage cards (Jurisdiction, Designation, Officers) plus one Web vs
-// Mobile application-mix donut — real Store data throughout. ----
+// Mobile application-mix donut — real Store data throughout. Below
+// Sub-Department (a jurisdiction-office admin), "coverage across
+// departments" stops meaning anything — there's only the one office and
+// its own subtree — so those three cards switch to real counts scoped to
+// that subtree instead of a ratio against the whole org. ----
 function getComboStatCards() {
+  const scope = Store.myScope();
+  if (scope.role === "dept-admin" && scope.office) {
+    const offices = Store.visibleOffices(scope.dept, scope.subDept);
+    const designations = Store.visibleDeptDesignations(scope.dept, scope.subDept);
+    const officers = Store.visibleOfficers();
+    const activeOfficers = officers.filter((o) => o.status === "active");
+    const levelsWithOffices = new Set(offices.map((o) => o.levelIndex)).size;
+    const levelsWithDesignations = new Set(designations.map((d) => d.levelIndex)).size;
+    return [
+      {
+        icon: "account_tree", title: "Jurisdiction Management", link: "jurisdiction.html",
+        items: [
+          { number: offices.length, label: "Jurisdiction Records" },
+          { number: Math.max(offices.length - 1, 0), label: "Offices Under Me" },
+        ],
+      },
+      {
+        icon: "badge", title: "Designation Management", link: "designation.html",
+        items: [
+          { number: designations.length, label: "Designations" },
+          { number: levelsWithDesignations, label: "Levels Covered" },
+        ],
+      },
+      {
+        icon: "group", title: "Officers", link: "users.html",
+        items: [
+          { number: officers.length, label: "Total Officers" },
+          { number: activeOfficers.length, label: "Active Officers" },
+        ],
+      },
+    ];
+  }
   const jurisdiction = coverageStats((dept, sub) => Store.deptOffices(dept, sub).length > 0);
   const designation = coverageStats((dept, sub) => Store.deptDesignations(dept, sub).length > 0);
   const activeOfficers = Store.officers().filter((o) => o.status === "active");
@@ -63,7 +99,7 @@ function getComboStatCards() {
 // so it reads better as one donut than as two more number tiles. ----
 const APP_TYPE_COLORS = { web: "#002385", mobile: "#0ea5e9", both: "#64748b" };
 function getAppTypeBreakdown() {
-  const active = Store.applications().filter((a) => a.status === "active");
+  const active = Store.visibleApplications().filter((a) => a.status === "active");
   let web = 0, mobile = 0, both = 0;
   active.forEach((a) => {
     if (a.type === "Web & Mobile") both++;
@@ -131,8 +167,11 @@ function getAttentionCards() {
 // entirely when there's nothing pending, so it doesn't turn into wallpaper. ----
 function getAttentionCards() {
   const cards = [];
-  const pendingOfficers = Store.pendingOfficers ? Store.pendingOfficers() : [];
-  const pendingAdmins = Store.pendingDepartmentAdmins ? Store.pendingDepartmentAdmins() : [];
+  const scope = Store.myScope();
+  const inScope = (dept, subDept) =>
+    scope.role !== "dept-admin" || (dept === scope.dept && (!scope.subDept || (subDept || "") === scope.subDept));
+  const pendingOfficers = (Store.pendingOfficers ? Store.pendingOfficers() : []).filter((o) => inScope(o.dept, o.subDept));
+  const pendingAdmins = (Store.pendingDepartmentAdmins ? Store.pendingDepartmentAdmins() : []).filter((a) => inScope(a.dept, a.subDept));
   if (pendingOfficers.length) {
     cards.push({
       icon: "hourglass_empty",
@@ -187,15 +226,32 @@ function el(tag, className, html) {
 
 // ---- Welcome banner: real identity + last login, same source as Profile ----
 function renderBanner() {
-  const p = Store.superAdmin();
+  const scope = Store.myScope();
+  let name, role, department, lastLogin;
+  if (scope.role === "dept-admin") {
+    const admin = Store.departmentAdmins().find((a) => a.dept === scope.dept && (a.subDept || "") === scope.subDept && (a.office || "") === scope.office);
+    name = admin ? admin.name : scope.dept;
+    role = scope.office ? "Jurisdiction Admin" : scope.subDept ? "Sub-Department Admin" : "Department Admin";
+    department = scope.office
+      ? `${scope.office} · ${scope.dept}`
+      : scope.subDept
+      ? `${scope.subDept} · ${scope.dept}`
+      : scope.dept;
+    lastLogin = "—";
+  } else {
+    const p = Store.superAdmin();
+    name = p.name;
+    role = p.role;
+    department = p.department;
+    const history = Store.loginHistory();
+    lastLogin = history.length ? history[0].timestamp : "—";
+  }
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
-  const firstName = p.name.split(" ")[0];
+  const firstName = name.split(" ")[0];
   document.getElementById("bannerGreeting").textContent = `${greeting}, ${firstName}`;
-  const history = Store.loginHistory();
-  const lastLogin = history.length ? history[0].timestamp : "—";
   document.getElementById("bannerSubtitle").innerHTML =
-    `${p.role} &nbsp;&middot;&nbsp; ${p.department} &nbsp;&middot;&nbsp; Last login: ${lastLogin}`;
+    `${role} &nbsp;&middot;&nbsp; ${department} &nbsp;&middot;&nbsp; Last login: ${lastLogin}`;
 }
 renderBanner();
 Store.on(renderBanner);
@@ -236,7 +292,7 @@ function renderComboStatCards() {
            .map(
              (item) => `
            <div class="combo-stat-item">
-             <div class="combo-stat-number">${item.number} <span class="combo-stat-denom">of ${item.denom}</span></div>
+             <div class="combo-stat-number">${item.number}${item.denom != null ? ` <span class="combo-stat-denom">of ${item.denom}</span>` : ""}</div>
              <div class="combo-stat-label">${item.label}</div>
            </div>`
            )
@@ -246,6 +302,11 @@ function renderComboStatCards() {
     card.href = c.link;
     overviewGrid.appendChild(card);
   });
+
+  // App Management doesn't exist below Sub-Department — applications
+  // aren't tied to a specific jurisdiction office in the data model.
+  const scope = Store.myScope();
+  if (scope.role === "dept-admin" && scope.office) return;
 
   const breakdown = getAppTypeBreakdown();
   const donutSegments = [
@@ -288,8 +349,12 @@ renderKpiCards();
 Store.on(renderKpiCards);
 
 // ---- Render Quick Access cards ----
+// App Management doesn't exist below Sub-Department — applications aren't
+// tied to a specific jurisdiction office in the data model.
+const isOfficeScoped = Store.myScope().role === "dept-admin" && !!Store.myScope().office;
+const visibleQuickCards = isOfficeScoped ? QUICK_CARDS.filter((c) => c.trigger !== "app") : QUICK_CARDS;
 const quickTrack = document.getElementById("quickTrack");
-QUICK_CARDS.forEach((c) => {
+visibleQuickCards.forEach((c) => {
   const html = `<span class="icon-badge icon-badge-sm"><span class="material-icons">${c.icon}</span></span>
        <span class="quick-label">${c.label}</span>`;
   const card = c.trigger

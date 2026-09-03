@@ -8,6 +8,23 @@
 // real — most of the real 75 departments start with zero
 // registered applications, which is the honest default.
 // ============================================================
+// A Department Admin only ever has one department in this list, so showing
+// it as a one-card picker is pure friction — skip straight to that
+// department's own registered-applications page instead. A Sub-Department
+// Admin only has one sub-department too, so they land straight on that
+// sub-department's own slice of it.
+{
+  const scope = Store.myScope();
+  // App Management doesn't exist below Sub-Department — applications
+  // aren't tied to a specific jurisdiction office in the data model.
+  if (scope.role === "dept-admin" && scope.office) {
+    window.location.replace("index.html");
+  } else if (scope.role === "dept-admin") {
+    const suffix = scope.subDept ? `&sub=${Store.subDeptSlug(scope.subDept)}` : "";
+    window.location.replace(`app-management-agency.html?dept=${Store.deptSlug(scope.dept)}${suffix}`);
+  }
+}
+
 function el(tag, className, html) {
   const node = document.createElement(tag);
   if (className) node.className = className;
@@ -22,14 +39,14 @@ function escapeHtml(s) {
 
 // ---- Overview: headline stat tiles ----
 function renderOverview() {
-  const apps = Store.applications();
+  const apps = Store.visibleApplications();
   const deptsWithApps = new Set(apps.map((a) => a.dept)).size;
   const webCount = apps.filter((a) => a.type === "Web Application" || a.type === "Web & Mobile").length;
   const mobileCount = apps.filter((a) => a.type === "Mobile Application" || a.type === "Web & Mobile").length;
 
   const tiles = [
     { icon: "apps", value: String(apps.length), label: "All Applications", href: "app-management-all.html" },
-    { icon: "domain", value: `${deptsWithApps} of ${Store.allDepartments().length}`, label: "Departments Registered", href: null },
+    { icon: "domain", value: `${deptsWithApps} of ${Store.visibleDepartments().length}`, label: "Departments Registered", href: null },
     { icon: "language", value: String(webCount), label: "Web Applications", href: "app-management-all.html?type=web" },
     { icon: "phone_iphone", value: String(mobileCount), label: "Mobile Applications", href: "app-management-all.html?type=mobile" },
   ];
@@ -61,7 +78,7 @@ let deptFilter = "";
 let configFilterValue = "all";
 let azFilter = null;
 
-deptCountBadge.textContent = Store.allDepartments().length;
+deptCountBadge.textContent = Store.visibleDepartments().length;
 
 function passesConfigFilter(configured) {
   if (configFilterValue === "configured") return configured;
@@ -73,7 +90,7 @@ function isConfigured(deptName) {
 }
 
 function departmentResults() {
-  let names = Store.allDepartments();
+  let names = Store.visibleDepartments();
   if (deptFilter) {
     const q = deptFilter.toLowerCase();
     names = names.filter((n) => n.toLowerCase().includes(q));
@@ -90,7 +107,7 @@ function subDeptHitResults() {
   if (!deptFilter) return [];
   const q = deptFilter.toLowerCase();
   const hits = [];
-  Store.allDepartments().forEach((dept) => {
+  Store.visibleDepartments().forEach((dept) => {
     if (dept.toLowerCase().includes(q)) return;
     Store.allSubDepartments(dept).forEach((sub) => {
       if (!sub.toLowerCase().includes(q)) return;
@@ -163,7 +180,7 @@ function renderDepartments() {
 }
 
 function renderAzStrip() {
-  const available = new Set(Store.allDepartments().map((n) => n.trim()[0].toUpperCase()));
+  const available = new Set(Store.visibleDepartments().map((n) => n.trim()[0].toUpperCase()));
   azStrip.innerHTML = "";
   "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach((letter) => {
     const btn = el("button", "ux4g-jm-az-btn" + (azFilter === letter ? " is-active" : ""), letter);

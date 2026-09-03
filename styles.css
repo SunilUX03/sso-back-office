@@ -44,6 +44,13 @@ body {
   background: var(--white);
   color: var(--heading);
   font-variation-settings: "wdth" 100;
+  /* Sticky footer: on a page whose content doesn't fill the viewport (a
+     Department Admin's narrowed, one-department views included), the
+     footer should still sit at the bottom of the screen, not float right
+     under a half-empty page. */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 a {
@@ -362,6 +369,8 @@ button.dropdown-toggle {
   max-width: var(--content-width);
   margin: 0 auto;
   padding: 24px 0 48px;
+  width: 100%;
+  flex: 1 0 auto;
 }
 .section {
   margin-top: 32px;
@@ -840,7 +849,8 @@ button.dropdown-toggle {
 }
 .ux4g-al-select:hover { border-color: #c7cfe6; }
 .ux4g-al-select:disabled { opacity: 0.6; cursor: not-allowed; }
-.ux4g-al-select .ux4g-icon-outlined { font-size: 18px; color: #6b7280; flex: 0 0 auto; }
+.ux4g-al-select .ux4g-icon-outlined,
+.ux4g-al-select .material-icons { font-size: 18px; color: #6b7280; flex: 0 0 auto; }
 .ux4g-al-select-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .ux4g-al-select-label.is-placeholder { color: #8a8a8a; }
 .ux4g-al-step-intro {
@@ -2054,6 +2064,8 @@ button.dropdown-toggle {
   justify-content: space-between;
   gap: 24px;
   flex-wrap: wrap;
+  flex-shrink: 0;
+  width: 100%;
 }
 .footer-copy {
   margin: 0;
@@ -2763,6 +2775,7 @@ select.field-control:invalid {
 .status-badge {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   font-size: 11px;
   font-weight: 600;

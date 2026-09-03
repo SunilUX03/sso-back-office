@@ -12,7 +12,7 @@
   <link
     href="https://fonts.googleapis.com/icon?family=Material+Icons"
     rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260962" />
+  <link rel="stylesheet" href="styles.css?v=20261000" />
 
   <!-- UX4G Design System (CDN) -->
   <link rel="stylesheet" href="https://cdn.ux4g.gov.in/UX4G@3.0.18/index.css" />
@@ -86,7 +86,7 @@
           <a href="admin-logins.html" class="nav-item dropdown-toggle" data-toggle="dropdown">Administration<span class="material-icons">keyboard_arrow_down</span></a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="admin-logins.html"><span class="material-icons">admin_panel_settings</span>Admin Logins</a></li>
-            <li><a class="dropdown-item" href="dept-directory.html"><span class="material-icons">edit_note</span>Edit Dept &amp; Sub Dept Names</a></li>
+            <li data-super-admin-only><a class="dropdown-item" href="dept-directory.html"><span class="material-icons">edit_note</span>Edit Dept &amp; Sub Dept Names</a></li>
             <li><a class="dropdown-item" href="reports.html"><span class="material-icons">summarize</span>Reports</a></li>
           </ul>
         </div>
@@ -108,10 +108,10 @@
           </ul>
         </div>
 
-        <div class="dropdown">
+        <div class="dropdown" data-office-scope-hide>
           <a href="app-management.html" class="nav-item dropdown-toggle" data-toggle="dropdown">App Management<span class="material-icons">keyboard_arrow_down</span></a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="app-management.html"><span class="material-icons">add_box</span>Register Application</a></li>
+            <li><a class="dropdown-item" href="#" data-open="app"><span class="material-icons">add_box</span>Register Application</a></li>
             <li><a class="dropdown-item" href="app-management.html"><span class="material-icons">apps</span>All Applications</a></li>
           </ul>
         </div>
@@ -199,11 +199,13 @@
     </div>
   </footer>
 
-  <script src="store.js?v=20260940"></script>
-  <script src="officer-modals.js?v=20260944"></script>
+  <script src="store.js?v=20261042"></script>
+  <script src="session.js?v=20261060"></script>
+  <script src="officer-modals.js?v=20261040"></script>
+  <script src="app-modals.js?v=20261040"></script>
   <script src="dropdown.js?v=20260901"></script>
   <script src="accessibility.js?v=20260960"></script>
-  <script src="designation.js?v=20260917"></script>
+  <script src="designation.js?v=20261020"></script>
 
   <!-- UX4G runtime (accessibility bar behavior, theme toggle, etc.) -->
   <script src="https://cdn.ux4g.gov.in/UX4G@3.0.18/ux4g.js"></script>

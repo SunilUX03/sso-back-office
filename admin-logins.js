@@ -19,13 +19,13 @@ const pendingCountBadge = document.getElementById("pendingCountBadge");
 let filterText = "";
 
 function renderKpis() {
-  const admins = Store.departmentAdmins();
+  const admins = Store.scopedDepartmentAdmins();
   const active = admins.filter((a) => a.status === "active").length;
   const pending = admins.filter((a) => a.status === "pending").length;
   const inactive = admins.length - active - pending;
   kpiGrid.innerHTML = "";
   [
-    { icon: "domain", number: String(Store.departments().length), label: "Departments" },
+    { icon: "domain", number: String(Store.myScope().role === "dept-admin" ? 1 : Store.departments().length), label: "Departments" },
     { icon: "check_circle", number: String(active), label: "Active Admins" },
     { icon: "hourglass_top", number: String(pending), label: "Pending Admins" },
     { icon: "cancel", number: String(inactive), label: "Inactive Admins" },
@@ -48,7 +48,7 @@ function renderKpis() {
 
 function renderDepartments() {
   deptList.innerHTML = "";
-  Store.departmentAdmins()
+  Store.scopedDepartmentAdmins()
     // Pending logins aren't "admin logins" yet — no one can sign in with
     // them until they're verified — so they live in their own section
     // below instead of this table.
@@ -85,7 +85,7 @@ function renderDepartments() {
 }
 
 function renderPending() {
-  const pending = Store.pendingDepartmentAdmins();
+  const pending = Store.scopedDepartmentAdmins().filter((a) => a.status === "pending");
   pendingSection.hidden = pending.length === 0;
   pendingCountBadge.textContent = pending.length;
   pendingList.innerHTML = "";
@@ -128,7 +128,7 @@ deptList.addEventListener("click", (e) => {
   }
   const editBtn = e.target.closest("[data-edit-id]");
   if (editBtn && window.openDepartmentWizard) {
-    const record = Store.departmentAdmins().find((a) => a.id === Number(editBtn.dataset.editId));
+    const record = Store.scopedDepartmentAdmins().find((a) => a.id === Number(editBtn.dataset.editId));
     if (record) window.openDepartmentWizard(record);
   }
 });
@@ -143,7 +143,7 @@ pendingList.addEventListener("click", (e) => {
   }
   const editBtn = e.target.closest("[data-edit-id]");
   if (editBtn && window.openDepartmentWizard) {
-    const record = Store.departmentAdmins().find((a) => a.id === Number(editBtn.dataset.editId));
+    const record = Store.scopedDepartmentAdmins().find((a) => a.id === Number(editBtn.dataset.editId));
     if (record) window.openDepartmentWizard(record);
   }
 });

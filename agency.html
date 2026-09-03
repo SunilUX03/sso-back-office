@@ -12,7 +12,7 @@
   <link
     href="https://fonts.googleapis.com/icon?family=Material+Icons"
     rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260962" />
+  <link rel="stylesheet" href="styles.css?v=20261000" />
 
   <!-- UX4G Design System (CDN) -->
   <link rel="stylesheet" href="https://cdn.ux4g.gov.in/UX4G@3.0.18/index.css" />
@@ -86,7 +86,7 @@
           <a href="admin-logins.html" class="nav-item dropdown-toggle" data-toggle="dropdown">Administration<span class="material-icons">keyboard_arrow_down</span></a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="admin-logins.html"><span class="material-icons">admin_panel_settings</span>Admin Logins</a></li>
-            <li><a class="dropdown-item" href="dept-directory.html"><span class="material-icons">edit_note</span>Edit Dept &amp; Sub Dept Names</a></li>
+            <li data-super-admin-only><a class="dropdown-item" href="dept-directory.html"><span class="material-icons">edit_note</span>Edit Dept &amp; Sub Dept Names</a></li>
             <li><a class="dropdown-item" href="reports.html"><span class="material-icons">summarize</span>Reports</a></li>
           </ul>
         </div>
@@ -108,10 +108,10 @@
           </ul>
         </div>
 
-        <div class="dropdown">
+        <div class="dropdown" data-office-scope-hide>
           <a href="app-management.html" class="nav-item dropdown-toggle" data-toggle="dropdown">App Management<span class="material-icons">keyboard_arrow_down</span></a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="app-management.html"><span class="material-icons">add_box</span>Register Application</a></li>
+            <li><a class="dropdown-item" href="#" data-open="app"><span class="material-icons">add_box</span>Register Application</a></li>
             <li><a class="dropdown-item" href="app-management.html"><span class="material-icons">apps</span>All Applications</a></li>
           </ul>
         </div>
@@ -140,13 +140,13 @@
         <nav class="breadcrumb" aria-label="Breadcrumb">
           <a href="index.html">Home</a>
           <span class="crumb-sep">/</span>
-          <a href="jurisdiction.html">Organisation Management</a>
-          <span class="crumb-sep">/</span>
           <a href="jurisdiction.html">Jurisdiction Management</a>
           <span class="crumb-sep" id="deptCrumbSep">/</span>
           <a href="jurisdiction-subdept.html" id="deptCrumbLink">Department</a>
           <span class="crumb-sep">/</span>
           <span class="crumb-current" id="subDeptCrumb">Sub-Department</span>
+          <span class="crumb-sep" id="officeCrumbSep" hidden>/</span>
+          <span class="crumb-current" id="officeCrumb" hidden>Office</span>
         </nav>
       </div>
     </div>
@@ -303,56 +303,108 @@
         </button>
       </div>
 
-      <div class="tip-box">
-        <span class="tip-label">Tip:</span>
-        <span class="tip-text">
-          Select the level this office belongs to, then give it its official name. If this office has a
-          parent (e.g. a District belongs under a Division), you'll be asked to select it after choosing
-          the level.
-        </span>
+      <div class="mode-toggle" id="officeModeToggle">
+        <button type="button" class="mode-toggle-btn is-active" data-mode="single">Add Single Office</button>
+        <button type="button" class="mode-toggle-btn" data-mode="bulk">Bulk Upload</button>
       </div>
 
-      <form class="form-fields" id="officeForm">
-        <div class="field">
-          <label class="field-label" for="fLevel">Jurisdiction Level <span class="field-req">*</span></label>
-          <select class="field-control" id="fLevel" required>
-            <option value="" disabled selected>Select a Level</option>
-          </select>
-          <span class="field-hint"><span class="material-icons">info</span>e.g. District, Taluk</span>
+      <div id="officeSinglePanel">
+        <div class="tip-box">
+          <span class="tip-label">Tip:</span>
+          <span class="tip-text">
+            Select the level this office belongs to, then give it its official name. If this office has a
+            parent (e.g. a District belongs under a Division), you'll be asked to select it after choosing
+            the level.
+          </span>
         </div>
 
-        <div class="field">
-          <label class="field-label" for="fName">Jurisdiction Office Name <span class="field-req">*</span></label>
-          <input class="field-control" id="fName" type="text"
-            placeholder="e.g. Vellore District, Tiruvallur Division...." required />
-        </div>
+        <form class="form-fields" id="officeForm">
+          <div class="field">
+            <label class="field-label" for="fLevel">Jurisdiction Level <span class="field-req">*</span></label>
+            <button type="button" class="ux4g-al-select" id="fLevelTrigger">
+              <span class="ux4g-al-select-label is-placeholder" id="fLevelTriggerLabel">Select a Level</span>
+              <span class="material-icons">expand_more</span>
+            </button>
+            <select class="ux4g-al-select-native" id="fLevel" required>
+              <option value="" disabled selected>Select a Level</option>
+            </select>
+            <span class="field-hint"><span class="material-icons">info</span>e.g. District, Taluk</span>
+          </div>
 
-        <div class="field" id="parentField" hidden>
-          <label class="field-label" for="fParent">Parent Office (Reports Under) <span class="field-req">*</span></label>
-          <select class="field-control" id="fParent">
-            <option value="" disabled selected>Select Parent office...</option>
-          </select>
-          <span class="field-hint"><span class="material-icons">info</span>Select which higher-level office this belongs to</span>
-        </div>
+          <div class="field">
+            <label class="field-label" for="fName">Jurisdiction Office Name <span class="field-req">*</span></label>
+            <input class="field-control" id="fName" type="text"
+              placeholder="e.g. Vellore District, Tiruvallur Division...." required />
+          </div>
 
-        <div class="field" id="descField">
-          <label class="field-label" for="fDesc">Description(Optional)</label>
-          <input class="field-control" id="fDesc" type="text" placeholder="Optional Notes about the office" />
+          <div class="field" id="parentField" hidden>
+            <label class="field-label" for="fParent">Parent Office (Reports Under) <span class="field-req">*</span></label>
+            <button type="button" class="ux4g-al-select" id="fParentTrigger">
+              <span class="ux4g-al-select-label is-placeholder" id="fParentTriggerLabel">Select Parent office...</span>
+              <span class="material-icons">expand_more</span>
+            </button>
+            <select class="ux4g-al-select-native" id="fParent">
+              <option value="" disabled selected>Select Parent office...</option>
+            </select>
+            <span class="field-hint"><span class="material-icons">info</span>Select which higher-level office this belongs to</span>
+          </div>
+
+          <div class="field" id="descField">
+            <label class="field-label" for="fDesc">Description(Optional)</label>
+            <input class="field-control" id="fDesc" type="text" placeholder="Optional Notes about the office" />
+          </div>
+        </form>
+      </div>
+
+      <div id="officeBulkPanel" hidden>
+        <div class="bulk-upload-intro">
+          <div class="bulk-columns-note">
+            <span class="material-icons">info</span>
+            <span>Columns required: <strong>Level, Office Name, Parent Office, Description</strong>. Level must match one of this department's real levels (e.g. District, Taluk). Parent Office is required for every level except the top one, and must already exist — an office one level up from the one you're adding.</span>
+          </div>
+          <div class="bulk-upload-actions">
+            <button class="btn btn-outline btn-officer" id="officeBulkDownloadTemplate" type="button"><span class="material-icons">download</span>Download CSV Template</button>
+            <label class="btn btn-outline btn-officer bulk-file-label" for="officeBulkFileInput"><span class="material-icons">upload_file</span>Choose CSV File<input type="file" id="officeBulkFileInput" accept=".csv" hidden /></label>
+            <span id="officeBulkFileName" class="bulk-file-name"></span>
+          </div>
         </div>
-      </form>
+        <div id="officeBulkPreviewWrap" hidden>
+          <div class="bulk-preview-summary" id="officeBulkPreviewSummary"></div>
+          <div class="bulk-preview-table-wrap">
+            <table class="bulk-preview-table">
+              <thead>
+                <tr><th>#</th><th>Level</th><th>Office Name</th><th>Parent Office</th><th>Status</th></tr>
+              </thead>
+              <tbody id="officeBulkPreviewBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="officeBulkResultsWrap" hidden>
+          <div class="bulk-results-banner" id="officeBulkResultsBanner"></div>
+          <div class="bulk-preview-table-wrap">
+            <table class="bulk-preview-table">
+              <thead><tr><th>#</th><th>Office Name</th><th>Reason</th></tr></thead>
+              <tbody id="officeBulkFailuresBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
       <div class="modal-footer">
         <button class="btn-cancel" data-close>Cancel</button>
         <button class="btn-modal-primary" id="addOfficeBtn">Add Jurisdiction Office</button>
+        <button class="btn-modal-primary" id="officeBulkCreateBtn" hidden disabled>Add Offices</button>
       </div>
     </div>
   </div>
 
-  <script src="store.js?v=20260940"></script>
-  <script src="officer-modals.js?v=20260944"></script>
+  <script src="store.js?v=20261042"></script>
+  <script src="session.js?v=20261060"></script>
+  <script src="officer-modals.js?v=20261040"></script>
+  <script src="app-modals.js?v=20261040"></script>
   <script src="dropdown.js?v=20260901"></script>
   <script src="accessibility.js?v=20260960"></script>
-  <script src="agency.js?v=20260920"></script>
+  <script src="agency.js?v=20261080"></script>
 
   <!-- UX4G runtime (accessibility bar behavior, theme toggle, etc.) -->
   <script src="https://cdn.ux4g.gov.in/UX4G@3.0.18/ux4g.js"></script>

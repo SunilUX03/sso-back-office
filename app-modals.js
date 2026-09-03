@@ -31,7 +31,7 @@
   // Management / Designation Management / App Management's own department
   // list use — falls back to a small seed list only when Store is absent) ----
   function departments() {
-    return (typeof Store !== "undefined" && Store.allDepartments()) || [
+    return (typeof Store !== "undefined" && Store.visibleDepartments()) || [
       "TN Information Technology and Digital Services (IT&DS)",
       "Revenue and Disaster Management",
       "Rural Development and Panchayat Raj Department",
@@ -607,7 +607,7 @@
   function syncJurisItems() {
     if (typeof Store === "undefined") return;
     const levelIndex = Number(levelSel.value);
-    const offices = Store.deptOffices(deptSel.value, subSel.value)
+    const offices = Store.visibleOffices(deptSel.value, subSel.value)
       .filter((o) => o.levelIndex === levelIndex)
       .map((o) => o.name);
     jurisMS._setItems(offices);
@@ -618,7 +618,7 @@
     levelSel.innerHTML = levels.map((l, i) => `<option value="${i}">${esc(l)}</option>`).join("");
     syncLevelTrigger();
     syncJurisItems();
-    desigMS._setItems(Store.deptDesignations(deptSel.value, subSel.value).map((d) => d.name));
+    desigMS._setItems(Store.visibleDeptDesignations(deptSel.value, subSel.value).map((d) => d.name));
   }
   levelSel.addEventListener("change", () => { syncLevelTrigger(); syncJurisItems(); });
 
@@ -665,7 +665,7 @@
   function syncDcJuris() {
     if (typeof Store === "undefined") return;
     const levelIndex = Number(dcLevelSel.value);
-    const offices = Store.deptOffices(deptSel.value, subSel.value).filter((o) => o.levelIndex === levelIndex);
+    const offices = Store.visibleOffices(deptSel.value, subSel.value).filter((o) => o.levelIndex === levelIndex);
     dcJurisSel.disabled = !offices.length;
     dcJurisSel.innerHTML = offices.length
       ? opts(offices.map((o) => o.name), "Select jurisdiction")
@@ -678,7 +678,7 @@
     dcLevelSel.innerHTML = levels.map((l, i) => `<option value="${i}">${esc(l)}</option>`).join("");
     syncDcLevelTrigger();
     syncDcJuris();
-    dcDesigSel.innerHTML = opts(Store.deptDesignations(deptSel.value, subSel.value).map((d) => d.name), "Select designation");
+    dcDesigSel.innerHTML = opts(Store.visibleDeptDesignations(deptSel.value, subSel.value).map((d) => d.name), "Select designation");
     syncDcDesigTrigger();
   }
   dcLevelSel.addEventListener("change", () => { syncDcLevelTrigger(); syncDcJuris(); });
@@ -823,9 +823,24 @@
       r.closest(".signin-option").classList.toggle("is-selected", r.checked);
     });
 
-    if (ctx.dept && [...deptSel.options].some((o) => o.value === ctx.dept)) deptSel.value = ctx.dept;
+    // A Department Admin can only register applications under their own
+    // department — the field is locked to it, not just pre-selected. A
+    // Sub-Department Admin is locked one level further, to their own
+    // sub-department too.
+    const scope = typeof Store !== "undefined" ? Store.myScope() : { role: "super-admin" };
+    const deptTrigger = document.getElementById("awDeptTrigger");
+    const subDeptTrigger = document.getElementById("awSubDeptTrigger");
+    if (scope.role === "dept-admin") {
+      deptSel.innerHTML = opts(departments());
+      deptSel.value = scope.dept;
+      deptTrigger.disabled = true;
+    } else {
+      deptTrigger.disabled = false;
+      if (ctx.dept && [...deptSel.options].some((o) => o.value === ctx.dept)) deptSel.value = ctx.dept;
+    }
     syncDeptTrigger();
-    syncSub(ctx.subDept);
+    syncSub(scope.role === "dept-admin" && scope.subDept ? scope.subDept : ctx.subDept);
+    subDeptTrigger.disabled = scope.role === "dept-admin" && !!scope.subDept;
     syncLevelAndJuris();
     syncDcLevel();
 
